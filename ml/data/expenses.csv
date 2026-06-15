@@ -1,0 +1,51 @@
+description,category
+coffee at starbucks,Food
+office lunch with team,Food
+monthly grocery shopping,Food
+pizza delivery,Food
+dinner at restaurant,Food
+uber ride to office,Transport
+metro card recharge,Transport
+petrol pump fuel,Transport
+bus ticket,Transport
+train booking,Transport
+amazon headphones order,Shopping
+new shoes from mall,Shopping
+flipkart mobile cover,Shopping
+clothes shopping,Shopping
+gift purchase,Shopping
+electricity bill payment,Bills
+mobile phone recharge,Bills
+home internet bill,Bills
+water bill,Bills
+credit card annual fee,Bills
+movie tickets,Entertainment
+netflix monthly subscription,Entertainment
+spotify premium,Entertainment
+gaming pass,Entertainment
+concert ticket,Entertainment
+doctor consultation,Health
+pharmacy medicines,Health
+hospital bill,Health
+dental clinic visit,Health
+health insurance premium,Health
+online course subscription,Education
+college exam fee,Education
+textbook purchase,Education
+tuition payment,Education
+coding bootcamp fee,Education
+flight ticket to goa,Travel
+hotel booking,Travel
+airbnb stay,Travel
+holiday package,Travel
+airport cab,Travel
+monthly house rent,Rent
+apartment rent transfer,Rent
+rent paid to landlord,Rent
+flat maintenance rent,Rent
+room rent payment,Rent
+atm withdrawal,Other
+charity donation,Other
+bank service charge,Other
+miscellaneous expense,Other
+cash transfer to friend,Other

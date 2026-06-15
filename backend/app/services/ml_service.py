@@ -1,0 +1,55 @@
+from pathlib import Path
+
+import joblib
+
+from app.schemas.expense import CATEGORIES
+
+
+MODEL_PATH = Path(__file__).resolve().parents[1] / "ml" / "expense_classifier.joblib"
+
+
+class ExpenseCategorizer:
+    def __init__(self) -> None:
+        self._model = None
+
+    def load(self) -> None:
+        if MODEL_PATH.exists():
+            self._model = joblib.load(MODEL_PATH)
+
+    def predict(self, description: str) -> tuple[str, float]:
+        text = description.strip()
+        if not text:
+            return "Other", 0.0
+        if self._model is None:
+            self.load()
+        if self._model is None:
+            return self._fallback_predict(text), 0.45
+
+        prediction = self._model.predict([text])[0]
+        confidence = 0.75
+        if hasattr(self._model, "predict_proba"):
+            probabilities = self._model.predict_proba([text])[0]
+            confidence = float(max(probabilities))
+        category = str(prediction)
+        return (category if category in CATEGORIES else "Other"), round(confidence, 3)
+
+    def _fallback_predict(self, text: str) -> str:
+        normalized = text.lower()
+        keyword_map = {
+            "Food": ["coffee", "restaurant", "pizza", "burger", "grocery", "lunch", "dinner"],
+            "Transport": ["uber", "ola", "metro", "fuel", "bus", "taxi", "train"],
+            "Shopping": ["amazon", "flipkart", "clothes", "mall", "shoes"],
+            "Bills": ["electricity", "internet", "phone", "water", "bill", "recharge"],
+            "Entertainment": ["movie", "netflix", "spotify", "game", "concert"],
+            "Health": ["doctor", "pharmacy", "medicine", "hospital", "clinic"],
+            "Education": ["course", "book", "tuition", "exam", "college"],
+            "Travel": ["flight", "hotel", "trip", "airbnb", "booking"],
+            "Rent": ["rent", "landlord", "apartment"],
+        }
+        for category, keywords in keyword_map.items():
+            if any(keyword in normalized for keyword in keywords):
+                return category
+        return "Other"
+
+
+categorizer = ExpenseCategorizer()
