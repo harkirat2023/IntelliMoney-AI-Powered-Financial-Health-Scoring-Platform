@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.errors import DuplicateKeyError
@@ -8,7 +6,7 @@ from app.api.deps import get_current_user
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.mongodb import get_database
 from app.schemas.user import Token, UserCreate, UserLogin, UserPublic
-from app.services.serializers import serialize_document
+from app.services.serializers import serialize_document, utc_now
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -21,7 +19,7 @@ async def register(payload: UserCreate, db: AsyncIOMotorDatabase = Depends(get_d
         "email": payload.email.lower(),
         "hashed_password": hash_password(payload.password),
         "monthly_income": payload.monthly_income,
-        "created_at": datetime.utcnow(),
+        "created_at": utc_now(),
     }
     try:
         result = await db.users.insert_one(document)

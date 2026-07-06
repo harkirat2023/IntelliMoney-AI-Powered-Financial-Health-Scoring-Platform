@@ -2,7 +2,7 @@ from pathlib import Path
 
 import joblib
 
-from app.schemas.expense import CATEGORIES
+from app.core.constants import CATEGORIES, CATEGORY_KEYWORD_MAP
 
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "ml" / "expense_classifier.joblib"
@@ -35,18 +35,7 @@ class ExpenseCategorizer:
 
     def _fallback_predict(self, text: str) -> str:
         normalized = text.lower()
-        keyword_map = {
-            "Food": ["coffee", "restaurant", "pizza", "burger", "grocery", "lunch", "dinner"],
-            "Transport": ["uber", "ola", "metro", "fuel", "bus", "taxi", "train"],
-            "Shopping": ["amazon", "flipkart", "clothes", "mall", "shoes"],
-            "Bills": ["electricity", "internet", "phone", "water", "bill", "recharge"],
-            "Entertainment": ["movie", "netflix", "spotify", "game", "concert"],
-            "Health": ["doctor", "pharmacy", "medicine", "hospital", "clinic"],
-            "Education": ["course", "book", "tuition", "exam", "college"],
-            "Travel": ["flight", "hotel", "trip", "airbnb", "booking"],
-            "Rent": ["rent", "landlord", "apartment"],
-        }
-        for category, keywords in keyword_map.items():
+        for category, keywords in CATEGORY_KEYWORD_MAP.items():
             if any(keyword in normalized for keyword in keywords):
                 return category
         return "Other"

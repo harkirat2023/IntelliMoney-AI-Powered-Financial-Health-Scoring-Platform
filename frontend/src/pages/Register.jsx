@@ -19,9 +19,9 @@ export default function Register() {
     setError("");
     try {
       await register({ ...form, monthly_income: Number(form.monthly_income) });
-      navigate("/");
-    } catch {
-      setError("Could not create account. Try another email.");
+      navigate("/app");
+    } catch (err) {
+      setError(err.response?.data?.detail || "Could not create account. Try another email.");
     }
   }
 
@@ -39,6 +39,11 @@ export default function Register() {
           <button type="submit">Register</button>
         </form>
         <span>Already registered? <Link to="/login">Login</Link></span>
+        <div style={{ marginTop: "16px", padding: "12px", background: "#f0f9ff", borderRadius: "8px", fontSize: "0.9rem" }}>
+          <strong>Demo Account:</strong><br />
+          Email: demo@example.com<br />
+          Password: password123
+        </div>
       </section>
     </main>
   );

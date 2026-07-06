@@ -1,0 +1,7 @@
+[Tue 07/07/2026  2:12:35.49] IntelliMoney Startup Started 
+================================== 
+[Tue 07/07/2026  2:12:35.60] "===== STEP 1: Environment Validation =====" 
+[Tue 07/07/2026  2:12:35.72] "Git found: 2.54.0.windows.1" 
+[Tue 07/07/2026  2:12:35.90] "Python found: 3.14.4" 
+[Tue 07/07/2026  2:12:36.01] "Node.js found: v26.2.0" 
+[Tue 07/07/2026  2:12:36.47] "npm found: 11.13.0" 

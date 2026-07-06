@@ -1,10 +1,10 @@
-from datetime import datetime
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.services.analytics_service import category_breakdown, get_summary
 from app.services.budget_service import get_budget_status
+from app.services.serializers import utc_now
 
 
 async def generate_recommendations(
@@ -73,6 +73,6 @@ async def generate_recommendations(
         )
 
     await db.recommendations.insert_one(
-        {"user_id": user["_id"], "items": recommendations, "created_at": datetime.utcnow()}
+        {"user_id": user["_id"], "items": recommendations, "created_at": utc_now()}
     )
     return recommendations

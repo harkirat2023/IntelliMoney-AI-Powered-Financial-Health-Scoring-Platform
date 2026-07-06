@@ -5,7 +5,7 @@ from typing import Any
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.services.serializers import month_bounds, serialize_document
+from app.services.serializers import month_bounds, serialize_document, utc_now
 
 
 async def get_month_expenses(
@@ -19,7 +19,7 @@ async def get_month_expenses(
 
 
 async def get_summary(db: AsyncIOMotorDatabase, user: dict[str, Any]) -> dict[str, Any]:
-    now = datetime.utcnow()
+    now = utc_now()
     expenses = await get_month_expenses(db, str(user["_id"]), now.year, now.month)
     total_spending = round(sum(item["amount"] for item in expenses), 2)
     monthly_income = float(user.get("monthly_income", 0))
@@ -42,7 +42,7 @@ async def get_summary(db: AsyncIOMotorDatabase, user: dict[str, Any]) -> dict[st
 
 
 async def category_breakdown(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[str, Any]]:
-    now = datetime.utcnow()
+    now = utc_now()
     expenses = await get_month_expenses(db, user_id, now.year, now.month)
     totals: dict[str, float] = defaultdict(float)
     for item in expenses:
@@ -51,7 +51,7 @@ async def category_breakdown(db: AsyncIOMotorDatabase, user_id: str) -> list[dic
 
 
 async def payment_methods(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[str, Any]]:
-    now = datetime.utcnow()
+    now = utc_now()
     expenses = await get_month_expenses(db, user_id, now.year, now.month)
     totals: dict[str, float] = defaultdict(float)
     for item in expenses:
@@ -60,7 +60,7 @@ async def payment_methods(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[s
 
 
 async def monthly_spending(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[str, Any]]:
-    now = datetime.utcnow()
+    now = utc_now()
     points: list[dict[str, Any]] = []
     for offset in range(5, -1, -1):
         month = now.month - offset

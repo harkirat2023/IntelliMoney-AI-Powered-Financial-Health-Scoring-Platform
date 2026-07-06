@@ -1,15 +1,14 @@
-from datetime import datetime
 from typing import Any
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.services.analytics_service import get_month_expenses
-from app.services.serializers import serialize_document
+from app.services.serializers import serialize_document, utc_now
 
 
 async def get_budget_status(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[str, Any]]:
-    now = datetime.utcnow()
+    now = utc_now()
     budgets = [
         serialize_document(item)
         async for item in db.budgets.find(

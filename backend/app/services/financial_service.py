@@ -1,4 +1,3 @@
-from datetime import datetime
 from statistics import mean, pstdev
 from typing import Any
 
@@ -7,6 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.services.analytics_service import get_month_expenses, get_summary
 from app.services.budget_service import get_budget_status
+from app.services.serializers import utc_now
 
 
 def risk_level(score: int) -> str:
@@ -23,7 +23,7 @@ async def calculate_financial_score(
     db: AsyncIOMotorDatabase, user: dict[str, Any]
 ) -> dict[str, Any]:
     user_id = str(user["_id"])
-    now = datetime.utcnow()
+    now = utc_now()
     summary = await get_summary(db, user)
     savings_rate = max(min(summary["savings_rate"], 100), -100)
     savings_component = max(min(savings_rate / 30 * 100, 100), 0)

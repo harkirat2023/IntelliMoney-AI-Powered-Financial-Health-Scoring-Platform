@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Trash2 } from "lucide-react";
+import { Pencil, Sparkles, Trash2, X } from "lucide-react";
 
 import { api } from "../api/client";
+import { CATEGORIES, PAYMENT_METHODS } from "../config/constants";
 import { currency, today } from "../utils/format";
-
-const categories = ["Food", "Transport", "Shopping", "Bills", "Entertainment", "Health", "Education", "Travel", "Rent", "Other"];
-const paymentMethods = ["Cash", "Card", "UPI", "Bank Transfer", "Wallet", "Other"];
 
 const initialForm = {
   amount: "",
@@ -18,6 +16,7 @@ const initialForm = {
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
   const [form, setForm] = useState(initialForm);
+  const [editingId, setEditingId] = useState(null);
   const [filters, setFilters] = useState({ category: "", payment_method: "" });
   const [prediction, setPrediction] = useState(null);
   const [error, setError] = useState("");
@@ -43,12 +42,18 @@ export default function Expenses() {
     event.preventDefault();
     setError("");
     try {
-      await api.post("/expenses", {
+      const payload = {
         ...form,
         amount: Number(form.amount),
         category: form.category || null
-      });
+      };
+      if (editingId) {
+        await api.put(`/expenses/${editingId}`, payload);
+      } else {
+        await api.post("/expenses", payload);
+      }
       setForm(initialForm);
+      setEditingId(null);
       setPrediction(null);
       await loadExpenses();
     } catch {
@@ -56,8 +61,27 @@ export default function Expenses() {
     }
   }
 
+  function editExpense(expense) {
+    setEditingId(expense.id);
+    setPrediction(null);
+    setForm({
+      amount: expense.amount,
+      description: expense.description,
+      category: expense.category,
+      payment_method: expense.payment_method,
+      date: expense.date
+    });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setPrediction(null);
+    setForm(initialForm);
+  }
+
   async function deleteExpense(id) {
     await api.delete(`/expenses/${id}`);
+    if (editingId === id) cancelEdit();
     await loadExpenses();
   }
 
@@ -72,7 +96,10 @@ export default function Expenses() {
 
       <section className="split">
         <form className="panel form-panel" onSubmit={saveExpense}>
-          <h2>Add Expense</h2>
+          <div className="panel-title-row">
+            <h2>{editingId ? "Edit Expense" : "Add Expense"}</h2>
+            {editingId && <button className="icon-button" type="button" onClick={cancelEdit} aria-label="Cancel edit"><X size={16} /></button>}
+          </div>
           <label>Amount<input type="number" min="1" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required /></label>
           <label>Description<input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="e.g. Uber ride to office" required /></label>
           <button className="secondary" type="button" onClick={predictCategory}><Sparkles size={16} /> Predict Category</button>
@@ -80,17 +107,17 @@ export default function Expenses() {
           <label>Category
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
               <option value="">Auto categorize</option>
-              {categories.map((category) => <option key={category}>{category}</option>)}
+              {CATEGORIES.map((category) => <option key={category}>{category}</option>)}
             </select>
           </label>
           <label>Payment method
             <select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
-              {paymentMethods.map((method) => <option key={method}>{method}</option>)}
+              {PAYMENT_METHODS.map((method) => <option key={method}>{method}</option>)}
             </select>
           </label>
           <label>Date<input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required /></label>
           {error && <div className="error">{error}</div>}
-          <button type="submit">Save Expense</button>
+          <button type="submit">{editingId ? "Update Expense" : "Save Expense"}</button>
         </form>
 
         <article className="panel list-panel">
@@ -99,11 +126,11 @@ export default function Expenses() {
             <div className="filters">
               <select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })}>
                 <option value="">All categories</option>
-                {categories.map((category) => <option key={category}>{category}</option>)}
+                {CATEGORIES.map((category) => <option key={category}>{category}</option>)}
               </select>
               <select value={filters.payment_method} onChange={(e) => setFilters({ ...filters, payment_method: e.target.value })}>
                 <option value="">All methods</option>
-                {paymentMethods.map((method) => <option key={method}>{method}</option>)}
+                {PAYMENT_METHODS.map((method) => <option key={method}>{method}</option>)}
               </select>
             </div>
           </div>
@@ -113,6 +140,7 @@ export default function Expenses() {
                 <span>{expense.description}<small>{expense.date}</small></span>
                 <span>{expense.category}</span>
                 <strong>{currency(expense.amount)}</strong>
+                <button className="icon-button" onClick={() => editExpense(expense)} aria-label="Edit expense"><Pencil size={16} /></button>
                 <button className="icon-button danger" onClick={() => deleteExpense(expense.id)} aria-label="Delete expense"><Trash2 size={16} /></button>
               </div>
             ))}

@@ -14,9 +14,9 @@ export default function Login() {
     setError("");
     try {
       await login(form.email, form.password);
-      navigate("/");
-    } catch {
-      setError("Invalid email or password.");
+      navigate("/app");
+    } catch (err) {
+      setError(err.response?.data?.detail || "Invalid email or password.");
     }
   }
 
@@ -32,6 +32,11 @@ export default function Login() {
           <button type="submit">Login</button>
         </form>
         <span>New here? <Link to="/register">Create an account</Link></span>
+        <div style={{ marginTop: "16px", padding: "12px", background: "#f0f9ff", borderRadius: "8px", fontSize: "0.9rem" }}>
+          <strong>Demo Account:</strong><br />
+          Email: demo@example.com<br />
+          Password: password123
+        </div>
       </section>
     </main>
   );

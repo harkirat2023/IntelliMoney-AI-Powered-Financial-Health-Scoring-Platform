@@ -1,0 +1,13 @@
+.health-layout { display: flex; gap: 0; min-height: calc(100vh - 64px); }
+.health-nav { width: 200px; min-width: 200px; background: #111827; border-right: 1px solid #1f2937; padding: 16px 0; display: flex; flex-direction: column; gap: 2px; }
+.health-nav-link { display: block; padding: 10px 20px; color: #9ca3af; font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
+.health-nav-link:hover { color: #f9fafb; background: #1f2937; }
+.health-nav-link.active { color: #10b981; border-left-color: #10b981; background: rgba(16,185,129,0.08); font-weight: 600; }
+.health-content { flex: 1; overflow-y: auto; }
+
+@media (max-width: 768px) {
+  .health-layout { flex-direction: column; }
+  .health-nav { width: 100%; min-width: unset; flex-direction: row; overflow-x: auto; padding: 8px 12px; border-right: none; border-bottom: 1px solid #1f2937; gap: 4px; }
+  .health-nav-link { white-space: nowrap; padding: 8px 14px; border-left: none; border-bottom: 2px solid transparent; }
+  .health-nav-link.active { border-left-color: transparent; border-bottom-color: #10b981; }
+}

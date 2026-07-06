@@ -3,22 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from app.core.constants import CATEGORIES, PAYMENT_METHODS
 from app.schemas.common import PyObjectId
-
-
-PAYMENT_METHODS = ["Cash", "Card", "UPI", "Bank Transfer", "Wallet", "Other"]
-CATEGORIES = [
-    "Food",
-    "Transport",
-    "Shopping",
-    "Bills",
-    "Entertainment",
-    "Health",
-    "Education",
-    "Travel",
-    "Rent",
-    "Other",
-]
 
 
 class ExpenseCreate(BaseModel):

@@ -9,7 +9,7 @@ from app.db.mongodb import get_database
 from app.services.serializers import to_object_id
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 async def get_current_user(
@@ -22,10 +22,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
         )
-    try:
-        object_id = to_object_id(user_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials") from exc
+    object_id = to_object_id(user_id)
     user = await db.users.find_one({"_id": object_id})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
