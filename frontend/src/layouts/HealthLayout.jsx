@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { motion } from "framer-motion";
 import "./HealthLayout.css";
 
 const navItems = [
@@ -11,7 +12,12 @@ const navItems = [
 
 export default function HealthLayout() {
   return (
-    <div className="health-layout">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="health-layout"
+    >
       <nav className="health-nav">
         {navItems.map((item) => (
           <NavLink key={item.path} to={item.path} end={item.end} className={({ isActive }) => `health-nav-link${isActive ? " active" : ""}`}>
@@ -22,6 +28,6 @@ export default function HealthLayout() {
       <div className="health-content">
         <Outlet />
       </div>
-    </div>
+    </motion.div>
   );
 }

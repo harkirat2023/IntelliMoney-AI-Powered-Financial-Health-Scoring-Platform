@@ -17,6 +17,19 @@ const NAV_ITEMS = [
   { to: "/app/dashboard/insights", icon: Lightbulb, label: "Insights" },
 ];
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 },
+  },
+};
+
+const itemAnim = {
+  hidden: { opacity: 0, x: -10 },
+  show: { opacity: 1, x: 0 },
+};
+
 export default function DashboardLayout() {
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -28,20 +41,27 @@ export default function DashboardLayout() {
   }, []);
 
   return (
-    <motion.div className="dash-v2-shell" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="dash-v2-shell"
+    >
       <nav className="dash-v2-nav">
         <div className="dash-nav-brand">
           <LayoutDashboard size={22} />
           <span>Dashboard</span>
         </div>
-        <div className="dash-nav-items">
+        <motion.div className="dash-nav-items" variants={container} initial="hidden" animate="show">
           {NAV_ITEMS.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `dash-nav-item ${isActive ? "active" : ""}`}>
-              <item.icon size={18} />
-              <span>{item.label}</span>
-            </NavLink>
+            <motion.div key={item.to} variants={itemAnim}>
+              <NavLink to={item.to} end={item.end} className={({ isActive }) => `dash-nav-item ${isActive ? "active" : ""}`}>
+                <item.icon size={18} />
+                <span>{item.label}</span>
+              </NavLink>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
         <div className="dash-nav-footer">
           <NavLink to="/app/dashboard/notifications" className={({ isActive }) => `dash-nav-item ${isActive ? "active" : ""}`}>
             <Bell size={18} />

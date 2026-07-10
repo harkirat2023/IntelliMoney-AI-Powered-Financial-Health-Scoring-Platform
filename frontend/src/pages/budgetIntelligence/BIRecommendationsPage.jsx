@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { budgetIntelligenceStore } from "../../../store/budgetIntelligenceStore";
+import { budgetIntelligenceStore } from "../../store/budgetIntelligenceStore";
 import "../../layouts/BudgetIntelligenceLayout.css";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };

@@ -1,16 +1,4 @@
 services:
-  mongodb:
-    image: mongo:7
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
   backend:
     build:
       context: .
@@ -18,9 +6,8 @@ services:
     ports:
       - "8080:8080"
     env_file: backend/.env
-    depends_on:
-      - mongodb
-      - redis
+    environment:
+      FRONTEND_ORIGIN: http://localhost:3002
     volumes:
       - ./backend:/app
       - ./ml:/app/ml
@@ -30,9 +17,6 @@ services:
       context: .
       dockerfile: docker/Dockerfile.frontend
     ports:
-      - "80:80"
+      - "3002:80"
     depends_on:
       - backend
-
-volumes:
-  mongo_data:

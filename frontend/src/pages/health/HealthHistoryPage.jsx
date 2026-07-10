@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { healthStore } from "../../../store/healthStore";
-import { LineChartCard } from "../../../dashboard/charts/LineChartCard";
+import { healthStore } from "../../store/healthStore";
+import  LineChartCard  from "../../dashboard/charts/LineChartCard";
 import "./HealthV2.css";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };

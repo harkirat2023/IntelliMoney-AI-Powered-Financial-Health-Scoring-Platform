@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { budgetIntelligenceStore } from "../../../store/budgetIntelligenceStore";
+import { budgetIntelligenceStore } from "../../store/budgetIntelligenceStore";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { StatWidget } from "../../../dashboard/widgets/StatWidget";
+import  StatWidget  from "../../dashboard/widgets/StatWidget";
 import "../../layouts/BudgetIntelligenceLayout.css";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };

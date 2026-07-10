@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { motion } from "framer-motion";
 import "./CopilotLayout.css";
 
 const navItems = [
@@ -9,7 +10,12 @@ const navItems = [
 
 export default function CopilotLayout() {
   return (
-    <div className="copilot-layout">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="copilot-layout"
+    >
       <nav className="copilot-nav">
         {navItems.map((item) => (
           <NavLink key={item.path} to={item.path} end={item.end} className={({ isActive }) => `copilot-nav-link${isActive ? " active" : ""}`}>
@@ -20,6 +26,6 @@ export default function CopilotLayout() {
       <div className="copilot-content">
         <Outlet />
       </div>
-    </div>
+    </motion.div>
   );
 }

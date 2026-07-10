@@ -132,7 +132,7 @@ async def get_suggestions(
 async def get_settings_endpoint():
     cfg = get_settings()
     return CopilotSettings(
-        model=cfg.OPENAI_MODEL or cfg.get("OPENAI_MODEL", "gpt-4o"),
-        temperature=cfg.OPENAI_TEMPERATURE or cfg.get("OPENAI_TEMPERATURE", 0.3),
-        max_tokens=cfg.OPENAI_MAX_TOKENS or cfg.get("OPENAI_MAX_TOKENS", 1024),
+        model=cfg.openai_model or "gpt-4o",
+        temperature=cfg.openai_temperature or 0.3,
+        max_tokens=cfg.openai_max_tokens or 1024,
     )

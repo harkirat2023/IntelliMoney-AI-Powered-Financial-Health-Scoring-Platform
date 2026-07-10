@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     mongodb_db: str = "intellimoney"
     redis_url: str = ""
     log_level: str = "INFO"
-    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:80", "http://localhost"]
 
     bank_encryption_key: str
     bank_consent_redirect_base: str = "http://localhost:5173/connect-bank/consent"

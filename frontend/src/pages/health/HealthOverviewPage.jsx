@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { healthStore } from "../../../store/healthStore";
-import { HealthScoreWidget } from "../../../dashboard/widgets/HealthScoreWidget";
-import { StatWidget } from "../../../dashboard/widgets/StatWidget";
-import { PieChartCard } from "../../../dashboard/charts/PieChartCard";
-import { BarChartCard } from "../../../dashboard/charts/BarChartCard";
+import { healthStore } from "../../store/healthStore";
+import  HealthScoreWidget  from "../../dashboard/widgets/HealthScoreWidget";
+import  StatWidget  from "../../dashboard/widgets/StatWidget";
+import  PieChartCard  from "../../dashboard/charts/PieChartCard";
+import  BarChartCard  from "../../dashboard/charts/BarChartCard";
 import "./HealthV2.css";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, Any
 
 from bson import ObjectId
 

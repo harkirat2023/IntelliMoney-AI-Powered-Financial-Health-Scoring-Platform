@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { healthStore } from "../../../store/healthStore";
+import { healthStore } from "../../store/healthStore";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
-import { StatWidget } from "../../../dashboard/widgets/StatWidget";
+import  StatWidget  from "../../dashboard/widgets/StatWidget";
 import "./HealthV2.css";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };

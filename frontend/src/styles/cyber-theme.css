@@ -1,0 +1,605 @@
+/* ============================================================
+   Cyber-Neon Theme — IntelliMoney
+   Void black, cyan/magenta accents, glassmorphism, neon glow
+   ============================================================ */
+
+:root {
+  --cyber-black: #020204;
+  --cyber-cyan: #00f5ff;
+  --cyber-pink: #ff007f;
+  --cyber-purple: #1f1035;
+  --cyber-purple-light: #2d1b4e;
+}
+
+/* ── Mesh Gradient Background ── */
+body {
+  background: var(--cyber-black) !important;
+  color: #e2e8f0 !important;
+}
+
+.cyber-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(0, 245, 255, 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(255, 0, 127, 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(31, 16, 53, 0.3) 0%, transparent 70%);
+  animation: mesh-drift 30s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes mesh-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(2%, 2%) scale(1.02); }
+  50% { transform: translate(-1%, 1%) scale(0.98); }
+  75% { transform: translate(1%, -1%) scale(1.01); }
+}
+
+/* ── Glassmorphic Card ── */
+.glass-card {
+  background: rgba(15, 15, 35, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 245, 255, 0.06);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 245, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 245, 255, 0.1);
+}
+
+.glass-card-cyan {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 245, 255, 0.1);
+}
+
+.glass-card-pink {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 0, 127, 0.1);
+}
+
+/* ── Neon Text ── */
+.neon-text-cyan {
+  color: var(--cyber-cyan);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.5), 0 0 20px rgba(0, 245, 255, 0.2);
+}
+
+.neon-text-pink {
+  color: var(--cyber-pink);
+  text-shadow: 0 0 10px rgba(255, 0, 127, 0.5), 0 0 20px rgba(255, 0, 127, 0.2);
+}
+
+/* ── Neon Border ── */
+.neon-border-cyan {
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  box-shadow: inset 0 0 20px rgba(0, 245, 255, 0.05), 0 0 20px rgba(0, 245, 255, 0.1);
+}
+
+.neon-border-pink {
+  border: 1px solid rgba(255, 0, 127, 0.3);
+  box-shadow: inset 0 0 20px rgba(255, 0, 127, 0.05), 0 0 20px rgba(255, 0, 127, 0.1);
+}
+
+/* ── Neon Button ── */
+.neon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  min-height: 42px;
+  color: #fff;
+}
+
+.neon-btn-cyan {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(0, 245, 255, 0.05));
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.1);
+}
+
+.neon-btn-cyan:hover {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.25), rgba(0, 245, 255, 0.1));
+  border-color: rgba(0, 245, 255, 0.6);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.neon-btn-pink {
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.15), rgba(255, 0, 127, 0.05));
+  border: 1px solid rgba(255, 0, 127, 0.3);
+  box-shadow: 0 0 15px rgba(255, 0, 127, 0.1);
+}
+
+.neon-btn-pink:hover {
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.25), rgba(255, 0, 127, 0.1));
+  border-color: rgba(255, 0, 127, 0.6);
+  box-shadow: 0 0 30px rgba(255, 0, 127, 0.25);
+  transform: translateY(-1px);
+}
+
+.neon-btn-solid {
+  background: linear-gradient(135deg, var(--cyber-cyan), #00b8c4);
+  border: none;
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+  color: #020204;
+}
+
+.neon-btn-solid:hover {
+  box-shadow: 0 0 35px rgba(0, 245, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.neon-btn-solid-pink {
+  background: linear-gradient(135deg, var(--cyber-pink), #cc0066);
+  border: none;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.3);
+  color: #fff;
+}
+
+.neon-btn-solid-pink:hover {
+  box-shadow: 0 0 35px rgba(255, 0, 127, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ── Neon Input ── */
+.neon-input-group {
+  position: relative;
+  width: 100%;
+}
+
+.neon-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 16px 16px 6px;
+  background: rgba(15, 15, 35, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.neon-input:focus {
+  border-color: var(--cyber-cyan);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.1), inset 0 0 20px rgba(0, 245, 255, 0.03);
+}
+
+.neon-input ~ .neon-floating-label {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.neon-input:focus ~ .neon-floating-label,
+.neon-input:not(:placeholder-shown) ~ .neon-floating-label {
+  top: 8px;
+  transform: translateY(0);
+  font-size: 0.7rem;
+  color: var(--cyber-cyan);
+}
+
+/* ── Sidebar / Nav Rail ── */
+.cyber-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 240px;
+  z-index: 50;
+  background: rgba(10, 10, 28, 0.85);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.cyber-rail-brand {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cyber-rail-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(255, 0, 127, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cyber-cyan);
+}
+
+.cyber-rail-brand-text strong {
+  display: block;
+  font-size: 1rem;
+  color: #e2e8f0;
+  letter-spacing: -0.02em;
+}
+
+.cyber-rail-brand-text span {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cyber-rail-nav {
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cyber-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.cyber-nav-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cyber-nav-link.active {
+  color: var(--cyber-cyan);
+  background: rgba(0, 245, 255, 0.06);
+  box-shadow: inset 3px 0 0 var(--cyber-cyan);
+}
+
+.cyber-nav-link svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.cyber-nav-link.active svg {
+  opacity: 1;
+}
+
+.cyber-rail-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cyber-rail-user {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cyber-rail-logout {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  transition: color 0.2s;
+  min-height: auto;
+}
+
+.cyber-rail-logout:hover {
+  color: var(--cyber-pink);
+}
+
+/* ── Main Content Area ── */
+.cyber-main {
+  margin-left: 240px;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  padding: 24px 32px;
+}
+
+/* ── Top Bar ── */
+.cyber-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 24px;
+  gap: 12px;
+}
+
+/* ── App Shell ── */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Override existing styles.css ── */
+#root {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* overrides for default button/input styles from styles.css */
+button, input, select {
+  font: inherit;
+}
+
+/* ── Cyber Section Headers ── */
+.cyber-section-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cyber-section-header::before {
+  content: "";
+  width: 3px;
+  height: 20px;
+  background: var(--cyber-cyan);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+}
+
+/* ── Monospace utility ── */
+.neon-mono {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Auth Pages (Login / Register) ── */
+.auth-page {
+  background: var(--cyber-black) !important;
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(0, 245, 255, 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(255, 0, 127, 0.04) 0%, transparent 55%) !important;
+}
+
+.auth-panel {
+  background: rgba(15, 15, 35, 0.6) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 245, 255, 0.06) !important;
+}
+
+.auth-panel h1,
+.auth-panel p {
+  color: #e2e8f0 !important;
+}
+
+.auth-panel label {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.auth-panel input {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  border-radius: 10px !important;
+  min-height: 48px !important;
+}
+
+.auth-panel input:focus {
+  border-color: var(--cyber-cyan) !important;
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.1) !important;
+  outline: none !important;
+}
+
+.auth-panel button[type="submit"] {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(0, 245, 255, 0.05)) !important;
+  border: 1px solid rgba(0, 245, 255, 0.3) !important;
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  border-radius: 10px !important;
+  min-height: 44px !important;
+  font-weight: 600 !important;
+  transition: all 0.25s ease !important;
+}
+
+.auth-panel button[type="submit"]:hover {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.3), rgba(0, 245, 255, 0.1)) !important;
+  border-color: rgba(0, 245, 255, 0.6) !important;
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.25) !important;
+}
+
+.auth-panel a {
+  color: var(--cyber-cyan) !important;
+}
+
+/* ── Override V2 dashboard theme ── */
+.dash-v2-shell {
+  background: transparent !important;
+}
+
+.dash-v2-nav,
+.dash-nav-brand {
+  background: rgba(10, 10, 28, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dash-nav-brand span {
+  color: #e2e8f0 !important;
+}
+
+.dash-nav-item {
+  color: rgba(255, 255, 255, 0.5) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.dash-nav-item:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.dash-nav-item.active {
+  color: var(--cyber-cyan) !important;
+  background: rgba(0, 245, 255, 0.06) !important;
+  border-left: 2px solid var(--cyber-cyan) !important;
+}
+
+.dash-nav-badge {
+  background: var(--cyber-cyan) !important;
+  color: #020204 !important;
+}
+
+.dash-v2-content {
+  background: transparent !important;
+}
+
+.dash-topbar {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ── Override feature layout sub-navigation ── */
+.health-nav,
+.bi-nav,
+.copilot-nav,
+.goals-nav,
+.receipts-nav {
+  background: rgba(10, 10, 28, 0.5) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px !important;
+}
+
+.health-nav-link,
+.bi-nav-link,
+.copilot-nav-link,
+.goals-nav-link,
+.receipts-nav-link {
+  color: rgba(255, 255, 255, 0.4) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.health-nav-link:hover,
+.bi-nav-link:hover,
+.copilot-nav-link:hover,
+.goals-nav-link:hover,
+.receipts-nav-link:hover {
+  color: rgba(255, 255, 255, 0.7) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.health-nav-link.active,
+.bi-nav-link.active,
+.copilot-nav-link.active,
+.goals-nav-link.active,
+.receipts-nav-link.active {
+  color: var(--cyber-cyan) !important;
+  background: rgba(0, 245, 255, 0.06) !important;
+}
+
+/* ── Override content area backgrounds ── */
+.health-content,
+.bi-content,
+.copilot-content,
+.goals-content,
+.receipts-content {
+  background: transparent !important;
+}
+
+/* ── Override page-specific styles ── */
+.page-header h1 {
+  color: #e2e8f0 !important;
+}
+
+.page-header p {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ── Override generic table/card styles ── */
+.panel,
+.stat-card,
+.card {
+  background: rgba(15, 15, 35, 0.5) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ── Landing page wrapper ── */
+.landing-page {
+  background: #ffffff !important;
+  color: #172033 !important;
+}
+
+.landing-page .text-neutral-900 {
+  color: #172033 !important;
+}
+
+.landing-page .text-neutral-500 {
+  color: #65738b !important;
+}
+
+.landing-page .text-neutral-600 {
+  color: #4d5b73 !important;
+}
+
+.landing-page .text-emerald-600 {
+  color: #059669 !important;
+}
+
+.landing-page .text-emerald-700 {
+  color: #047857 !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

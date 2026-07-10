@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import "./styles.css";
 import "./landing/index.css";
+import "./styles/cyber-theme.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

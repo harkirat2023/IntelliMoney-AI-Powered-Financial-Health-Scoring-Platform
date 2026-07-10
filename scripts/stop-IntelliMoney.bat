@@ -28,7 +28,7 @@ set "INFO=%CYAN%[INFO]%RESET%"
 
 echo.
 echo %BOLD%======================================================%RESET%
-echo %BOLD%    IntelliMoney — Shutting Down%RESET%
+echo %BOLD%    IntelliMoney - Shutting Down%RESET%
 echo %BOLD%======================================================%RESET%
 echo.
 
@@ -107,7 +107,7 @@ if exist "%ROOT_DIR%\logs" (
 
 echo.
 echo %BOLD%======================================================%RESET%
-echo %BOLD%    IntelliMoney — Shutdown Complete%RESET%
+echo %BOLD%    IntelliMoney - Shutdown Complete%RESET%
 echo %BOLD%======================================================%RESET%
 echo.
 echo %PASS% All services stopped gracefully.

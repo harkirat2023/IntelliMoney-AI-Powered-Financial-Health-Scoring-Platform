@@ -1,13 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/landing/**/*.{js,jsx}"],
+  content: ["./src/**/*.{js,jsx}"],
   theme: {
     extend: {
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+        mono: ["JetBrains Mono", "Fira Code", "monospace"],
         display: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
+        cyber: {
+          black: "#020204",
+          cyan: "#00f5ff",
+          pink: "#ff007f",
+          purple: "#1f1035",
+          "purple-light": "#2d1b4e",
+          "cyan-dim": "rgba(0,245,255,0.15)",
+          "pink-dim": "rgba(255,0,127,0.15)",
+        },
         brand: {
           50: "#ecfdf5",
           100: "#d1fae5",
@@ -48,9 +58,13 @@ module.exports = {
         "float": "float 6s ease-in-out infinite",
         "float-slow": "float 8s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "pulse-neon-cyan": "pulse-neon-cyan 2s ease-in-out infinite",
+        "pulse-neon-pink": "pulse-neon-pink 2s ease-in-out infinite",
         "gradient-shift": "gradient-shift 8s ease infinite",
         "slide-up": "slide-up 0.5s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
+        "mesh-drift": "mesh-drift 20s ease-in-out infinite",
+        "border-glow": "border-glow 3s ease-in-out infinite",
       },
       keyframes: {
         float: {
@@ -60,6 +74,14 @@ module.exports = {
         "pulse-glow": {
           "0%, 100%": { boxShadow: "0 0 20px rgba(16, 185, 129, 0.3)" },
           "50%": { boxShadow: "0 0 40px rgba(16, 185, 129, 0.6)" },
+        },
+        "pulse-neon-cyan": {
+          "0%, 100%": { boxShadow: "0 0 15px rgba(0,245,255,0.2)" },
+          "50%": { boxShadow: "0 0 30px rgba(0,245,255,0.5)" },
+        },
+        "pulse-neon-pink": {
+          "0%, 100%": { boxShadow: "0 0 15px rgba(255,0,127,0.2)" },
+          "50%": { boxShadow: "0 0 30px rgba(255,0,127,0.5)" },
         },
         "gradient-shift": {
           "0%": { backgroundPosition: "0% 50%" },
@@ -74,9 +96,21 @@ module.exports = {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        "mesh-drift": {
+          "0%, 100%": { transform: "translate(0,0) rotate(0deg)" },
+          "25%": { transform: "translate(5%,5%) rotate(1deg)" },
+          "50%": { transform: "translate(-3%,2%) rotate(-0.5deg)" },
+          "75%": { transform: "translate(2%,-3%) rotate(0.5deg)" },
+        },
+        "border-glow": {
+          "0%, 100%": { borderColor: "rgba(0,245,255,0.2)" },
+          "50%": { borderColor: "rgba(0,245,255,0.5)" },
+        },
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "mesh-cyan": "radial-gradient(circle at 20% 30%, rgba(0,245,255,0.03) 0%, transparent 50%)",
+        "mesh-magenta": "radial-gradient(circle at 80% 70%, rgba(255,0,127,0.03) 0%, transparent 50%)",
       },
     },
   },
