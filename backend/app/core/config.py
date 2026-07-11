@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,9 +26,8 @@ class Settings(BaseSettings):
     mongodb_db: str = "intellimoney"
     redis_url: str = ""
     log_level: str = "INFO"
-    cors_origins: list[str] = Field(
+    cors_origins: Annotated[list[str], NoDecode] = Field(
         default=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:80", "http://localhost"],
-        metadata=[NoDecode()],
     )
 
     bank_encryption_key: str
