@@ -3,7 +3,7 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
@@ -135,10 +135,15 @@ async def get_receipt_image(
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ):
+    from app.infrastructure.storage import get_storage_backend
+
     svc = _get_svc(db)
     receipt = await svc.get_receipt(receipt_id, str(current_user["_id"]))
     if not receipt or not receipt.image_path:
         raise HTTPException(status_code=404, detail="Receipt or image not found")
-    if not os.path.exists(receipt.image_path):
+
+    storage = get_storage_backend()
+    data = await storage.read(receipt.image_path)
+    if data is None:
         raise HTTPException(status_code=404, detail="Image file not found")
-    return FileResponse(receipt.image_path, media_type=receipt.mime_type or "image/jpeg")
+    return Response(content=data, media_type=receipt.mime_type or "image/jpeg")

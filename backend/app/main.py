@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from fastapi.responses import RedirectResponse
 
 from app.api.v1.router import router as v1_router
@@ -31,7 +30,7 @@ async def lifespan(app: FastAPI):
 
 setup_logging()
 settings = get_settings()
-app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, version=settings.version, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,9 +47,28 @@ app.add_exception_handler(Exception, global_exception_handler)
 app.include_router(v1_router, prefix="/api/v1")
 
 
+@app.get("/")
+async def root() -> dict[str, str]:
+    return {
+        "app": settings.app_name,
+        "version": settings.version,
+        "environment": settings.environment,
+    }
+
+
 @app.get("/api/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok", "service": settings.app_name}
+async def health() -> dict:
+    from app.db.mongodb import database
+    db_ok = database is not None
+    model_ok = categorizer._model is not None
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "service": settings.app_name,
+        "version": settings.version,
+        "environment": settings.environment,
+        "database": "connected" if db_ok else "disconnected",
+        "ml_model": "loaded" if model_ok else "not_loaded",
+    }
 
 
 @app.get("/api/{path:path}")

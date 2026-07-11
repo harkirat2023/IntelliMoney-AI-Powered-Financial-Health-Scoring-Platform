@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: intellimoney-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile -
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: APP_NAME
+        value: IntelliMoney
+      - key: ENVIRONMENT
+        value: production
+      - key: MONGODB_URL
+        sync: false
+      - key: MONGODB_DB
+        value: IntelliMoney
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: BANK_ENCRYPTION_KEY
+        sync: false
+      - key: BANK_CONSENT_REDIRECT_BASE
+        value: https://intellimoney.vercel.app/connect-bank/consent
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://intellimoney.vercel.app,http://localhost:5173
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false

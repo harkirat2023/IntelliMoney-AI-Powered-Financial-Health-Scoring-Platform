@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 import uuid
 from datetime import datetime
@@ -10,6 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.config import get_settings
 from app.infrastructure.messaging.event_bus import event_bus as global_event_bus
 from app.infrastructure.messaging.events import Event
+from app.infrastructure.storage import get_storage_backend
 from app.receipt_ocr.models.receipt_models import Receipt, ReceiptProcessingLog
 from app.receipt_ocr.repositories.receipt_repositories import (
     MongoReceiptProcessingLogRepository, MongoReceiptRepository,
@@ -33,13 +33,7 @@ class ReceiptService:
         self._ocr = OCRService()
         self._validator = ReceiptValidationService()
         self._categorizer = ExpenseCategorizer()
-        self._upload_dir = self._ensure_upload_dir()
-
-    def _ensure_upload_dir(self) -> str:
-        cfg = get_settings()
-        base = getattr(cfg, "upload_dir", "uploads/receipts")
-        Path(base).mkdir(parents=True, exist_ok=True)
-        return base
+        self._storage = get_storage_backend()
 
     async def upload(self, user_id: str, file_bytes: bytes, filename: str,
                      content_type: str) -> dict:
@@ -54,19 +48,17 @@ class ReceiptService:
 
         file_id = uuid.uuid4().hex[:12]
         safe_name = f"{file_id}_{filename}"
-        image_path = os.path.join(self._upload_dir, safe_name)
-        with open(image_path, "wb") as f:
-            f.write(file_bytes)
+        image_path = await self._storage.save(safe_name, file_bytes)
 
         receipt = Receipt(
             user_id=user_id, image_path=image_path, filename=filename,
             mime_type=content_type, file_size=len(file_bytes),
-            image_preview_url=f"/api/v1/receipts/{file_id}/image",
+            image_preview_url=self._storage.get_url(safe_name),
             status="uploaded",
             metadata={"original_filename": filename, "file_id": file_id},
         )
         receipt = await self._receipt_repo.create(receipt)
-        image_url = f"/api/v1/receipts/{receipt.id}/image"
+        image_url = self._storage.get_url(safe_name)
         await self._receipt_repo.update(receipt.id, {"image_preview_url": image_url})
         receipt.image_preview_url = image_url
 
@@ -78,6 +70,16 @@ class ReceiptService:
         })
 
         return {"receipt": receipt, "errors": [], "message": "Receipt uploaded"}
+
+    async def _resolve_image_path(self, image_path: str) -> str:
+        if image_path.startswith("http"):
+            data = await self._storage.read(image_path)
+            if data is None:
+                raise FileNotFoundError(f"Image not found in storage: {image_path}")
+            tmp = Path(f"/tmp/{uuid.uuid4().hex}.jpg")
+            tmp.write_bytes(data)
+            return str(tmp)
+        return image_path
 
     async def process(self, receipt_id: str, user_id: str) -> dict:
         receipt = await self._receipt_repo.get_by_id(receipt_id)
@@ -95,7 +97,8 @@ class ReceiptService:
                 "status": "processing", "ocr_attempts": receipt.ocr_attempts + 1,
             })
 
-            processed_bytes = self._image_processor.preprocess(receipt.image_path)
+            local_path = await self._resolve_image_path(receipt.image_path)
+            processed_bytes = self._image_processor.preprocess(local_path)
             if not processed_bytes:
                 raise RuntimeError("Image preprocessing failed")
 
@@ -250,9 +253,8 @@ class ReceiptService:
             return False
 
         try:
-            if os.path.exists(receipt.image_path):
-                os.remove(receipt.image_path)
-        except OSError as e:
+            await self._storage.delete(receipt.image_path)
+        except Exception as e:
             logger.warning(f"Failed to delete receipt image: {e}")
 
         await self._receipt_repo.delete(receipt_id)

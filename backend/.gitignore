@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+Lib/
+Scripts/
+pyvenv.cfg
+share/
+
+# Environment
+.env
+
+# Uploads (local storage)
+uploads/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

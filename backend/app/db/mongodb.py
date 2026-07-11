@@ -10,7 +10,16 @@ database: AsyncIOMotorDatabase | None = None
 async def connect_to_mongo() -> None:
     global client, database
     settings = get_settings()
-    client = AsyncIOMotorClient(settings.mongodb_url)
+    use_tls = settings.mongodb_url.startswith("mongodb+srv")
+    client = AsyncIOMotorClient(
+        settings.mongodb_url,
+        maxPoolSize=50,
+        minPoolSize=5,
+        serverSelectionTimeoutMS=5000,
+        connectTimeoutMS=10000,
+        retryWrites=True,
+        tls=use_tls,
+    )
     database = client[settings.mongodb_db]
     await database.users.create_index("email", unique=True)
     await database.expenses.create_index([("user_id", 1), ("date", -1)])

@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +15,7 @@ class ProcessingSettings(BaseSettings):
 
 class Settings(BaseSettings):
     app_name: str = "IntelliMoney"
+    version: str = "1.0.0"
     environment: str = "development"
     secret_key: str
     algorithm: str = "HS256"
@@ -37,7 +38,18 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     upload_dir: str = "uploads/receipts"
 
+    supabase_url: str = ""
+    supabase_service_key: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+    @model_validator(mode="before")
+    @classmethod
+    def parse_cors_origins(cls, data: dict) -> dict:
+        origins = data.get("cors_origins")
+        if isinstance(origins, str):
+            data["cors_origins"] = [o.strip() for o in origins.split(",") if o.strip()]
+        return data
 
 
 @lru_cache
