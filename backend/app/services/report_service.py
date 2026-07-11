@@ -44,14 +44,14 @@ async def _generate_report(
     """Internal function to generate financial reports."""
     # Convert dates to datetime for MongoDB queries
     period_start_dt = datetime.combine(period_start, datetime.min.time())
-    period_end_dt = datetime.combine(period_end, datetime.max.time())
+    period_end_dt = datetime.combine(period_end + timedelta(days=1), datetime.min.time())
     
     # Get expenses for the period
     expenses = [
         serialize_document(item)
         async for item in db.expenses.find({
             "user_id": ObjectId(user_id),
-            "date": {"$gte": period_start_dt, "$lte": period_end_dt}
+            "date": {"$gte": period_start_dt, "$lt": period_end_dt}
         })
     ]
     
@@ -114,8 +114,8 @@ async def _generate_report(
         "_id": ObjectId(),
         "user_id": ObjectId(user_id),
         "report_type": report_type,
-        "period_start": period_start,
-        "period_end": period_end,
+        "period_start": datetime.combine(period_start, datetime.min.time()),
+        "period_end": datetime.combine(period_end, datetime.min.time()),
         "total_spending": round(total_spending, 2),
         "total_income": round(total_income, 2),
         "net_savings": round(net_savings, 2),
@@ -152,13 +152,13 @@ async def _calculate_budget_performance(
     
     # Get expenses for the period
     period_start_dt = datetime.combine(period_start, datetime.min.time())
-    period_end_dt = datetime.combine(period_end, datetime.max.time())
+    period_end_dt = datetime.combine(period_end + timedelta(days=1), datetime.min.time())
     
     expenses = [
         serialize_document(item)
         async for item in db.expenses.find({
             "user_id": ObjectId(user_id),
-            "date": {"$gte": period_start_dt, "$lte": period_end_dt}
+            "date": {"$gte": period_start_dt, "$lt": period_end_dt}
         })
     ]
     

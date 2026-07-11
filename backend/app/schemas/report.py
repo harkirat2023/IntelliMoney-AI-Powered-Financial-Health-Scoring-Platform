@@ -2,7 +2,7 @@ from typing import Any
 from datetime import date as Date
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.common import PyObjectId
 
@@ -13,6 +13,13 @@ class FinancialReport(BaseModel):
     report_type: str = Field(pattern="^(weekly|monthly)$")
     period_start: Date
     period_end: Date
+
+    @field_validator("period_start", "period_end", mode="before")
+    @classmethod
+    def coerce_datetime_to_date(cls, v: Any) -> Any:
+        if isinstance(v, datetime):
+            return v.date()
+        return v
     total_spending: float
     total_income: float
     net_savings: float
