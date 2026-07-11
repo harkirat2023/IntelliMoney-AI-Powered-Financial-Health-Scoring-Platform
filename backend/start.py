@@ -6,17 +6,10 @@ port = int(os.environ.get("PORT", 8080))
 
 try:
     import uvicorn
-    from fastapi import FastAPI
 
-    app = FastAPI(title="IntelliMoney")
-
-    @app.get("/")
-    async def root():
-        return {"app": "IntelliMoney"}
-
-    @app.get("/healthz")
-    async def healthz():
-        return {"status": "ok"}
+    print("Importing main app...", file=sys.stderr)
+    from app.main import app
+    print("App imported successfully", file=sys.stderr)
 
     uvicorn.run(app, host="0.0.0.0", port=port, workers=1, timeout_keep_alive=120)
 except Exception:
