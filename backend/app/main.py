@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -18,18 +19,9 @@ from app.services.ml_service import categorizer
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting IntelliMoney backend...")
-    try:
-        await connect_to_mongo()
-    except Exception as e:
-        logger.error(f"MongoDB connection failed: {e}")
-    try:
-        categorizer.load()
-    except Exception as e:
-        logger.error(f"ML model load failed: {e}")
-    try:
-        await cache_client.connect()
-    except Exception as e:
-        logger.error(f"Redis connection failed: {e}")
+    asyncio.create_task(connect_to_mongo())
+    asyncio.create_task(cache_client.connect())
+    categorizer.load()
     logger.info("IntelliMoney backend started successfully")
     yield
     try:
