@@ -2,6 +2,7 @@ from pathlib import Path
 
 import joblib
 
+from app.core.config import get_settings
 from app.core.constants import CATEGORIES, CATEGORY_KEYWORD_MAP
 
 
@@ -13,8 +14,16 @@ class ExpenseCategorizer:
         self._model = None
 
     def load(self) -> None:
-        if MODEL_PATH.exists():
-            self._model = joblib.load(MODEL_PATH)
+        if not MODEL_PATH.exists():
+            settings = get_settings()
+            if settings.ml_allow_fallback:
+                return
+            raise RuntimeError(
+                f"ML model not found at {MODEL_PATH}. "
+                f"The model must be generated during build by running `python ml/train_model.py`. "
+                f"Set ML_ALLOW_FALLBACK=true to use keyword-based fallback instead."
+            )
+        self._model = joblib.load(MODEL_PATH)
 
     def predict(self, description: str) -> tuple[str, float]:
         text = description.strip()

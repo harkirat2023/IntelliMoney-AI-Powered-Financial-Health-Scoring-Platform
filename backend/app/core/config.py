@@ -44,6 +44,7 @@ class Settings(BaseSettings):
 
     supabase_url: str = ""
     supabase_service_key: str = ""
+    ml_allow_fallback: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

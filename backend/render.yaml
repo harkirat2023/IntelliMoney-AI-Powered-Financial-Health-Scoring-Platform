@@ -4,7 +4,18 @@ services:
     runtime: python
     rootDir: backend
     healthCheckPath: /healthz
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python -c "
+import subprocess, sys
+result = subprocess.run([sys.executable, '../ml/train_model.py'], capture_output=True, text=True, cwd='..')
+print(result.stdout)
+if result.returncode != 0:
+    print(result.stderr, file=sys.stderr)
+    sys.exit(1)
+p = __import__('pathlib').Path('app/ml/expense_classifier.joblib')
+assert p.exists(), f'Model not found at {p.resolve()}'
+m = __import__('joblib').load(p)
+print(f'Model verified OK: {type(m).__name__}, classes={list(m.classes_)}')
+"
     startCommand: python start.py
     envVars:
       - key: PYTHON_VERSION
