@@ -73,7 +73,7 @@ class GoalProgressResponse(BaseModel):
 
 
 class GoalRecommendationResponse(BaseModel):
-    id: str
+    id: str | None = None
     goal_id: str = ""
     recommendation_type: str = ""
     title: str = ""
