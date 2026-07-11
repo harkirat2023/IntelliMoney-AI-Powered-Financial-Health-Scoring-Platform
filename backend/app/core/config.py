@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings.sources import NoDecode
 
 
 class ProcessingSettings(BaseSettings):
@@ -24,7 +25,10 @@ class Settings(BaseSettings):
     mongodb_db: str = "intellimoney"
     redis_url: str = ""
     log_level: str = "INFO"
-    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:80", "http://localhost"]
+    cors_origins: list[str] = Field(
+        default=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:80", "http://localhost"],
+        metadata=[NoDecode()],
+    )
 
     bank_encryption_key: str
     bank_consent_redirect_base: str = "http://localhost:5173/connect-bank/consent"
