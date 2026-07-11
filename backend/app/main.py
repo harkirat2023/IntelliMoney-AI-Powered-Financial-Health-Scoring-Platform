@@ -18,13 +18,28 @@ from app.services.ml_service import categorizer
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting IntelliMoney backend...")
-    await connect_to_mongo()
-    categorizer.load()
-    await cache_client.connect()
+    try:
+        await connect_to_mongo()
+    except Exception as e:
+        logger.error(f"MongoDB connection failed: {e}")
+    try:
+        categorizer.load()
+    except Exception as e:
+        logger.error(f"ML model load failed: {e}")
+    try:
+        await cache_client.connect()
+    except Exception as e:
+        logger.error(f"Redis connection failed: {e}")
     logger.info("IntelliMoney backend started successfully")
     yield
-    await cache_client.close()
-    await close_mongo_connection()
+    try:
+        await cache_client.close()
+    except Exception:
+        pass
+    try:
+        await close_mongo_connection()
+    except Exception:
+        pass
     logger.info("IntelliMoney backend shut down")
 
 
