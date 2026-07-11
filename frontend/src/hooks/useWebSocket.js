@@ -10,9 +10,9 @@ export function useWebSocket(channel, onMessage) {
     if (!token) return;
 
     function connect() {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = process.env.VITE_WS_HOST || window.location.host;
-      const url = `${protocol}//${host}/api/v1/ws?token=${token}`;
+      const apiBase = process.env.API_BASE_URL || "http://localhost:8080/api/v1";
+      const wsBase = apiBase.replace(/^http/, "ws");
+      const url = `${wsBase}/ws?token=${token}`;
 
       const ws = new WebSocket(url);
       wsRef.current = ws;

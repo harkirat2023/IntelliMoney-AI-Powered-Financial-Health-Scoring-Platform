@@ -19,8 +19,16 @@ from app.services.ml_service import categorizer
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting IntelliMoney backend...")
-    asyncio.create_task(connect_to_mongo())
-    asyncio.create_task(cache_client.connect())
+
+    async def _run_task(coro, name: str):
+        try:
+            await coro
+            logger.info("%s connected successfully", name)
+        except Exception:
+            logger.exception("%s failed to connect", name)
+
+    asyncio.create_task(_run_task(connect_to_mongo(), "MongoDB"))
+    asyncio.create_task(_run_task(cache_client.connect(), "Redis"))
     categorizer.load()
     logger.info("IntelliMoney backend started successfully")
     yield
@@ -70,15 +78,22 @@ async def root() -> dict[str, str]:
 
 @app.get("/api/health")
 async def health() -> dict:
-    from app.db.mongodb import database
-    db_ok = database is not None
+    from app.db.mongodb import database, connection_error
+    db_ping = False
+    if database is not None:
+        try:
+            await database.command("ping")
+            db_ping = True
+        except Exception:
+            pass
     model_ok = categorizer._model is not None
     return {
-        "status": "ok" if db_ok else "degraded",
+        "status": "ok" if db_ping else "degraded",
         "service": settings.app_name,
         "version": settings.version,
         "environment": settings.environment,
-        "database": "connected" if db_ok else "disconnected",
+        "database": "connected" if db_ping else "disconnected",
+        "connection_error": connection_error,
         "ml_model": "loaded" if model_ok else "not_loaded",
     }
 

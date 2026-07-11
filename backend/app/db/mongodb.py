@@ -1,27 +1,37 @@
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import get_settings
+from app.core.logging import logger
 
 
 client: AsyncIOMotorClient | None = None
 database: AsyncIOMotorDatabase | None = None
+connection_error: str | None = None
 
 
 async def connect_to_mongo() -> None:
-    global client, database
+    global client, database, connection_error
     settings = get_settings()
     use_tls = settings.mongodb_url.startswith("mongodb+srv")
-    client = AsyncIOMotorClient(
-        settings.mongodb_url,
-        maxPoolSize=50,
-        minPoolSize=5,
-        serverSelectionTimeoutMS=5000,
-        connectTimeoutMS=10000,
-        retryWrites=True,
-        tls=use_tls,
-    )
-    database = client[settings.mongodb_db]
-    await database.users.create_index("email", unique=True)
+    try:
+        client = AsyncIOMotorClient(
+            settings.mongodb_url,
+            maxPoolSize=50,
+            minPoolSize=5,
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=10000,
+            retryWrites=True,
+            tls=use_tls,
+        )
+        database = client[settings.mongodb_db]
+        await database.users.create_index("email", unique=True)
+        connection_error = None
+    except Exception as exc:
+        connection_error = f"{type(exc).__name__}: {exc}"
+        logger.error("MongoDB connection failed: %s", connection_error)
+        client = None
+        database = None
+        return
     await database.expenses.create_index([("user_id", 1), ("date", -1)])
     await database.budgets.create_index(
         [("user_id", 1), ("category", 1), ("month", 1), ("year", 1)],

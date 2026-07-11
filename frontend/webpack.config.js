@@ -55,6 +55,7 @@ export default (env, argv) => {
       new webpack.DefinePlugin({
         "process.env": JSON.stringify({
           API_BASE_URL: process.env.API_BASE_URL || "http://localhost:8080/api/v1",
+          VITE_WS_HOST: process.env.VITE_WS_HOST || "",
         }),
       }),
     ],
