@@ -259,14 +259,24 @@ class DashboardService:
         insights = []
         async for r in cursor:
             for ins in r.get("insights", []):
-                insights.append(AIInsightItem(
-                    id=str(r["_id"]),
-                    title=ins.get("title", "Insight"),
-                    message=ins.get("message", ""),
-                    severity=ins.get("severity", "info"),
-                    category=ins.get("category", "general"),
-                    created_at=str(r.get("generated_at", "")),
-                ))
+                if isinstance(ins, str):
+                    insights.append(AIInsightItem(
+                        id=str(r["_id"]),
+                        title="Insight",
+                        message=ins,
+                        severity="info",
+                        category="general",
+                        created_at=str(r.get("generated_at", "")),
+                    ))
+                else:
+                    insights.append(AIInsightItem(
+                        id=str(r["_id"]),
+                        title=ins.get("title", "Insight"),
+                        message=ins.get("message", ""),
+                        severity=ins.get("severity", "info"),
+                        category=ins.get("category", "general"),
+                        created_at=str(r.get("generated_at", "")),
+                    ))
         return insights[:5]
 
     async def _get_budget_alerts(self, user_id: str) -> list[BudgetAlertItem]:
