@@ -54,6 +54,11 @@ app.add_exception_handler(Exception, global_exception_handler)
 app.include_router(v1_router, prefix="/api/v1")
 
 
+@app.get("/healthz")
+async def healthz() -> dict:
+    return {"status": "ok"}
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     return {
