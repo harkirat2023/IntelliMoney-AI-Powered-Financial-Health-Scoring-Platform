@@ -2,7 +2,6 @@ import logging
 from typing import Any
 
 import tiktoken
-from langchain.memory import ConversationSummaryBufferMemory
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.messages import AIMessage
@@ -41,6 +40,7 @@ class LLMService:
             temperature=self._temperature,
             max_tokens=self._max_tokens,
             openai_api_key=self._api_key,
+            base_url=get_settings().openai_api_base,
             streaming=streaming,
         )
 
@@ -77,9 +77,3 @@ class LLMService:
             "total_tokens": prompt_tokens + completion_tokens,
         }
 
-    def get_memory(self) -> ConversationSummaryBufferMemory:
-        return ConversationSummaryBufferMemory(
-            llm=self._get_llm(),
-            max_token_limit=2000,
-            return_messages=True,
-        )

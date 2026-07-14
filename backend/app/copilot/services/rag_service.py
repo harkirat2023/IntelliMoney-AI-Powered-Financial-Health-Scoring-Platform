@@ -2,7 +2,7 @@ import hashlib
 import logging
 from typing import Any
 
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -15,9 +15,8 @@ logger = logging.getLogger(__name__)
 class RAGService:
     def __init__(self):
         cfg = get_settings()
-        self._embeddings = OpenAIEmbeddings(
-            openai_api_key=cfg.openai_api_key,
-            model=cfg.openai_embedding_model,
+        self._embeddings = HuggingFaceEmbeddings(
+            model_name="all-MiniLM-L6-v2"
         )
         self._splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,

@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     processing: ProcessingSettings = ProcessingSettings()
 
     openai_api_key: str = ""
+    openai_api_base: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o"
     openai_temperature: float = 0.3
     openai_max_tokens: int = 1024
