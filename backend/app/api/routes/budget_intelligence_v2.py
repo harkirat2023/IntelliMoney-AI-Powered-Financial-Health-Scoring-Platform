@@ -30,16 +30,6 @@ async def intelligence_generate(
     return GenerateResponse(**result)
 
 
-@router.post("/recalculate", response_model=GenerateResponse)
-async def intelligence_recalculate(
-    current_user: dict[str, Any] = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-) -> GenerateResponse:
-    svc = _get_svc(db)
-    result = await svc.recalculate(str(current_user["_id"]))
-    return GenerateResponse(**result)
-
-
 @router.get("/current", response_model=BudgetIntelligenceResponse)
 async def intelligence_current(
     current_user: dict[str, Any] = Depends(get_current_user),

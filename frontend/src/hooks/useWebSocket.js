@@ -23,12 +23,14 @@ export function useWebSocket(channel, onMessage) {
         reconnectTimeoutRef.current = setTimeout(connect, 3000);
       };
       ws.onmessage = (event) => {
-        if (onMessage) {
-          try {
-            const data = JSON.parse(event.data);
+        if (event.data === "pong") return;
+        try {
+          const data = JSON.parse(event.data);
+          if (onMessage) {
             onMessage(data);
-          } catch {
-            if (event.data === "pong") return;
+          }
+        } catch {
+          if (onMessage) {
             onMessage(event.data);
           }
         }

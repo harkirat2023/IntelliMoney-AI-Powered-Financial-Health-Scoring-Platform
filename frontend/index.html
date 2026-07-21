@@ -17,8 +17,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="canonical" href="https://intellimoney.vercel.app" />
+    <style>
+      /* Fallback styles to prevent black screen if React fails to load */
+      html, body {
+        background: #f5f7fb !important;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      /* Loading indicator */
+      .loading-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: Inter, system-ui, sans-serif;
+        color: #172033;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="loading-fallback">Loading IntelliMoney...</div>
+    </div>
   </body>
 </html>

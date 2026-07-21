@@ -9,7 +9,7 @@ from app.db.mongodb import get_database
 from app.goal_planning.schemas import (
     GoalAnalyzeRequest, GoalAnalyzeResponse, GoalCreateRequest,
     GoalCreateResponse, GoalPredictionResponse, GoalProgressResponseList,
-    GoalRecalculateResponse, GoalRecommendationResponse, GoalResponse,
+    GoalRecommendationResponse, GoalResponse,
     GoalUpdateRequest,
 )
 from app.goal_planning.services.goal_planning_service import GoalPlanningService
@@ -93,16 +93,6 @@ async def analyze_goal(
     svc = _get_svc(db)
     result = await svc.analyze(str(current_user["_id"]), body.model_dump())
     return GoalAnalyzeResponse(**result)
-
-
-@router.post("/recalculate", response_model=GoalRecalculateResponse)
-async def recalculate_goals(
-    current_user: dict[str, Any] = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-) -> GoalRecalculateResponse:
-    svc = _get_svc(db)
-    result = await svc.recalculate(str(current_user["_id"]))
-    return GoalRecalculateResponse(**result)
 
 
 @router.get("/recommendations", response_model=list[GoalRecommendationResponse])

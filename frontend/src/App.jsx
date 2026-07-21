@@ -5,7 +5,6 @@ import AppLayout from "./layouts/AppLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Budgets from "./pages/Budgets";
 import BudgetOptimizer from "./pages/BudgetOptimizer";
-import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -96,7 +95,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="expenses" element={<Expenses />} />
         <Route path="budgets" element={<Budgets />} />
         <Route path="budget-optimizer" element={<BudgetOptimizer />} />
@@ -157,6 +156,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 function CatchAllRedirect() {
   const token = localStorage.getItem("intellimoney_token");

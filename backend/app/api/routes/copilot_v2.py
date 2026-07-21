@@ -129,7 +129,9 @@ async def get_suggestions(
 
 
 @router.get("/settings", response_model=CopilotSettings)
-async def get_settings_endpoint():
+async def get_settings_endpoint(
+    current_user: dict[str, Any] = Depends(get_current_user),
+):
     cfg = get_settings()
     return CopilotSettings(
         model=cfg.openai_model or "gpt-4o",

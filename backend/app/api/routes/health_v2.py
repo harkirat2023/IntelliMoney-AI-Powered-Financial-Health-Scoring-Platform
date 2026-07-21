@@ -27,15 +27,6 @@ async def health_calculate(
     return await svc.calculate(str(current_user["_id"]))
 
 
-@router.post("/recalculate", response_model=CalculateResponse)
-async def health_recalculate(
-    current_user: dict[str, Any] = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-) -> CalculateResponse:
-    svc = _get_svc(db)
-    return await svc.recalculate(str(current_user["_id"]))
-
-
 @router.get("/current", response_model=HealthCurrentResponse)
 async def health_current(
     current_user: dict[str, Any] = Depends(get_current_user),

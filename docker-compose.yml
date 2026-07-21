@@ -1,4 +1,28 @@
 services:
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    profiles:
+      - with-redis
+
   backend:
     build:
       context: .
@@ -7,10 +31,13 @@ services:
       - "8080:8080"
     env_file: backend/.env
     environment:
-      FRONTEND_ORIGIN: http://localhost:3002
+      MONGODB_URL: mongodb://mongodb:27017
     volumes:
       - ./backend:/app
       - ./ml:/app/ml
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
   frontend:
     build:
@@ -20,3 +47,6 @@ services:
       - "3002:80"
     depends_on:
       - backend
+
+volumes:
+  mongodb_data:

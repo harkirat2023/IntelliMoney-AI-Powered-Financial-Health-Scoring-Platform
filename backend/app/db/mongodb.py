@@ -88,12 +88,9 @@ async def connect_to_mongo() -> None:
     await database.financial_transactions.create_index([("user_id", 1), ("normalized_merchant", 1)])
 
     await database.merchant_dictionary.create_index([("merchant_name", 1)], unique=True)
-
     await database.merchant_aliases.create_index([("alias_type", 1), ("priority", -1)])
-
     await database.category_feedback.create_index([("user_id", 1), ("created_at", -1)])
     await database.category_feedback.create_index([("suggested_category", 1)])
-
     await database.transaction_tags.create_index([("user_id", 1), ("name", 1)], unique=True)
 
     await database.budget_usage.create_index(
@@ -127,8 +124,9 @@ async def connect_to_mongo() -> None:
     await database.financial_health.create_index([("user_id", 1), ("period", 1)], unique=True)
     await database.financial_health.create_index([("user_id", 1), ("calculated_at", -1)])
 
-    await database.financial_health_history.create_index([("user_id", 1), ("calculated_at", -1)])
-    await database.financial_health_history.create_index([("user_id", 1), ("period", 1)], unique=True)
+    await database.financial_health_history.create_index(
+        [("user_id", 1), ("calculated_at", -1)],
+    )
 
     await database.financial_health_factors.create_index([("user_id", 1), ("period", 1)])
 
@@ -155,18 +153,14 @@ async def connect_to_mongo() -> None:
     await database.budget_risk.create_index([("user_id", 1), ("calculated_at", -1)])
 
     await database.chat_sessions.create_index([("user_id", 1), ("updated_at", -1)])
-
     await database.chat_messages.create_index([("session_id", 1), ("created_at", 1)])
     await database.chat_messages.create_index([("user_id", 1), ("created_at", -1)])
-
     await database.conversation_memory.create_index(
         [("user_id", 1), ("session_id", 1)], unique=True,
     )
-
     await database.conversation_summary.create_index(
         [("user_id", 1), ("session_id", 1)], unique=True,
     )
-
     await database.ai_feedback.create_index([("user_id", 1), ("created_at", -1)])
     await database.ai_feedback.create_index([("session_id", 1), ("message_id", 1)])
 

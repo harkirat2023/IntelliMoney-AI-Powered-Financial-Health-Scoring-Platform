@@ -14,5 +14,5 @@ export const receiptsApi = {
   getById: (receiptId) => api.get(`/receipts/${receiptId}`),
   update: (receiptId, data) => api.patch(`/receipts/${receiptId}`, data),
   delete: (receiptId) => api.delete(`/receipts/${receiptId}`),
-  getImageUrl: (receiptId) => `/api/v1/receipts/${receiptId}/image`,
+  getImageUrl: (receiptId) => `/receipts/${receiptId}/image`,
 };

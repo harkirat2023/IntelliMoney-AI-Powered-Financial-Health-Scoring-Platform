@@ -15,14 +15,13 @@ class ExpenseCategorizer:
 
     def load(self) -> None:
         if not MODEL_PATH.exists():
-            settings = get_settings()
-            if settings.ml_allow_fallback:
-                return
-            raise RuntimeError(
-                f"ML model not found at {MODEL_PATH}. "
-                f"The model must be generated during build by running `python ml/train_model.py`. "
-                f"Set ML_ALLOW_FALLBACK=true to use keyword-based fallback instead."
+            from app.core.logging import logger
+            logger.warning(
+                "ML model not found at %s. Falling back to keyword matching. "
+                "Run `python ml/train_model.py` to train the model, or set ML_ALLOW_FALLBACK=true.",
+                MODEL_PATH,
             )
+            return
         self._model = joblib.load(MODEL_PATH)
 
     def predict(self, description: str) -> tuple[str, float]:

@@ -2,8 +2,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
-import App from "./App";
-import { AuthProvider } from "./auth/AuthContext";
+import App from "./frontend/src/App.jsx";
+import { AuthProvider } from "./frontend/src/auth/AuthContext.jsx";
 import "./styles.css";
 import "./landing/index.css";
 import "./styles/cyber-theme.css";

@@ -39,19 +39,6 @@ async def process_all(
     return await service.process_pending(str(user["_id"]), limit=100)
 
 
-@router.post("/reprocess", response_model=ProcessResultResponse)
-async def reprocess(
-    req: ProcessPendingRequest,
-    user: dict = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-):
-    service = get_intelligence_service(db)
-    result = await service.process_pending(
-        str(user["_id"]), req.bank_account_id, req.limit,
-    )
-    return result
-
-
 @router.get("/status", response_model=IntelligenceStatusResponse)
 async def intelligence_status(
     user: dict = Depends(get_current_user),
