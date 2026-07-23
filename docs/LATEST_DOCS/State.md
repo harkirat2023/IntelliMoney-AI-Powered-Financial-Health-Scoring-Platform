@@ -74,14 +74,18 @@ backend:  Dockerfile.backend → port 8080 (env: MONGODB_URL=mongodb://mongodb:2
 frontend: Dockerfile.frontend→ port 3002 (nginx serving static build)
 ```
 
-### Startup Orchestration (`start_all.py`)
-```python
-# Order:
-1. check_ml_model()        — trains if missing
-2. install_backend_deps()  — pip install -r requirements.txt
-3. install_frontend_deps() — npm install
-4. start_backend()         — uvicorn on :8080
-5. start_frontend()        — npm run dev on :5173
+### Startup Orchestration (`scripts/start-IntelliMoney.bat`)
+```
+Docker mode:
+  1. docker compose up -d
+  2. docker compose run --rm seed
+
+Native mode:
+  1. python -m venv venv → pip install -r requirements.txt
+  2. python scripts/create_indexes.py
+  3. python backend/scripts/seed_demo.py
+  4. uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+  5. npm install → npm run dev (port 5173)
 ```
 
 ### Environment Flags
@@ -516,24 +520,16 @@ All mounted at prefix `/api/v1`. Prefix omitted for brevity.
 
 ## 5. BROKEN PIPELINES, DEAD ROUTES & TECHNICAL DEBT
 
-### CRITICAL: Broken Frontend Build
+~~### CRITICAL: Broken Frontend Build~~ ✅ FIXED
 
-| Issue | File | Severity | Details |
-|---|---|---|---|
-| **Missing webpack entry point** | `frontend/webpack.config.js:11` | 🔴 BLOCKER | Entry `./src/main.jsx` does not exist under `frontend/`. The actual entry is at project root `D:\1. PLACEMENT\IntelliMoney\main.jsx`. This causes **both** `npm run dev` and `npm run build` to fail with module not found. Docker frontend build also fails. |
-| **Root main.jsx has broken imports** | `D:\1. PLACEMENT\IntelliMoney\main.jsx` | 🔴 BLOCKER | Lines 7-9: imports `./styles.css`, `./landing/index.css`, `./styles/cyber-theme.css` — none exist at project root. These are at `frontend/src/styles.css`, `frontend/src/landing/index.css`, `frontend/src/styles/cyber-theme.css`. |
+~~- Webpack entry `./src/main.jsx` now exists at `frontend/src/main.jsx`~~
+~~- Root `main.jsx.old` / `main.jsx.archived` removed — only `frontend/src/main.jsx` is active~~
+~~- `npm run dev` and `npm run build` work correctly~~
 
-### CRITICAL: Double-Prefixed API URLs (401 errors)
+~~### CRITICAL: Double-Prefixed API URLs (401 errors)~~ ✅ FIXED
 
-Three frontend API modules hardcode `/api/v1/` prefix, but `axios` `baseURL` already includes `/api/v1`, causing duplicate prefix:
-
-| File | Line | Current (wrong) | Expected |
-|---|---|---|---|
-| `frontend/src/api/bank.js` | 4-8 | `api.post("/api/v1/bank/connect")` | `api.post("/bank/connect")` |
-| `frontend/src/api/consent.js` | 4-6 | `api.post("/api/v1/consent/grant")` | `api.post("/consent/grant")` |
-| `frontend/src/api/importPreference.js` | 4-5 | `api.post("/api/v1/import-preference/")` | `api.post("/import-preference/")` |
-
-**Effect:** Bank connection, consent management, and import preference features are completely broken. Requests go to `/api/v1/api/v1/bank/connect` which returns 404/401.
+~~- `bank.js`, `consent.js`, `importPreference.js` no longer hardcode `/api/v1/` prefix~~
+~~- `api/client.js` sets `baseURL: http://localhost:8080/api/v1` so all calls resolve correctly~~
 
 ### CRITICAL: Dual Dashboard Confusion (V1 vs V2)
 
@@ -542,12 +538,11 @@ Three frontend API modules hardcode `/api/v1/` prefix, but `axios` `baseURL` alr
 | **Two competing dashboards** | 🟠 HIGH | `/app` → uses `Dashboard.jsx` (legacy V1 with `/analytics/*`, `/financial-health/score`, `/recommendations`). `/app/dashboard` → uses `DashboardLayout` (V2 with `/dashboard/*` routes). Both active simultaneously, confusing UX. |
 | **Two data loading paths** | 🟠 HIGH | `Dashboard.jsx` fetches via direct `api.get()` calls. `dashboardV2Store` fetches via `dashboardV2Api`. Same data, different endpoints, potential inconsistency. |
 
-### MODERATE: Missing ML Model at Startup
+~~### MODERATE: Missing ML Model at Startup~~ ✅ FIXED
 
-| File | Line | Issue |
-|---|---|---|
-| `backend/app/services/ml_service.py` | 21-24 | If `expense_classifier.joblib` not found and `ml_allow_fallback=False` (default), raises `RuntimeError` on startup. The `categorizer.load()` call in `main.py:32` will crash the app. |
-| `ml/train_model.py` | 14 | Training path writes to `backend/app/ml/` but loads from `backend/app/ml/` — the `backend/ml/` directory is **empty**. Model path resolution is fragile. |
+~~- Model file `backend/app/ml/expense_classifier.joblib` exists and is loaded by `ExpenseCategorizer.load()`~~
+~~- `categorizer.load()` in `main.py:32` logs a warning (not crash) if model is missing, then falls back to keyword matching~~
+~~- `ML_ALLOW_FALLBACK=true` env var controls fallback behavior~~
 
 ### MODERATE: Inconsistent Frontend Entry Points
 
@@ -565,11 +560,9 @@ Three frontend API modules hardcode `/api/v1/` prefix, but `axios` `baseURL` alr
 | `backend/app/copilot/services/rag_service.py` | 26, 39-42 | FAISS vector store is **in-memory only** (`self._vector_store`). Every server restart loses all indexed documents. No persistence to disk or MongoDB. |
 | `backend/app/copilot/services/rag_service.py` | 18-20 | `HuggingFaceEmbeddings` is synchronous but `FAISS.afrom_documents` is async — potential blocking on event loop. |
 
-### MODERATE: Missing Auth on Copilot Settings
+~~### MODERATE: Missing Auth on Copilot Settings~~ ✅ FIXED
 
-| File | Lines | Issue |
-|---|---|---|
-| `backend/app/api/routes/copilot_v2.py` | 131-138 | `GET /copilot/settings` has **no auth dependency** (`get_current_user` not injected). Exposes model config (model name, temperature, max_tokens) to unauthenticated users. |
+~~- `GET /copilot/settings` now requires authentication~~
 
 ### MODERATE: WebSocket Token in URL
 
@@ -622,17 +615,9 @@ Three frontend API modules hardcode `/api/v1/` prefix, but `axios` `baseURL` alr
 | Missing `react-scripts` or Vite | — | No Vite config; pure Webpack 5 is verbose for SPA |
 | Missing `@tanstack/react-query` | — | No declarative data fetching library; custom `useApi` hook is basic |
 
-### LOW: No Database Seeds for New Modules
+~~### LOW: No Database Seeds for New Modules~~ ✅ FIXED
 
-| Module | Missing Seed |
-|---|---|
-| Financial Transactions | `seed_demo.py` only seeds legacy `expenses` collection |
-| Bank Accounts | No demo bank accounts created |
-| AI Copilot | No seed chat sessions |
-| Goal Planning | No seed goals |
-| Receipt OCR | No seed receipts |
-| Budget Intelligence | No seed intelligence data |
-| Financial Health V2 | No seed health data |
+~~- `backend/scripts/seed_demo.py` now seeds ALL modules: expenses, budgets, bank accounts, financial transactions, goals, goal progress, budget intelligence, financial health (with 6-month history), notifications, and receipts~~
 
 ### CRITICAL SUMMARY
 

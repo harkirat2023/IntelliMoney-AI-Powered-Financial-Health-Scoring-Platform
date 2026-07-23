@@ -6,7 +6,6 @@ setlocal enabledelayedexpansion
 :: ======================================================================
 
 set "ROOT_DIR=%~dp0.."
-set "STARTUP_LOG=%ROOT_DIR%\logs\startup.log"
 
 :: ANSI color support
 set "SUPPORT_COLOR=0"
@@ -89,7 +88,7 @@ if %ERRORLEVEL% equ 0 (
 
 :: ---- Cleanup any lingering processes on ports ----
 echo %INFO% Checking for lingering processes on common ports...
-for %%p in (8080 5173) do (
+for %%p in (8080 3002 5173) do (
     netstat -ano | findstr ":%%p " >nul 2>&1
     if !ERRORLEVEL! equ 0 (
         for /F "tokens=5" %%a in ('netstat -ano ^| findstr ":%%p "') do (
@@ -97,12 +96,6 @@ for %%p in (8080 5173) do (
         )
         if !ERRORLEVEL! equ 0 echo %PASS% Freed port %%p.
     )
-)
-
-:: ---- Log shutdown ----
-if exist "%ROOT_DIR%\logs" (
-    echo [%DATE% %TIME%] IntelliMoney Shutdown Complete >> "%STARTUP_LOG%" 2>nul
-    echo ================================== >> "%STARTUP_LOG%" 2>nul
 )
 
 echo.

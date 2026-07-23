@@ -10,6 +10,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
 
   redis:
     image: redis:7-alpine
@@ -32,12 +33,36 @@ services:
     env_file: backend/.env
     environment:
       MONGODB_URL: mongodb://mongodb:27017
+      HF_HOME: /cache/huggingface
     volumes:
-      - ./backend:/app
-      - ./ml:/app/ml
+      - backend_uploads:/app/uploads
+      - huggingface_cache:/cache/huggingface
     depends_on:
       mongodb:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  seed:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    profiles:
+      - with-seed
+    env_file: backend/.env
+    environment:
+      MONGODB_URL: mongodb://mongodb:27017
+      HF_HOME: /cache/huggingface
+    volumes:
+      - huggingface_cache:/cache/huggingface
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    entrypoint: ["python", "scripts/seed_demo.py"]
 
   frontend:
     build:
@@ -46,7 +71,10 @@ services:
     ports:
       - "3002:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
 
 volumes:
   mongodb_data:
+  backend_uploads:
+  huggingface_cache:
