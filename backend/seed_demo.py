@@ -1,10 +1,8 @@
 import asyncio
 from datetime import date, timedelta
 
-from app.api.routes.auth import register
 from app.core.security import hash_password
 from app.db.mongodb import close_mongo_connection, connect_to_mongo, get_database
-from app.schemas.user import UserCreate
 from app.services.ml_service import categorizer
 from app.services.serializers import date_to_datetime, utc_now
 
@@ -24,21 +22,16 @@ async def seed() -> None:
             {"$set": {"hashed_password": hash_password(DEMO_PASSWORD), "monthly_income": 60000}},
         )
     else:
-        token = await register(
-            UserCreate(
-                name="Demo User",
-                email=DEMO_EMAIL,
-                password=DEMO_PASSWORD,
-                monthly_income=60000,
-            ),
-            db,
+        result = await db.users.insert_one(
+            {
+                "name": "Demo User",
+                "email": DEMO_EMAIL,
+                "hashed_password": hash_password(DEMO_PASSWORD),
+                "monthly_income": 60000,
+                "created_at": utc_now(),
+            }
         )
-        user_id = token.user.id
-
-    if isinstance(user_id, str):
-        from bson import ObjectId
-
-        user_id = ObjectId(user_id)
+        user_id = result.inserted_id
 
     await db.expenses.delete_many({"user_id": user_id})
     await db.budgets.delete_many({"user_id": user_id})

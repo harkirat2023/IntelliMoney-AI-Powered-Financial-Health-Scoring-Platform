@@ -20,6 +20,16 @@ def _get_svc(db: AsyncIOMotorDatabase) -> BudgetIntelligenceService:
     return BudgetIntelligenceService(db)
 
 
+@router.post("/recalculate", response_model=GenerateResponse)
+async def intelligence_recalculate(
+    current_user: dict[str, Any] = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+) -> GenerateResponse:
+    svc = _get_svc(db)
+    result = await svc.recalculate(str(current_user["_id"]))
+    return GenerateResponse(**result)
+
+
 @router.post("/generate", response_model=GenerateResponse)
 async def intelligence_generate(
     current_user: dict[str, Any] = Depends(get_current_user),

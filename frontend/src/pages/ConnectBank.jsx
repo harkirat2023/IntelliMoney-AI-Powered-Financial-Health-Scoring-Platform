@@ -33,14 +33,16 @@ const providers = [
 
 export default function ConnectBank() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!user) navigate("/login", { replace: true });
-  }, [user, navigate]);
+    if (!authLoading && !user) navigate("/login", { replace: true });
+  }, [user, authLoading, navigate]);
+
+  if (authLoading) return null;
 
   const handleConnect = async () => {
     if (!selected) return;

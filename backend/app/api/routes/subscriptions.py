@@ -74,7 +74,7 @@ async def remove_subscription(
     deleted = await delete_subscription(db, current_user["_id"], subscription_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Subscription not found")
-    return {"status": "deleted"}
+    return {"message": "Subscription deleted"}
 
 
 @router.get("/suggestions/detect", response_model=list[SubscriptionSuggestion])

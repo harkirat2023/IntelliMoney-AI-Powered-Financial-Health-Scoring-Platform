@@ -110,12 +110,12 @@ async def update_expense(
     return ExpensePublic(**serialize_document(expense))
 
 
-@router.delete("/{expense_id}", status_code=204)
+@router.delete("/{expense_id}")
 async def delete_expense(
     expense_id: str,
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-) -> None:
+) -> dict[str, str]:
     try:
         object_id = to_object_id(expense_id)
     except ValueError as exc:
@@ -123,3 +123,4 @@ async def delete_expense(
     result = await db.expenses.delete_one({"_id": object_id, "user_id": current_user["_id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Expense not found")
+    return {"message": "Expense deleted"}

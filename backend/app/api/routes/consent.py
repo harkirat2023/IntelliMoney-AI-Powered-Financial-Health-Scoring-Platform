@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -30,7 +32,7 @@ async def grant_consent(
     req: ConsentGrantRequest,
     user: dict = Depends(get_current_user),
     service: ConsentGrantService = Depends(_get_consent_service),
-):
+) -> Any:
     return await service.grant(str(user["_id"]), req)
 
 
@@ -39,7 +41,7 @@ async def revoke_consent(
     req: ConsentRevokeRequest,
     user: dict = Depends(get_current_user),
     service: ConsentGrantService = Depends(_get_consent_service),
-):
+) -> Any:
     return await service.revoke(str(user["_id"]), req)
 
 
@@ -48,5 +50,5 @@ async def consent_status(
     bank_account_id: str = Query(...),
     user: dict = Depends(get_current_user),
     service: ConsentGrantService = Depends(_get_consent_service),
-):
+) -> Any:
     return await service.get_status(str(user["_id"]), bank_account_id)

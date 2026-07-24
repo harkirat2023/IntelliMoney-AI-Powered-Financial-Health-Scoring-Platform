@@ -51,8 +51,13 @@ if errorlevel 1 (
 
 :: ---------- open browser ----------
 timeout /t 3 /nobreak >nul
-start "" "http://localhost:3002"
-echo %PASS% Browser opened to http://localhost:3002
+if "%DOCKER_AVAILABLE%"=="1" (
+  start "" "http://localhost:3002"
+  echo %PASS% Browser opened to http://localhost:3002
+) else (
+  start "" "http://localhost:5173"
+  echo %PASS% Browser opened to http://localhost:5173
+)
 
 :: ---------- summary ----------
 echo.
@@ -60,10 +65,15 @@ echo %BOLD%======================================================%RESET%
 echo %BOLD%    IntelliMoney is running%RESET%
 echo %BOLD%======================================================%RESET%
 echo.
-echo   Frontend:     %CYAN%http://localhost:3002%RESET%
+if "%DOCKER_AVAILABLE%"=="1" (
+  set "FRONTEND_PORT=3002"
+) else (
+  set "FRONTEND_PORT=5173"
+)
+echo   Frontend:     %CYAN%http://localhost:%FRONTEND_PORT%%RESET%
 echo   Backend API:  %CYAN%http://localhost:8080/api/v1%RESET%
 echo   Swagger Docs: %CYAN%http://localhost:8080/docs%RESET%
-echo   Dashboard:    %CYAN%http://localhost:3002/app/dashboard%RESET%
+echo   Dashboard:    %CYAN%http://localhost:%FRONTEND_PORT%/app/dashboard%RESET%
 echo   Login (demo): %CYAN%demo@example.com / password123%RESET%
 echo.
 echo %INFO% To stop: double-click scripts\stop-IntelliMoney.bat
@@ -129,10 +139,15 @@ exit /b 0
 :: ---------- backend ----------
 echo %BOLD%--- Backend ---%RESET%
 cd /d "%BACKEND_DIR%"
-set "VENV_DIR=%BACKEND_DIR%\venv"
+
+:: use existing .venv if present, otherwise create venv
+set "VENV_DIR=%BACKEND_DIR%\.venv"
 if not exist "%VENV_DIR%\Scripts\activate.bat" (
-  echo %INFO% Creating Python virtual environment...
-  python -m venv "%VENV_DIR%"
+  set "VENV_DIR=%BACKEND_DIR%\venv"
+  if not exist "%VENV_DIR%\Scripts\activate.bat" (
+    echo %INFO% Creating Python virtual environment...
+    python -m venv "%VENV_DIR%"
+  )
 )
 call "%VENV_DIR%\Scripts\activate.bat"
 pip install -r requirements.txt --quiet 2>nul
@@ -142,7 +157,7 @@ if not exist "%BACKEND_DIR%\uploads\receipts" mkdir "%BACKEND_DIR%\uploads\recei
 
 :: run index & seed
 "%VENV_DIR%\Scripts\python" "%ROOT_DIR%\scripts\create_indexes.py" 2>nul
-"%VENV_DIR%\Scripts\python" "%ROOT_DIR%\backend\scripts\seed_demo.py" 2>nul
+"%VENV_DIR%\Scripts\python" "%BACKEND_DIR%\seed_demo.py" 2>nul
 
 echo %INFO% Starting backend on port 8080...
 start "IntelliMoney-Backend" cmd /c "title IntelliMoney Backend && cd /d "%BACKEND_DIR%" && call "%VENV_DIR%\Scripts\activate.bat" && uvicorn app.main:app --reload --host 0.0.0.0 --port 8080"
@@ -189,4 +204,5 @@ if !ERRORLEVEL! equ 0 (
   exit /b 0
 )
 if !WAITED! lss 45 goto frontend_wait
-echo %WARN% Frontend not yet responding — continuing.exit /b 0
+echo %WARN% Frontend not yet responding — continuing.
+exit /b 0

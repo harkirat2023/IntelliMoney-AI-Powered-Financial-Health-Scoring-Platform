@@ -2,12 +2,11 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     alerts, analytics, anomaly, auth, bank, budgets, budget_intelligence_v2,
-    budget_suggestion, consent, copilot_v2, dashboard_v2, dashboard_v2_extended,
+    budget_suggestion, consent, copilot_v2, dashboard_v2,
     expenses, financial_health, goal_planning_v2, health_v2, import_preference,
-    intelligence, ml, processing, receipt_ocr_v2, recommendations, recurring,
+    ml, receipt_ocr_v2, recommendations, recurring,
     reports, subscriptions, sync,
 )
-from app.api.routes import financial_transactions as financial_transactions_route
 from app.api.v1 import websocket
 
 router = APIRouter()
@@ -29,11 +28,7 @@ router.include_router(consent.router, tags=["consent"])
 router.include_router(import_preference.router, tags=["import_preference"])
 router.include_router(recurring.router, tags=["recurring"])
 router.include_router(sync.router, tags=["sync"])
-router.include_router(intelligence.router, tags=["intelligence"])
-router.include_router(financial_transactions_route.router, tags=["financial_transactions"])
-router.include_router(processing.router, tags=["processing"])
 router.include_router(dashboard_v2.router, tags=["dashboard"])
-router.include_router(dashboard_v2_extended.router, tags=["dashboard"])
 router.include_router(budget_intelligence_v2.router, tags=["budget-intelligence"])
 router.include_router(health_v2.router, tags=["health"])
 router.include_router(copilot_v2.router, tags=["copilot"])

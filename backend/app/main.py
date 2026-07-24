@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
         except Exception:
             logger.exception("%s failed to connect", name)
 
-    asyncio.create_task(_run_task(connect_to_mongo(), "MongoDB"))
+    await _run_task(connect_to_mongo(), "MongoDB")
     asyncio.create_task(_run_task(cache_client.connect(), "Redis"))
     categorizer.load()
     logger.info("IntelliMoney backend started successfully")

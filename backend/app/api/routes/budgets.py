@@ -66,12 +66,12 @@ async def update_budget(
     return BudgetPublic(**serialize_document(budget))
 
 
-@router.delete("/{budget_id}", status_code=204)
+@router.delete("/{budget_id}")
 async def delete_budget(
     budget_id: str,
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-) -> None:
+) -> dict[str, str]:
     try:
         object_id = to_object_id(budget_id)
     except ValueError as exc:
@@ -79,3 +79,4 @@ async def delete_budget(
     result = await db.budgets.delete_one({"_id": object_id, "user_id": current_user["_id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Budget not found")
+    return {"message": "Budget deleted"}

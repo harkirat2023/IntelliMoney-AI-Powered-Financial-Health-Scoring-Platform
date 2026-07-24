@@ -62,7 +62,7 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-    entrypoint: ["python", "scripts/seed_demo.py"]
+    entrypoint: ["python", "seed_demo.py"]
 
   frontend:
     build:

@@ -61,7 +61,7 @@ async def dismiss_suggestion(
     deleted = await dismiss_budget_suggestion(db, current_user["_id"], suggestion_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Suggestion not found")
-    return {"status": "dismissed"}
+    return {"message": "Suggestion dismissed"}
 
 
 @router.get("/optimization-report", response_model=BudgetOptimizationReport)

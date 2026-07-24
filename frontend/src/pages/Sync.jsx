@@ -1,12 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Database,
-  Play,
-  RefreshCw,
-  XCircle,
+  AlertCircle, CheckCircle2, Clock, Database, Play, RefreshCw, XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,27 +8,15 @@ import { syncApi } from "../api/sync";
 import { bankApi } from "../api/bank";
 
 const STATUS_ICONS = {
-  idle: Clock,
-  running: RefreshCw,
-  completed: CheckCircle2,
-  failed: XCircle,
-  never: AlertCircle,
+  idle: Clock, running: RefreshCw, completed: CheckCircle2, failed: XCircle, never: AlertCircle,
 };
 
-const STATUS_COLORS = {
-  idle: "text-gray-500",
-  running: "text-blue-500 animate-spin",
-  completed: "text-emerald-500",
-  failed: "text-red-500",
-  never: "text-gray-400",
-};
-
-const STATUS_BG = {
-  idle: "bg-gray-100 text-gray-700",
-  running: "bg-blue-100 text-blue-700",
-  completed: "bg-emerald-100 text-emerald-700",
-  failed: "bg-red-100 text-red-700",
-  never: "bg-gray-100 text-gray-500",
+const STATUS_VARIANTS = {
+  idle: { bg: "var(--neutral-100)", color: "var(--neutral-600)" },
+  running: { bg: "var(--accent-100)", color: "var(--accent-600)" },
+  completed: { bg: "var(--brand-100)", color: "var(--brand-700)" },
+  failed: { bg: "#fef2f2", color: "#dc2626" },
+  never: { bg: "var(--neutral-100)", color: "var(--neutral-400)" },
 };
 
 export default function Sync() {
@@ -55,9 +37,7 @@ export default function Sync() {
       const statuses = Array.isArray(statusRes.data) ? statusRes.data : [];
       setAccounts(accts);
       const statusMap = {};
-      statuses.forEach((s) => {
-        statusMap[s.bank_account_id] = s;
-      });
+      statuses.forEach((s) => { statusMap[s.bank_account_id] = s; });
       setSyncStatuses(statusMap);
       setError(null);
     } catch (err) {
@@ -67,22 +47,16 @@ export default function Sync() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
-    const hasRunning = Object.values(syncStatuses).some(
-      (s) => s.sync_status === "running"
-    );
+    const hasRunning = Object.values(syncStatuses).some((s) => s.sync_status === "running");
     if (!hasRunning) return;
     const interval = setInterval(() => {
       syncApi.status().then((res) => {
         const statuses = Array.isArray(res.data) ? res.data : [];
         const statusMap = {};
-        statuses.forEach((s) => {
-          statusMap[s.bank_account_id] = s;
-        });
+        statuses.forEach((s) => { statusMap[s.bank_account_id] = s; });
         setSyncStatuses(statusMap);
       });
     }, 5000);
@@ -92,8 +66,7 @@ export default function Sync() {
   const handleSyncAll = async () => {
     setSyncing(true);
     try {
-      const res = await syncApi.manual();
-      const results = res.data?.results || [];
+      await syncApi.manual();
       await fetchData();
     } catch (err) {
       setError(err.response?.data?.detail || "Sync failed");
@@ -112,123 +85,74 @@ export default function Sync() {
   };
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-48" />
-          <div className="h-32 bg-gray-200 rounded" />
-          <div className="h-32 bg-gray-200 rounded" />
-        </div>
-      </div>
-    );
+    return <div className="centered"><RefreshCw size={20} className="spin" /></div>;
   }
 
-  const hasRunning = Object.values(syncStatuses).some(
-    (s) => s.sync_status === "running"
-  );
+  const hasRunning = Object.values(syncStatuses).some((s) => s.sync_status === "running");
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="page">
+      <header className="page-header">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Data Sync</h1>
-          <p className="text-gray-500 mt-1">
-            Synchronize your bank transactions
-          </p>
+          <h1>Data Sync</h1>
+          <p>Synchronize your bank transactions</p>
         </div>
-        <button
-          onClick={handleSyncAll}
-          disabled={syncing || hasRunning || accounts.length === 0}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <RefreshCw size={16} className={syncing || hasRunning ? "animate-spin" : ""} />
+        <button onClick={handleSyncAll} disabled={syncing || hasRunning || accounts.length === 0}>
+          <RefreshCw size={16} className={syncing || hasRunning ? "spin" : ""} />
           {syncing || hasRunning ? "Syncing..." : "Sync All"}
         </button>
-      </div>
+      </header>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
-          <AlertCircle size={16} />
-          {error}
-        </div>
-      )}
+      {error && <div className="error">{error}</div>}
 
       {accounts.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
-          <Database size={48} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium">No bank accounts connected</p>
-          <p className="text-sm mt-1">
+        <div className="panel" style={{ textAlign: "center", padding: "48px 20px" }}>
+          <Database size={48} style={{ color: "var(--neutral-300)", marginBottom: "12px" }} />
+          <p style={{ fontWeight: 600, margin: 0 }}>No bank accounts connected</p>
+          <p className="muted" style={{ fontSize: "0.85rem", marginTop: "4px" }}>
             Connect a bank account first to start syncing transactions.
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {accounts.map((acc) => {
-            const status = syncStatuses[acc.id] || {
-              sync_status: "never",
-              last_synced_at: null,
-              latest_sync: null,
-            };
+            const status = syncStatuses[acc.id] || { sync_status: "never", last_synced_at: null, latest_sync: null };
             const StatusIcon = STATUS_ICONS[status.sync_status] || Clock;
-            const spinClass =
-              status.sync_status === "running" ? "animate-spin" : "";
+            const variant = STATUS_VARIANTS[status.sync_status] || STATUS_VARIANTS.never;
             const isRunning = status.sync_status === "running";
 
             return (
-              <div
-                key={acc.id}
-                className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-sm transition-shadow"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                      <Database size={20} className="text-emerald-600" />
+              <div key={acc.id} className="panel" style={{ padding: "16px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: "8px", background: "var(--brand-50)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Database size={18} style={{ color: "var(--brand-600)" }} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {acc.bank_name}
-                      </h3>
-                      <p className="text-sm text-gray-500">
+                      <strong style={{ display: "block" }}>{acc.bank_name}</strong>
+                      <span className="muted" style={{ fontSize: "0.82rem" }}>
                         {acc.masked_account_number}
-                        {acc.account_type &&
-                          ` · ${acc.account_type.replace("_", " ")}`}
-                      </p>
+                        {acc.account_type && ` · ${acc.account_type.replace("_", " ")}`}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_BG[status.sync_status] || STATUS_BG.never}`}
-                    >
-                      <StatusIcon size={14} className={spinClass} />
-                      {status.sync_status === "never"
-                        ? "Not Synced"
-                        : status.sync_status.charAt(0).toUpperCase() +
-                          status.sync_status.slice(1)}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 600, background: variant.bg, color: variant.color }}>
+                      <StatusIcon size={12} className={isRunning ? "spin" : ""} />
+                      {status.sync_status === "never" ? "Not Synced" : status.sync_status.charAt(0).toUpperCase() + status.sync_status.slice(1)}
                     </span>
-                    <button
-                      onClick={() => handleSyncOne(acc.id)}
-                      disabled={isRunning}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Play size={14} />
-                      Sync
+                    <button className="secondary" style={{ minHeight: 32, fontSize: "0.82rem", padding: "0 10px" }} onClick={() => handleSyncOne(acc.id)} disabled={isRunning}>
+                      <Play size={12} /> Sync
                     </button>
-                    <button
-                      onClick={() => navigate(`/app/sync/history?bank_account_id=${acc.id}`)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      History
+                    <button className="icon-button" style={{ minHeight: 32, width: 32 }} onClick={() => navigate(`/app/sync/history?bank_account_id=${acc.id}`)} title="History">
+                      <Clock size={12} />
                     </button>
                   </div>
                 </div>
                 {status.last_synced_at && (
-                  <p className="text-xs text-gray-400 mt-3">
+                  <p className="muted" style={{ fontSize: "0.78rem", marginTop: "8px", marginBottom: 0 }}>
                     Last synced: {new Date(status.last_synced_at).toLocaleString()}
-                  </p>
-                )}
-                {status.latest_sync && status.latest_sync.transactions_imported > 0 && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    Latest: {status.latest_sync.transactions_imported} transactions imported
+                    {status.latest_sync?.transactions_imported > 0 && ` · ${status.latest_sync.transactions_imported} transactions imported`}
                   </p>
                 )}
               </div>

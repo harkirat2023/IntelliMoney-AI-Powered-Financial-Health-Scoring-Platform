@@ -12,7 +12,7 @@ const consentItems = [
 
 export default function ConsentPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const consentHandle = searchParams.get("consent_handle");
   const provider = searchParams.get("provider");
@@ -24,6 +24,7 @@ export default function ConsentPage() {
   const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { navigate("/login", { replace: true }); return; }
     if (!consentHandle || !provider) {
       navigate("/connect-bank", { replace: true });
@@ -31,7 +32,9 @@ export default function ConsentPage() {
     if (state && user?._id && state !== user._id) {
       setError("Invalid request. Please restart the connection.");
     }
-  }, [user, consentHandle, provider, state, navigate]);
+  }, [user, authLoading, consentHandle, provider, state, navigate]);
+
+  if (authLoading) return null;
 
   const handleApprove = async () => {
     setLoading(true);

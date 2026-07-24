@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24
+    refresh_token_expire_minutes: int = 60 * 24 * 7
+    rate_limit_auth_enabled: bool = True
+    rate_limit_auth_max_requests: int = 10
+    rate_limit_auth_window_seconds: int = 60
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_from_name: str = "IntelliMoney"
     mongodb_url: str = "mongodb://localhost:27017"
     mongodb_db: str = "intellimoney"
     redis_url: str = ""
@@ -35,19 +45,18 @@ class Settings(BaseSettings):
 
     processing: ProcessingSettings = ProcessingSettings()
 
-    openai_api_key: str = ""
-    openai_api_base: str = "https://api.openai.com/v1"
-    openai_model: str = "gpt-4o"
-    openai_temperature: float = 0.3
-    openai_max_tokens: int = 1024
-    openai_embedding_model: str = "text-embedding-3-small"
+    groq_api_key: str = ""
+    groq_api_base: str = "https://api.groq.com/openai/v1"
+    groq_model: str = "llama3-8b-8192"
+    groq_temperature: float = 0.3
+    groq_max_tokens: int = 1024
     upload_dir: str = "uploads/receipts"
 
     supabase_url: str = ""
     supabase_service_key: str = ""
     ml_allow_fallback: bool = False
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @model_validator(mode="before")
     @classmethod

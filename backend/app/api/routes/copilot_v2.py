@@ -42,7 +42,7 @@ async def chat(
     body: ChatRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-):
+) -> Any:
     user_id = str(current_user["_id"])
     copilot, _, _ = _get_services(db)
     result = await copilot.process_message(user_id, body.message, body.session_id)
@@ -53,7 +53,7 @@ async def chat(
 async def get_sessions(
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-):
+) -> Any:
     user_id = str(current_user["_id"])
     _, memory, _ = _get_services(db)
     sessions = await memory.get_sessions(user_id)
@@ -70,7 +70,7 @@ async def get_session_history(
     session_id: str,
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-):
+) -> Any:
     user_id = str(current_user["_id"])
     _, _, message_repo = _get_services(db)
     session_repo = MongoChatSessionRepository(db)
@@ -96,7 +96,7 @@ async def get_session_history(
 async def delete_all_sessions(
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-):
+) -> Any:
     user_id = str(current_user["_id"])
     _, memory, _ = _get_services(db)
     await memory.delete_all(user_id)
@@ -108,7 +108,7 @@ async def submit_feedback(
     body: FeedbackRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-):
+) -> Any:
     user_id = str(current_user["_id"])
     copilot, _, _ = _get_services(db)
     result = await copilot.record_feedback(
@@ -121,7 +121,7 @@ async def submit_feedback(
 async def get_suggestions(
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-):
+) -> Any:
     user_id = str(current_user["_id"])
     copilot, _, _ = _get_services(db)
     suggestions = await copilot.get_suggestions(user_id)
@@ -131,10 +131,10 @@ async def get_suggestions(
 @router.get("/settings", response_model=CopilotSettings)
 async def get_settings_endpoint(
     current_user: dict[str, Any] = Depends(get_current_user),
-):
+) -> Any:
     cfg = get_settings()
     return CopilotSettings(
-        model=cfg.openai_model or "gpt-4o",
-        temperature=cfg.openai_temperature or 0.3,
-        max_tokens=cfg.openai_max_tokens or 1024,
+        model=cfg.groq_model,
+        temperature=cfg.groq_temperature,
+        max_tokens=cfg.groq_max_tokens,
     )

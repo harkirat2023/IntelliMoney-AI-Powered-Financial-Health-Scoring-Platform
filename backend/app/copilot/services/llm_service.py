@@ -2,9 +2,8 @@ import logging
 from typing import Any
 
 import tiktoken
-from langchain.schema import HumanMessage, SystemMessage
-from langchain_community.chat_models import ChatOpenAI
-from langchain_core.messages import AIMessage
+from langchain_groq import ChatGroq
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from app.core.config import get_settings
 
@@ -29,18 +28,17 @@ class TokenCounter:
 class LLMService:
     def __init__(self):
         cfg = get_settings()
-        self._model = cfg.openai_model
-        self._temperature = cfg.openai_temperature
-        self._max_tokens = cfg.openai_max_tokens
-        self._api_key = cfg.openai_api_key
+        self._model = cfg.groq_model
+        self._temperature = cfg.groq_temperature
+        self._max_tokens = cfg.groq_max_tokens
+        self._api_key = cfg.groq_api_key
 
-    def _get_llm(self, streaming: bool = False) -> ChatOpenAI:
-        return ChatOpenAI(
+    def _get_llm(self, streaming: bool = False) -> ChatGroq:
+        return ChatGroq(
             model=self._model,
             temperature=self._temperature,
             max_tokens=self._max_tokens,
-            openai_api_key=self._api_key,
-            base_url=get_settings().openai_api_base,
+            groq_api_key=self._api_key,
             streaming=streaming,
         )
 

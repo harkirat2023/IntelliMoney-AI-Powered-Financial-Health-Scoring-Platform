@@ -134,7 +134,7 @@ async def get_receipt_image(
     receipt_id: str,
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
-):
+) -> Any:
     from app.infrastructure.storage import get_storage_backend
 
     svc = _get_svc(db)

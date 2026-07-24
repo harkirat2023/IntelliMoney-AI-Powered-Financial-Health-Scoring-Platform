@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -43,7 +45,7 @@ async def start_sync(
     req: SyncStartRequest,
     user: dict = Depends(get_current_user),
     service: SyncService = Depends(_get_sync_service),
-):
+) -> Any:
     return await service.start_sync(str(user["_id"]), req.bank_account_id)
 
 
@@ -51,7 +53,7 @@ async def start_sync(
 async def manual_sync(
     user: dict = Depends(get_current_user),
     service: SyncService = Depends(_get_sync_service),
-):
+) -> Any:
     return await service.manual_sync_all(str(user["_id"]))
 
 
@@ -60,7 +62,7 @@ async def sync_status(
     bank_account_id: str | None = Query(None),
     user: dict = Depends(get_current_user),
     service: SyncService = Depends(_get_sync_service),
-):
+) -> Any:
     return await service.get_status(str(user["_id"]), bank_account_id)
 
 
@@ -71,7 +73,7 @@ async def sync_history(
     offset: int = Query(0, ge=0),
     user: dict = Depends(get_current_user),
     service: SyncService = Depends(_get_sync_service),
-):
+) -> Any:
     return await service.get_history(str(user["_id"]), bank_account_id, limit, offset)
 
 
@@ -80,5 +82,5 @@ async def retry_sync(
     req: SyncRetryRequest,
     user: dict = Depends(get_current_user),
     service: SyncService = Depends(_get_sync_service),
-):
+) -> Any:
     return await service.retry_sync(str(user["_id"]), req.sync_log_id)

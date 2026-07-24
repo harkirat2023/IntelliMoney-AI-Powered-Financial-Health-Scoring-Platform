@@ -4,13 +4,17 @@ from app.core.config import get_settings
 from app.core.logging import logger
 
 
+import asyncio
+
 client: AsyncIOMotorClient | None = None
 database: AsyncIOMotorDatabase | None = None
 connection_error: str | None = None
+_connected_event: asyncio.Event = asyncio.Event()
 
 
 async def connect_to_mongo() -> None:
     global client, database, connection_error
+    _connected_event.clear()
     settings = get_settings()
     use_tls = settings.mongodb_url.startswith("mongodb+srv")
     try:
@@ -31,7 +35,9 @@ async def connect_to_mongo() -> None:
         logger.error("MongoDB connection failed: %s", connection_error)
         client = None
         database = None
+        _connected_event.set()
         return
+    _connected_event.set()
     await database.expenses.create_index([("user_id", 1), ("date", -1)])
     await database.budgets.create_index(
         [("user_id", 1), ("category", 1), ("month", 1), ("year", 1)],
@@ -55,7 +61,7 @@ async def connect_to_mongo() -> None:
     await database.subscriptions.create_index([("user_id", 1), ("next_payment_date", 1)])
     await database.bank_accounts.create_index([("user_id", 1), ("connection_status", 1)])
     await database.bank_accounts.create_index([("user_id", 1), ("provider", 1)])
-    await database.bank_accounts.create_index([("consent_handle", 1)], unique=True, sparse=True)
+    await database.bank_accounts.create_index([("consent_handle", 1)])
     await database.bank_accounts.create_index([("consent_expiry", 1)], expireAfterSeconds=0)
 
     await database.consents.create_index([("user_id", 1), ("bank_account_id", 1)])
@@ -196,6 +202,16 @@ async def close_mongo_connection() -> None:
         client.close()
     client = None
     database = None
+
+
+async def wait_for_connection(timeout: float = 10.0) -> None:
+    if database is not None:
+        return
+    try:
+        await asyncio.wait_for(_connected_event.wait(), timeout=timeout)
+    except asyncio.TimeoutError:
+        if database is None:
+            raise RuntimeError(f"MongoDB failed to connect within {timeout}s")
 
 
 def get_database() -> AsyncIOMotorDatabase:

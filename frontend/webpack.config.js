@@ -12,6 +12,7 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, "dist"),
       filename: "bundle.[contenthash].js",
+      chunkFilename: "chunk.[contenthash].js",
       publicPath: "/",
       clean: true,
     },
@@ -29,7 +30,10 @@ module.exports = (env, argv) => {
           use: {
             loader: "babel-loader",
             options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
+              presets: [
+                ["@babel/preset-env", { targets: "defaults" }],
+                ["@babel/preset-react", { runtime: "automatic" }],
+              ],
             },
           },
         },
@@ -51,7 +55,7 @@ module.exports = (env, argv) => {
       }),
       new webpack.DefinePlugin({
         "process.env": JSON.stringify({
-          API_BASE_URL: process.env.API_BASE_URL || "http://localhost:8080/api/v1",
+          API_BASE_URL: process.env.API_BASE_URL || "/api/v1",
           VITE_WS_HOST: process.env.VITE_WS_HOST || "",
         }),
       }),
@@ -65,6 +69,7 @@ module.exports = (env, argv) => {
           port: 5173,
           hot: true,
           open: true,
+          historyApiFallback: true,
           proxy: {
             "/api": {
               target: "http://localhost:8080",

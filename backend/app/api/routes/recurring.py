@@ -39,6 +39,24 @@ async def add_recurring_expense(
     return RecurringExpensePublic(**item)
 
 
+@router.get("/upcoming", response_model=list[dict[str, Any]])
+async def upcoming_recurring_expenses(
+    days_ahead: int = 30,
+    current_user: dict[str, Any] = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+) -> list[dict[str, Any]]:
+    return await generate_upcoming_expenses(db, current_user["_id"], days_ahead)
+
+
+@router.get("/suggestions/detect", response_model=list[RecurringExpenseSuggestion])
+async def suggest_recurring_expenses(
+    current_user: dict[str, Any] = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+) -> list[RecurringExpenseSuggestion]:
+    suggestions = await detect_recurring_patterns(db, current_user["_id"])
+    return [RecurringExpenseSuggestion(**item) for item in suggestions]
+
+
 @router.get("/{recurring_id}", response_model=RecurringExpensePublic)
 async def read_recurring_expense(
     recurring_id: str,
@@ -73,22 +91,4 @@ async def remove_recurring_expense(
     deleted = await delete_recurring_expense(db, current_user["_id"], recurring_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Recurring expense not found")
-    return {"status": "deleted"}
-
-
-@router.get("/suggestions/detect", response_model=list[RecurringExpenseSuggestion])
-async def suggest_recurring_expenses(
-    current_user: dict[str, Any] = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-) -> list[RecurringExpenseSuggestion]:
-    suggestions = await detect_recurring_patterns(db, current_user["_id"])
-    return [RecurringExpenseSuggestion(**item) for item in suggestions]
-
-
-@router.get("/upcoming", response_model=list[dict[str, Any]])
-async def upcoming_recurring_expenses(
-    days_ahead: int = 30,
-    current_user: dict[str, Any] = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-) -> list[dict[str, Any]]:
-    return await generate_upcoming_expenses(db, current_user["_id"], days_ahead)
+    return {"message": "Recurring expense deleted"}

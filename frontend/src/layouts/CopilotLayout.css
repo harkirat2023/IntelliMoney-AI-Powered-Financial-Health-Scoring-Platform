@@ -31,8 +31,10 @@
 .copilot-input-bar .btn-icon:not(:disabled):hover { background: #059669; }
 
 .copilot-history-page, .copilot-settings-page { padding: 24px; max-width: 900px; margin: 0 auto; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { display: flex; align-items: center; gap: 8px; font-size: 1.25rem; color: #f9fafb; }
+.copilot-history-page .page-header,
+.copilot-settings-page .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.copilot-history-page .page-header h2,
+.copilot-settings-page .page-header h2 { display: flex; align-items: center; gap: 8px; font-size: 1.25rem; color: #f9fafb; }
 .btn-outline { background: transparent; border: 1px solid #374151; color: #d1d5db; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.82rem; }
 .btn-outline:hover { background: #1f2937; border-color: #ef4444; color: #fca5a5; }
 .btn-sm { padding: 4px 10px; font-size: 0.78rem; }

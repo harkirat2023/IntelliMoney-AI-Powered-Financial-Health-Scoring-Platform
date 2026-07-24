@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -28,7 +30,7 @@ async def connect_bank(
     req: BankConnectRequest,
     user: dict = Depends(get_current_user),
     service: BankService = Depends(_get_bank_service),
-):
+) -> Any:
     return await service.initiate_connection(str(user["_id"]), req.provider)
 
 
@@ -37,7 +39,7 @@ async def submit_consent(
     req: ConsentSubmitRequest,
     user: dict = Depends(get_current_user),
     service: BankService = Depends(_get_bank_service),
-):
+) -> Any:
     return await service.complete_consent(str(user["_id"]), req)
 
 
@@ -45,7 +47,7 @@ async def submit_consent(
 async def list_accounts(
     user: dict = Depends(get_current_user),
     service: BankService = Depends(_get_bank_service),
-):
+) -> Any:
     return await service.list_accounts(str(user["_id"]))
 
 
@@ -53,14 +55,15 @@ async def list_accounts(
 async def connection_status(
     user: dict = Depends(get_current_user),
     service: BankService = Depends(_get_bank_service),
-):
+) -> Any:
     return await service.get_status(str(user["_id"]))
 
 
-@router.delete("/disconnect/{account_id}", status_code=204)
+@router.delete("/disconnect/{account_id}")
 async def disconnect_account(
     account_id: str,
     user: dict = Depends(get_current_user),
     service: BankService = Depends(_get_bank_service),
-):
+) -> dict[str, str]:
     await service.disconnect(str(user["_id"]), account_id)
+    return {"message": "Account disconnected"}

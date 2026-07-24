@@ -8,11 +8,12 @@ import { useAuth } from "../auth/AuthContext";
 export default function ConnectSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [accounts, setAccounts] = useState(location.state?.accounts || []);
   const [loading, setLoading] = useState(!accounts.length);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { navigate("/login", { replace: true }); return; }
     if (!accounts.length) {
       bankApi.getAccounts()

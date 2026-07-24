@@ -23,6 +23,8 @@ class BudgetOverview(BaseModel):
     category: str
     limit: float
     spent: float
+    remaining: float = 0
+    percentage_used: float = 0
     state: str
 
 

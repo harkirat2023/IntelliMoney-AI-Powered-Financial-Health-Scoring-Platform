@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -23,7 +25,7 @@ async def save_import_preference(
     req: ImportPreferenceRequest,
     user: dict = Depends(get_current_user),
     service: ImportPreferenceService = Depends(_get_pref_service),
-):
+) -> Any:
     return await service.save(str(user["_id"]), req)
 
 
@@ -32,5 +34,5 @@ async def get_import_preference(
     bank_account_id: str = Query(...),
     user: dict = Depends(get_current_user),
     service: ImportPreferenceService = Depends(_get_pref_service),
-):
+) -> Any:
     return await service.get(str(user["_id"]), bank_account_id)

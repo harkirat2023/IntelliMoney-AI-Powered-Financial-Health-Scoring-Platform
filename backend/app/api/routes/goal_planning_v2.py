@@ -84,6 +84,15 @@ async def get_goal(
     return GoalResponse(**svc._goal_to_dict(goal))
 
 
+@router.post("/recalculate")
+async def goals_recalculate(
+    current_user: dict[str, Any] = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+) -> dict:
+    svc = _get_svc(db)
+    return await svc.recalculate(str(current_user["_id"]))
+
+
 @router.post("/analyze", response_model=GoalAnalyzeResponse)
 async def analyze_goal(
     body: GoalAnalyzeRequest,

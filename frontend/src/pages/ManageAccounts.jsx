@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Shield, Loader2, AlertCircle, RefreshCw, Trash2 } from "lucide-react";
 import { bankApi } from "../api/bank";
 import { BankCard } from "../components/bank/BankCard";
 import { DisconnectDialog } from "../components/bank/DisconnectDialog";
 
 export default function ManageAccounts() {
+  const location = useLocation();
+  const inApp = location.pathname.startsWith("/app");
   const [accounts, setAccounts] = useState([]);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,89 +50,92 @@ export default function ManageAccounts() {
 
   if (loading) {
     return (
-      <div className="pt-24 pb-16 min-h-screen flex items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-emerald-600" />
+      <div className={`flex items-center justify-center ${inApp ? "page" : "pt-24 pb-16 min-h-screen"}`}>
+        <Loader2 size={24} className="animate-spin" style={{ color: "var(--brand-500)" }} />
       </div>
     );
   }
 
-  return (
-    <div className="pt-24 pb-16 min-h-screen bg-gradient-to-b from-neutral-50/30 via-white to-white">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900">Connected Banks</h1>
-            <p className="text-sm text-neutral-500 mt-1">Manage your bank connections</p>
-          </div>
-          <button
-            onClick={fetchData}
-            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
-            title="Refresh"
-          >
-            <RefreshCw size={18} className="text-neutral-500" />
-          </button>
+  const content = (
+    <div className={inApp ? "page max-w-2xl" : "max-w-2xl mx-auto px-4 sm:px-6 lg:px-8"}>
+      <header className="page-header">
+        <div>
+          <h1>Connected Banks</h1>
+          <p>Manage your bank connections</p>
         </div>
+        <button onClick={fetchData} className="icon-button" title="Refresh">
+          <RefreshCw size={18} />
+        </button>
+      </header>
 
-        {status && (
-          <div className="flex items-center gap-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl mb-6">
-            <Shield size={20} className="text-emerald-600" />
-            <div className="text-sm">
-              <span className="font-semibold text-emerald-800">{status.active_accounts} active</span>
-              <span className="text-emerald-600"> connection{status.active_accounts !== 1 ? "s" : ""}</span>
+      {status && (
+        <div className="panel" style={{ background: "var(--brand-50)", borderColor: "var(--brand-200)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Shield size={20} style={{ color: "var(--brand-600)" }} />
+            <div className="muted" style={{ fontSize: "0.9rem" }}>
+              <strong style={{ color: "var(--brand-800)" }}>{status.active_accounts} active</strong>
+              {" "}connection{status.active_accounts !== 1 ? "s" : ""}
               {status.providers_connected.length > 0 && (
-                <span className="text-emerald-600"> via {status.providers_connected.join(", ")}</span>
+                <> via {status.providers_connected.join(", ")}</>
               )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {error && (
-          <div className="flex items-center gap-2 p-4 mb-6 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
-            <AlertCircle size={16} />
-            {error}
-          </div>
-        )}
+      {error && <div className="error">{error}</div>}
 
-        {accounts.length === 0 ? (
-          <div className="text-center py-12 bg-neutral-50 rounded-2xl border border-neutral-200">
-            <Shield size={40} className="text-neutral-300 mx-auto mb-3" />
-            <p className="text-neutral-500 font-medium">No bank accounts connected</p>
-            <p className="text-sm text-neutral-400 mt-1">Connect your first bank account to get started.</p>
-            <a
-              href="/connect-bank"
-              className="inline-flex items-center gap-1 mt-4 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
-            >
-              Connect a Bank Account
-            </a>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {accounts.map((acc) => (
-              <div key={acc.id} className="relative group">
-                <BankCard account={acc} />
-                {acc.connection_status === "active" && (
-                  <button
-                    onClick={() => setDisconnecting(acc)}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg bg-white border border-neutral-200 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:border-red-200 transition-all"
-                    title="Disconnect"
-                  >
-                    <Trash2 size={14} className="text-red-500" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+      {accounts.length === 0 ? (
+        <div className="panel" style={{ textAlign: "center", padding: "40px 20px" }}>
+          <Shield size={40} style={{ color: "var(--neutral-300)", marginBottom: "12px" }} />
+          <p style={{ fontWeight: 600, color: "var(--neutral-500)", margin: 0 }}>No bank accounts connected</p>
+          <p className="muted" style={{ fontSize: "0.85rem", marginTop: "4px" }}>Connect your first bank account to get started.</p>
+          <a
+            href="/connect-bank"
+            className="secondary"
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "16px", padding: "10px 20px", borderRadius: "12px", background: "var(--brand-600)", color: "#fff", fontWeight: 600, fontSize: "0.9rem" }}
+          >
+            Connect a Bank Account
+          </a>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {accounts.map((acc) => (
+            <div key={acc.id} style={{ position: "relative" }}>
+              <BankCard account={acc} />
+              {acc.connection_status === "active" && (
+                <button
+                  onClick={() => setDisconnecting(acc)}
+                  className="icon-button danger"
+                  style={{ position: "absolute", top: "8px", right: "8px", opacity: 0.6 }}
+                  title="Disconnect"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
-        {disconnecting && (
-          <DisconnectDialog
-            account={disconnecting}
-            onConfirm={handleDisconnect}
-            onCancel={() => setDisconnecting(null)}
-            loading={disconnectLoading}
-          />
-        )}
-      </div>
+      {disconnecting && (
+        <DisconnectDialog
+          account={disconnecting}
+          onConfirm={handleDisconnect}
+          onCancel={() => setDisconnecting(null)}
+          loading={disconnectLoading}
+        />
+      )}
+    </div>
+  );
+
+  if (inApp) {
+    return <div className="page">{content}</div>;
+  }
+
+  return (
+    <div className="pt-24 pb-16 min-h-screen" style={{ background: "linear-gradient(180deg, var(--neutral-50), #fff)" }}>
+      {content}
     </div>
   );
 }
