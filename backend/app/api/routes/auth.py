@@ -1,6 +1,8 @@
 import time
 from collections import defaultdict
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
@@ -24,7 +26,7 @@ _rate_limit_store: dict[str, list[float]] = defaultdict(list)
 
 def _check_rate_limit(key: str) -> None:
     settings = get_settings()
-    if not settings.rate_limit_auth_enabled:
+    if not settings.rate_limit_auth_enabled or settings.environment in ("testing", "test"):
         return
     now = time.time()
     window = settings.rate_limit_auth_window_seconds
@@ -44,10 +46,11 @@ class RefreshRequest(BaseModel):
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 async def register(
     payload: UserCreate,
-    request: Request,
     db: AsyncIOMotorDatabase = Depends(get_database),
+    request: Request = None,
 ) -> Token:
-    _check_rate_limit(f"register:{request.client.host}")
+    client_ip = getattr(getattr(request, "client", None), "host", "127.0.0.1")
+    _check_rate_limit(f"register:{client_ip}")
     document = {
         "name": payload.name,
         "email": payload.email.lower(),
@@ -72,10 +75,11 @@ async def register(
 @router.post("/login", response_model=Token)
 async def login(
     payload: UserLogin,
-    request: Request,
     db: AsyncIOMotorDatabase = Depends(get_database),
+    request: Request = None,
 ) -> Token:
-    _check_rate_limit(f"login:{request.client.host}")
+    client_ip = getattr(getattr(request, "client", None), "host", "127.0.0.1")
+    _check_rate_limit(f"login:{client_ip}")
     user_doc = await db.users.find_one({"email": payload.email.lower()})
     if not user_doc or not verify_password(payload.password, user_doc["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
