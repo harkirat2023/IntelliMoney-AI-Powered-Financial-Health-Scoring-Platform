@@ -23,6 +23,7 @@ class HealthHistoryService:
             period=health.period,
             score=health.score,
             risk_level=health.risk_level,
+            grade=health.grade,
             savings_rate=health.savings_rate,
             budget_adherence=health.budget_adherence,
             expense_stability=health.expense_stability,

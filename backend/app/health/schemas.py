@@ -21,6 +21,7 @@ class HealthFactorGroup(BaseModel):
 class HealthCurrentResponse(BaseModel):
     period: str
     score: int
+    grade: str = "D"
     risk_level: str
     factor_groups: list[HealthFactorGroup] = []
     calculated_at: datetime | None = None
@@ -56,6 +57,7 @@ class TrendAnalysis(BaseModel):
 class HealthBreakdownResponse(BaseModel):
     period: str
     score: int
+    grade: str = "D"
     risk_level: str
     factors: list[FactorDetail] = []
     strengths: list[str] = []

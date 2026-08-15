@@ -58,3 +58,19 @@ class BankStatusResponse(BaseModel):
     active_accounts: int
     providers_connected: list[str]
     last_sync: datetime | None = None
+
+
+class BankImportRequest(BaseModel):
+    bank_account_id: str
+    consent_duration_days: int = 365
+
+
+class BankImportResponse(BaseModel):
+    sync_log_id: str
+    status: str
+    transactions_imported: int = 0
+    transactions_categorized: int = 0
+    financial_transactions_processed: int = 0
+    health_recalculated: bool = False
+    onboarded: bool = False
+    message: str = ""

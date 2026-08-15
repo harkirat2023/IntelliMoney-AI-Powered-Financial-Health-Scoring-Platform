@@ -17,6 +17,10 @@ class RiskProfile(BaseModel):
     income_risk: str = "moderate"
     emergency_risk: str = "moderate"
     recurring_risk: str = "moderate"
+    debt_risk: str = "moderate"
+    goal_risk: str = "moderate"
+    investment_risk: str = "moderate"
+    trend_risk: str = "moderate"
     calculated_at: datetime | None = None
 
     @classmethod
@@ -34,6 +38,10 @@ class RiskProfile(BaseModel):
             income_risk=doc.get("income_risk", "moderate"),
             emergency_risk=doc.get("emergency_risk", "moderate"),
             recurring_risk=doc.get("recurring_risk", "moderate"),
+            debt_risk=doc.get("debt_risk", "moderate"),
+            goal_risk=doc.get("goal_risk", "moderate"),
+            investment_risk=doc.get("investment_risk", "moderate"),
+            trend_risk=doc.get("trend_risk", "moderate"),
             calculated_at=doc.get("calculated_at"),
         )
 

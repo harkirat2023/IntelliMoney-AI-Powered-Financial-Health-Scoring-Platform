@@ -121,7 +121,7 @@ class ProcessingPipeline:
             is_refund=income_result["is_refund"],
             is_transfer=income_result["is_transfer"],
             review_status=review_status,
-            processed_at=now,
+            processed_at=None,
             created_at=now,
             updated_at=now,
         )

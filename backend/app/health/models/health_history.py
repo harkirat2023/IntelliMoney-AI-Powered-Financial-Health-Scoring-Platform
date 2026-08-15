@@ -10,6 +10,7 @@ class HealthHistory(BaseModel):
     period: str
     score: int
     risk_level: str
+    grade: str = "D"
     savings_rate: float = 0.0
     budget_adherence: float = 0.0
     expense_stability: float = 0.0
@@ -28,6 +29,7 @@ class HealthHistory(BaseModel):
             period=doc["period"],
             score=int(doc.get("score", 0)),
             risk_level=doc.get("risk_level", "Needs Attention"),
+            grade=doc.get("grade", "D"),
             savings_rate=float(doc.get("savings_rate", 0)),
             budget_adherence=float(doc.get("budget_adherence", 0)),
             expense_stability=float(doc.get("expense_stability", 0)),

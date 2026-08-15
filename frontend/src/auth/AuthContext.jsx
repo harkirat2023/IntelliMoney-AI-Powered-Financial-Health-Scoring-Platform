@@ -66,12 +66,30 @@ export function AuthProvider({ children }) {
     storeAuth(response.data.access_token, response.data.refresh_token, response.data.user);
   }
 
+  async function sendOtp() {
+    const response = await api.post("/auth/send-otp");
+    return response.data;
+  }
+
+  async function verifyOtp(otp) {
+    const response = await api.post("/auth/verify-otp", { otp });
+    storeAuth(response.data.access_token, response.data.refresh_token, response.data.user);
+  }
+
+  async function completeOnboarding() {
+    const response = await api.post("/auth/onboarding/complete");
+    setUser(response.data);
+  }
+
   function logout() {
     clearAuth();
   }
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout, refreshToken, refreshingRef }),
+    () => ({
+      user, loading, login, register, logout, refreshToken, refreshingRef,
+      sendOtp, verifyOtp, completeOnboarding,
+    }),
     [user, loading, refreshToken],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

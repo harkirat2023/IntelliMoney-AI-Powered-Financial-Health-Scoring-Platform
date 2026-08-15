@@ -23,6 +23,7 @@ from app.schemas.sync import (
     SyncStartResponse,
     SyncStatusResponse,
 )
+from app.services.auto_processing_service import AutoProcessingService
 from app.services.sync_service import SyncService
 
 
@@ -45,16 +46,34 @@ async def start_sync(
     req: SyncStartRequest,
     user: dict = Depends(get_current_user),
     service: SyncService = Depends(_get_sync_service),
+    db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> Any:
-    return await service.start_sync(str(user["_id"]), req.bank_account_id)
+    result = await service.start_sync(str(user["_id"]), req.bank_account_id)
+    if result.status == "completed":
+        await AutoProcessingService(db).process_synced(str(user["_id"]), req.bank_account_id)
+    return result
 
 
 @router.post("/manual", response_model=SyncManualResponse)
 async def manual_sync(
     user: dict = Depends(get_current_user),
     service: SyncService = Depends(_get_sync_service),
+    db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> Any:
-    return await service.manual_sync_all(str(user["_id"]))
+    result = await service.manual_sync_all(str(user["_id"]))
+    for item in result.results:
+        if item.status == "completed" and item.sync_log_id:
+            account = None
+            try:
+                from app.infrastructure.database.repositories.sync_repository import MongoSyncLogRepository
+                repo = MongoSyncLogRepository(db)
+                log = await repo.get_by_id(item.sync_log_id)
+                account = log.bank_account_id if log else None
+            except Exception:
+                account = None
+            if account:
+                await AutoProcessingService(db).process_synced(str(user["_id"]), account)
+    return result
 
 
 @router.get("/status", response_model=list[SyncStatusResponse])

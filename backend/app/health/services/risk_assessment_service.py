@@ -9,10 +9,12 @@ logger = logging.getLogger("intellimoney")
 
 
 def _risk_level_for_score(score: float) -> str:
-    if score >= 70:
+    if score >= 80:
         return "low"
-    if score >= 40:
+    if score >= 65:
         return "moderate"
+    if score >= 50:
+        return "elevated"
     return "high"
 
 
@@ -21,10 +23,10 @@ def _overall_risk_level(score: int) -> str:
         return "Excellent"
     if score >= 65:
         return "Good"
-    if score >= 45:
-        return "Moderate"
-    if score >= 25:
-        return "Needs Attention"
+    if score >= 50:
+        return "Average"
+    if score >= 35:
+        return "Poor"
     return "Critical"
 
 
@@ -56,6 +58,10 @@ class RiskAssessmentService:
             income_risk=income_risk,
             emergency_risk=emergency_risk,
             recurring_risk=recurring_risk,
+            debt_risk=_risk_level_for_score(health.debt_ratio),
+            goal_risk=_risk_level_for_score(health.goal_completion),
+            investment_risk=_risk_level_for_score(health.investment_habit),
+            trend_risk=_risk_level_for_score(health.financial_trend),
             calculated_at=now,
         )
 

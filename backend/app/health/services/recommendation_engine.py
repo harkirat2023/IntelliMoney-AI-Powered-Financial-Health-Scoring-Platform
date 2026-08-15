@@ -97,6 +97,46 @@ class RecommendationEngine:
                 created_at=now,
             ))
 
+        if health.debt_ratio < 50:
+            recs.append(HealthRecommendation(
+                user_id=user_id, category="debt", priority="high",
+                title="Debt burden is high",
+                message=f"Your debt-to-income score is {health.debt_ratio:.0f}/100. Loan and EMI payments are consuming a large share of income.",
+                metric="debt_ratio", current_value=health.debt_ratio, target_value=80,
+                impact="high", action="Prioritise high-interest debt repayment. Consider debt consolidation or an EMI pause before adding new credit.",
+                created_at=now,
+            ))
+
+        if health.goal_completion < 30:
+            recs.append(HealthRecommendation(
+                user_id=user_id, category="goals", priority="medium",
+                title="Goals are barely funded",
+                message=f"Your active goal completion is {health.goal_completion:.0f}%. Savings targets are far from current balances.",
+                metric="goal_completion", current_value=health.goal_completion, target_value=60,
+                impact="medium", action="Break goals into monthly milestone targets and set up automatic transfers towards them.",
+                created_at=now,
+            ))
+
+        if health.investment_habit < 30:
+            recs.append(HealthRecommendation(
+                user_id=user_id, category="investment", priority="low",
+                title="Start building an investment habit",
+                message=f"Your investment habit score is {health.investment_habit:.0f}/100. A healthy target is ~15% of income invested monthly.",
+                metric="investment_habit", current_value=health.investment_habit, target_value=80,
+                impact="medium", action="Start a small monthly SIP in an index fund and increase it by 1% each quarter.",
+                created_at=now,
+            ))
+
+        if health.financial_trend < 40:
+            recs.append(HealthRecommendation(
+                user_id=user_id, category="trend", priority="medium",
+                title="Financial health is trending down",
+                message=f"Your financial trend score is {health.financial_trend:.0f}/100. Recent periods are weaker than earlier ones.",
+                metric="financial_trend", current_value=health.financial_trend, target_value=60,
+                impact="medium", action="Diagnose the last few months' spending spikes and correct course before the trend worsens.",
+                created_at=now,
+            ))
+
         if health.score >= 80:
             recs.append(HealthRecommendation(
                 user_id=user_id, category="general", priority="low",

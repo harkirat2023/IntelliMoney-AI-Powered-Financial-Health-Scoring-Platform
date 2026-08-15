@@ -10,6 +10,7 @@ class FinancialHealth(BaseModel):
     period: str
     score: int = 0
     risk_level: str = "Needs Attention"
+    grade: str = "D"
     savings_rate: float = 0.0
     savings_component: float = 0.0
     budget_adherence: float = 0.0
@@ -19,8 +20,10 @@ class FinancialHealth(BaseModel):
     emergency_fund_score: float = 0.0
     recurring_expense_ratio: float = 0.0
     essential_spending_ratio: float = 0.0
-    debt_readiness: float = 0.0
-    investment_readiness: float = 0.0
+    debt_ratio: float = 0.0
+    goal_completion: float = 0.0
+    investment_habit: float = 0.0
+    financial_trend: float = 0.0
     calculated_at: datetime | None = None
 
     @classmethod
@@ -31,6 +34,7 @@ class FinancialHealth(BaseModel):
             period=doc["period"],
             score=int(doc.get("score", 0)),
             risk_level=doc.get("risk_level", "Needs Attention"),
+            grade=doc.get("grade", "D"),
             savings_rate=float(doc.get("savings_rate", 0)),
             savings_component=float(doc.get("savings_component", 0)),
             budget_adherence=float(doc.get("budget_adherence", 0)),
@@ -40,8 +44,10 @@ class FinancialHealth(BaseModel):
             emergency_fund_score=float(doc.get("emergency_fund_score", 0)),
             recurring_expense_ratio=float(doc.get("recurring_expense_ratio", 0)),
             essential_spending_ratio=float(doc.get("essential_spending_ratio", 0)),
-            debt_readiness=float(doc.get("debt_readiness", 0)),
-            investment_readiness=float(doc.get("investment_readiness", 0)),
+            debt_ratio=float(doc.get("debt_ratio", 0)),
+            goal_completion=float(doc.get("goal_completion", 0)),
+            investment_habit=float(doc.get("investment_habit", 0)),
+            financial_trend=float(doc.get("financial_trend", 0)),
             calculated_at=doc.get("calculated_at"),
         )
 

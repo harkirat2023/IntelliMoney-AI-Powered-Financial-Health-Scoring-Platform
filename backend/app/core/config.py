@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from_email: str = ""
     smtp_from_name: str = "IntelliMoney"
+    resend_api_key: str = ""
+    resend_from_email: str = "IntelliMoney <onboarding@resend.dev>"
+    otp_expire_minutes: int = 10
+    frontend_base_url: str = "http://localhost:5173"
     mongodb_url: str = "mongodb://localhost:27017"
     mongodb_db: str = "intellimoney"
     redis_url: str = ""

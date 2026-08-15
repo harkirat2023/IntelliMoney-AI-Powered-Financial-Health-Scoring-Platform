@@ -22,6 +22,8 @@ class UserPublic(BaseModel):
     name: str
     email: EmailStr
     monthly_income: float
+    is_verified: bool = False
+    is_onboarded: bool = False
     created_at: datetime
 
 
