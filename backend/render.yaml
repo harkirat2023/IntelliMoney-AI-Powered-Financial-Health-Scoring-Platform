@@ -32,18 +32,32 @@ services:
         value: IntelliMoney
       - key: REDIS_URL
         sync: false
-      - key: SECRET_KEY
-        sync: false
       - key: BANK_ENCRYPTION_KEY
         sync: false
       - key: BANK_CONSENT_REDIRECT_BASE
         value: https://intellimoney.vercel.app/connect-bank/consent
-      - key: OPENAI_API_KEY
-        sync: false
       - key: CORS_ORIGINS
         value: https://intellimoney.vercel.app,http://localhost:5173
       - key: LOG_LEVEL
         value: INFO
+      - key: CLERK_FRONTEND_API
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_JWT_AUTHORIZED_PARTIES
+        sync: false
+      - key: SETU_CLIENT_ID
+        sync: false
+      - key: SETU_CLIENT_SECRET
+        sync: false
+      - key: SETU_PRODUCT_INSTANCE_ID
+        sync: false
+      - key: SETU_ENVIRONMENT
+        value: sandbox
+      - key: AA_ALLOW_DEMO_FALLBACK
+        value: "true"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY
