@@ -28,3 +28,11 @@ class BankProviderAdapter(ABC):
 
     @abstractmethod
     async def revoke_consent(self, consent_handle: str) -> bool: ...
+
+    async def create_data_session(self, consent_handle: str) -> dict:
+        """Create a data session for an approved consent.
+
+        Default implementation returns a demo session; adapters (e.g. the
+        Setu sandbox adapter) override it with provider-specific calls.
+        """
+        return {"session_id": f"demo-session-{consent_handle[-8:]}", "data_status": "READY"}

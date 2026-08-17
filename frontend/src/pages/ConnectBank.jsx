@@ -15,11 +15,11 @@ const providers = [
   },
   {
     id: "setu",
-    name: "Setu",
-    description: "Connect via Setu's Account Aggregator platform.",
+    name: "Setu AA Sandbox",
+    description: "RBI Account Aggregator demo flow via Setu's sandbox. Uses simulated data — not connected to real bank accounts.",
     icon: Landmark,
-    banks: "50+ Indian banks",
-    enabled: false,
+    banks: "50+ Indian banks (simulated)",
+    enabled: true,
   },
   {
     id: "finvu",
@@ -46,6 +46,10 @@ export default function ConnectBank() {
 
   const handleConnect = async () => {
     if (!selected) return;
+    if (selected.id === "setu") {
+      navigate("/app/aa-sandbox", { replace: true });
+      return;
+    }
     setLoading(true);
     setError("");
     try {

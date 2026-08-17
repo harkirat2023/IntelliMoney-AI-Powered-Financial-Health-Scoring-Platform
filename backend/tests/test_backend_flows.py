@@ -4,13 +4,13 @@ from types import SimpleNamespace
 
 from bson import ObjectId
 from fastapi import HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
 
 from app.api.deps import get_current_user
 from app.api.routes import alerts, auth, budgets, expenses, financial_health, ml
 from app.schemas.budget import BudgetCreate, BudgetUpdate
 from app.schemas.expense import ExpenseCreate, ExpenseUpdate
 from app.schemas.ml import CategorizeRequest
-from app.schemas.user import UserCreate, UserLogin
 from app.services import analytics_service
 from app.services.budget_service import get_budget_status
 
@@ -110,37 +110,88 @@ def matches(item, query):
 
 def make_user(email="user@example.com"):
     db = FakeDb()
-    token = run(
-        auth.register(
-            UserCreate(
-                name="Test User",
-                email=email,
-                password="password123",
-                monthly_income=60000,
-            ),
-            db,
-        )
-    )
-    user_doc = db.users.items[0]
-    return db, token, user_doc
+    from app.utils.date_utils import utc_now
+
+    user_doc = {
+        "_id": ObjectId(),
+        "clerk_user_id": f"user_{email.split('@')[0]}",
+        "name": "Test User",
+        "email": email,
+        "monthly_income": 60000,
+        "is_verified": True,
+        "is_onboarded": False,
+        "auth_provider": "clerk",
+        "created_at": utc_now(),
+    }
+    run(db.users.insert_one(user_doc))
+    return db, user_doc, user_doc
 
 
-def test_register_login_and_current_user_dependency():
-    db, token, user_doc = make_user()
+def test_clerk_token_validation_and_current_user_dependency():
+    """The authenticated identity comes exclusively from Clerk.
 
-    login_token = run(auth.login(UserLogin(email="user@example.com", password="password123"), db))
-    assert login_token.user.email == "user@example.com"
-    assert login_token.access_token
+    ``get_current_user`` must reject a missing/invalid token and must
+    resolve the local user profile from the verified Clerk subject.
+    """
+    import app.api.deps as deps
 
-    current = run(get_current_user(token.access_token, db))
-    assert current["_id"] == user_doc["_id"]
-
+    # No credentials -> 401
     try:
-        run(auth.login(UserLogin(email="user@example.com", password="wrong"), db))
+        run(get_current_user(credentials=None, db=FakeDb()))
     except HTTPException as exc:
         assert exc.status_code == 401
     else:
-        raise AssertionError("Invalid login should fail")
+        raise AssertionError("Missing credentials should fail")
+
+    db = FakeDb()
+
+    async def fake_verify(token):
+        return {"sub": "user_example.com", "sid": "test_session"}
+
+    async def fake_upsert(db_, claims):
+        from app.utils.date_utils import utc_now
+
+        doc = {
+            "_id": ObjectId(),
+            "clerk_user_id": claims["sub"],
+            "name": "Test User",
+            "email": "user@example.com",
+            "monthly_income": 60000,
+            "is_verified": True,
+            "is_onboarded": False,
+            "auth_provider": "clerk",
+            "created_at": utc_now(),
+        }
+        await db_.users.insert_one(doc)
+        return doc
+
+    original_verify = deps.validate_bearer_token
+    original_upsert = deps.upsert_clerk_user
+    deps.validate_bearer_token = fake_verify
+    deps.upsert_clerk_user = fake_upsert
+    try:
+        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="clerk-test-token")
+        current = run(get_current_user(credentials=credentials, db=db))
+        assert current["clerk_user_id"] == "user_example.com"
+    finally:
+        deps.validate_bearer_token = original_verify
+        deps.upsert_clerk_user = original_upsert
+
+    # Invalid token -> 401
+    async def bad_verify(token):
+        return None
+
+    deps.validate_bearer_token = bad_verify
+    try:
+        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="bad-token")
+        try:
+            run(get_current_user(credentials=credentials, db=db))
+        except HTTPException as exc:
+            assert exc.status_code == 401
+        else:
+            raise AssertionError("Invalid token should fail")
+    finally:
+        deps.validate_bearer_token = original_verify
 
 
 def test_expense_crud_and_filtering():

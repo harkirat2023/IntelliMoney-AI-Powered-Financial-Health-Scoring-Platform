@@ -1,56 +1,29 @@
-from datetime import datetime, timedelta, timezone
+"""Authentication/security helpers.
+
+IntelliMoney uses Clerk as its ONLY authentication and identity provider.
+
+There is intentionally no custom JWT generation, no password hashing and
+no local login credential storage in this module or anywhere in the
+application. ``hash_password`` / ``verify_password`` were removed with the
+legacy password authentication system.
+"""
+
+from __future__ import annotations
+
 from typing import Any
 
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-
-from app.core.config import get_settings
+from app.core.clerk import ClerkError, verify_clerk_token
 
 
-password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+async def validate_bearer_token(token: str) -> dict[str, Any] | None:
+    """Verify a Clerk session token and return its claims.
 
-
-def hash_password(password: str) -> str:
-    return password_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return password_context.verify(plain_password, hashed_password)
-
-
-def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
-    settings = get_settings()
-    expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=settings.access_token_expire_minutes)
-    )
-    payload: dict[str, Any] = {"sub": subject, "exp": expire, "type": "access"}
-    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
-
-
-def create_refresh_token(subject: str, expires_delta: timedelta | None = None) -> str:
-    settings = get_settings()
-    expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=settings.refresh_token_expire_minutes)
-    )
-    payload: dict[str, Any] = {"sub": subject, "exp": expire, "type": "refresh"}
-    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
-
-
-def decode_access_token(token: str) -> str | None:
-    settings = get_settings()
-    try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        subject = payload.get("sub")
-        return subject if isinstance(subject, str) and payload.get("type") == "access" else None
-    except JWTError:
+    Returns ``None`` when the token is missing or cannot be verified so
+    callers can raise the appropriate HTTP/websocket rejection.
+    """
+    if not token:
         return None
-
-
-def decode_refresh_token(token: str) -> str | None:
-    settings = get_settings()
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        subject = payload.get("sub")
-        return subject if isinstance(subject, str) and payload.get("type") == "refresh" else None
-    except JWTError:
+        return await verify_clerk_token(token)
+    except ClerkError:
         return None

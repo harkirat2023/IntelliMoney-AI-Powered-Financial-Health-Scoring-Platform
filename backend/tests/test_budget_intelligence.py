@@ -7,7 +7,6 @@ from fastapi import HTTPException
 
 from app.api.deps import get_current_user
 from app.api.routes import auth, budget_intelligence_v2
-from app.schemas.user import UserCreate, UserLogin
 
 
 def run(coro):
@@ -195,19 +194,21 @@ def matches(item, query):
 
 def make_user(email="bi_test@example.com"):
     db = FakeDb()
-    token = run(
-        auth.register(
-            UserCreate(
-                name="BI Test User",
-                email=email,
-                password="password123",
-                monthly_income=80000,
-            ),
-            db,
-        )
-    )
-    user_doc = db.users.items[0]
-    return db, token, user_doc
+    from app.utils.date_utils import utc_now
+
+    user_doc = {
+        "_id": ObjectId(),
+        "clerk_user_id": f"user_{email.split('@')[0]}",
+        "name": "BI Test User",
+        "email": email,
+        "monthly_income": 80000,
+        "is_verified": True,
+        "is_onboarded": False,
+        "auth_provider": "clerk",
+        "created_at": utc_now(),
+    }
+    run(db.users.insert_one(user_doc))
+    return db, user_doc, user_doc
 
 
 def seed_budget_usage(db, user_id, categories=None):

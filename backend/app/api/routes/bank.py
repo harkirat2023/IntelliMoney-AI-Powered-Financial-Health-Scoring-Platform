@@ -7,6 +7,7 @@ from app.api.deps import get_current_user
 from app.db.mongodb import get_database
 from app.infrastructure.bank_integration import MockBankProvider
 from app.infrastructure.bank_integration.consent_manager import BankProviderRegistry, ConsentManager
+from app.infrastructure.bank_integration.setu_sandbox import setu_sandbox_provider
 from app.infrastructure.database.repositories.bank_repository import MongoBankAccountRepository
 from app.infrastructure.database.repositories.consent_repository import MongoConsentRepository
 from app.infrastructure.database.repositories.import_preference_repository import MongoImportPreferenceRepository
@@ -27,6 +28,7 @@ router = APIRouter(prefix="/bank", tags=["bank"])
 
 def _get_bank_service(db: AsyncIOMotorDatabase = Depends(get_database)) -> BankService:
     registry = BankProviderRegistry()
+    registry.register("setu", setu_sandbox_provider)
     registry.register("mock", MockBankProvider())
     repo = MongoBankAccountRepository(db)
     consent_repo = MongoConsentRepository(db)
@@ -36,6 +38,7 @@ def _get_bank_service(db: AsyncIOMotorDatabase = Depends(get_database)) -> BankS
 
 def _get_sync_service(db: AsyncIOMotorDatabase = Depends(get_database)) -> SyncService:
     registry = BankProviderRegistry()
+    registry.register("setu", setu_sandbox_provider)
     registry.register("mock", MockBankProvider())
     return SyncService(
         bank_repo=MongoBankAccountRepository(db),

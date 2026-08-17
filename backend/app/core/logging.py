@@ -41,7 +41,6 @@ def setup_logging() -> None:
     root.addHandler(handler)
     root.setLevel(getattr(logging, settings.log_level.upper(), logging.INFO))
 
-    logging.getLogger("passlib").setLevel(logging.ERROR)
     logging.getLogger("jose").setLevel(logging.ERROR)
 
 

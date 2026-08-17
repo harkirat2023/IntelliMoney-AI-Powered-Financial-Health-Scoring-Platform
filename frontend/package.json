@@ -8,6 +8,7 @@
     "start": "webpack serve --mode development"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.9",
     "autoprefixer": "^10.5.2",
     "axios": "^1.7.9",
     "clsx": "^2.1.1",

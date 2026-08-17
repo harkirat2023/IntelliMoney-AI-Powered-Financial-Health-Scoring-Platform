@@ -19,10 +19,6 @@ class Settings(BaseSettings):
     app_name: str = "IntelliMoney"
     version: str = "1.0.0"
     environment: str = "development"
-    secret_key: str
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24
-    refresh_token_expire_minutes: int = 60 * 24 * 7
     rate_limit_auth_enabled: bool = True
     rate_limit_auth_max_requests: int = 10
     rate_limit_auth_window_seconds: int = 60
@@ -46,6 +42,18 @@ class Settings(BaseSettings):
 
     bank_encryption_key: str
     bank_consent_redirect_base: str = "http://localhost:5173/connect-bank/consent"
+
+    clerk_frontend_api: str = ""
+    clerk_publishable_key: str = ""
+    clerk_secret_key: str = ""
+    clerk_jwt_authorized_parties: str = ""
+
+    setu_client_id: str = ""
+    setu_client_secret: str = ""
+    setu_product_instance_id: str = ""
+    setu_base_url: str = "https://api.setu.co"
+    setu_environment: str = "sandbox"
+    aa_allow_demo_fallback: bool = True
 
     processing: ProcessingSettings = ProcessingSettings()
 

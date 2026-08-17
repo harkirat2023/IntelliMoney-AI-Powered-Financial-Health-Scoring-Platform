@@ -5,18 +5,6 @@ from pydantic import BaseModel, EmailStr, Field
 from app.schemas.common import PyObjectId
 
 
-class UserCreate(BaseModel):
-    name: str = Field(min_length=2, max_length=80)
-    email: EmailStr
-    password: str = Field(min_length=6, max_length=128)
-    monthly_income: float = Field(default=0, ge=0)
-
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-
 class UserPublic(BaseModel):
     id: PyObjectId
     name: str
@@ -24,11 +12,11 @@ class UserPublic(BaseModel):
     monthly_income: float
     is_verified: bool = False
     is_onboarded: bool = False
+    clerk_user_id: str | None = None
     created_at: datetime
+    updated_at: datetime | None = None
 
 
-class Token(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    user: UserPublic
+class ClerkSyncRequest(BaseModel):
+    name: str | None = Field(default=None, max_length=80)
+    monthly_income: float | None = Field(default=None, ge=0)

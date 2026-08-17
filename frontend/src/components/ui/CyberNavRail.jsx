@@ -3,37 +3,41 @@ import { motion } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";
 
 import {
-  Activity, AlertTriangle, BarChart3, Bot, Building2, CreditCard,
-  Database, FileText, LayoutDashboard, PieChart, Receipt,
-  LogOut, RefreshCw, Settings, Target, WalletCards,
+  Activity, AlertTriangle, BarChart3, Bot, Building2,
+  CreditCard, Database, FileText, LayoutDashboard, PieChart,
+  Receipt, LogOut, RefreshCw, Settings, Target, WalletCards,
+  ShieldCheck,
 } from "lucide-react";
 
 const iconMap = {
   Activity, AlertTriangle, BarChart3, Bot, Building2,
   CreditCard, Database, FileText, LayoutDashboard, PieChart,
-  Receipt, RefreshCw, Settings, Target, WalletCards,
+  Receipt, RefreshCw, Settings, ShieldCheck, Target, WalletCards,
 };
 
 const navItems = [
-  { to: "/app", label: "Dashboard", icon: BarChart3, end: true },
+  { to: "/app/dashboard", label: "Dashboard", icon: BarChart3, end: true },
   { to: "/app/expenses", label: "Expenses", icon: CreditCard },
   { to: "/app/budgets", label: "Budgets", icon: WalletCards },
-  { to: "/app/reports", label: "Reports", icon: FileText },
-  { to: "/app/recurring", label: "Recurring", icon: RefreshCw },
-  { to: "/app/anomaly", label: "Anomaly", icon: AlertTriangle },
-  { to: "/app/subscriptions", label: "Subscriptions", icon: RefreshCw },
+  { to: "/app/budget-intelligence", label: "Budget Intel", icon: PieChart },
+  { to: "/app/health", label: "Health Score", icon: Activity },
+  { to: "/app/copilot", label: "AI Copilot", icon: Bot },
+  { to: "/app/goals", label: "Goals", icon: Target },
+];
+
+const integrationsItems = [
+  { to: "/app/bank-accounts", label: "Bank Accounts", icon: Building2 },
+  { to: "/app/aa-sandbox", label: "AA Sandbox", icon: ShieldCheck },
   { to: "/app/sync", label: "Data Sync", icon: Database },
 ];
 
 const v2Items = [
-  { to: "/app/dashboard", label: "Dashboard V2", icon: LayoutDashboard },
-  { to: "/app/health", label: "Health V2", icon: Activity },
-  { to: "/app/budget-intelligence", label: "Budget Intel", icon: PieChart },
-  { to: "/app/copilot", label: "AI Copilot", icon: Bot },
-  { to: "/app/goals", label: "Goals", icon: Target },
+  { to: "/app/reports", label: "Reports", icon: FileText },
+  { to: "/app/recurring", label: "Recurring", icon: RefreshCw },
+  { to: "/app/anomaly", label: "Anomaly", icon: AlertTriangle },
+  { to: "/app/subscriptions", label: "Subscriptions", icon: RefreshCw },
   { to: "/app/receipts", label: "Receipts", icon: Receipt },
   { to: "/app/budget-optimizer", label: "Budget Optimizer", icon: Settings },
-  { to: "/app/bank-accounts", label: "Bank Accounts", icon: Building2 },
 ];
 
 function NavItem({ to, label, icon: Icon, end }) {
@@ -73,7 +77,13 @@ export default function CyberNavRail() {
           <NavItem key={item.to} {...item} />
         ))}
         <div className="neon-mono" style={{padding:"16px 14px 8px",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase"}}>
-          Advanced
+          Integrations
+        </div>
+        {integrationsItems.map((item) => (
+          <NavItem key={item.to} {...item} />
+        ))}
+        <div className="neon-mono" style={{padding:"16px 14px 8px",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase"}}>
+          Insights
         </div>
         {v2Items.map((item) => (
           <NavItem key={item.to} {...item} />

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routes import (
-    alerts, analytics, anomaly, auth, bank, budgets, budget_intelligence_v2,
+    alerts, analytics, anomaly, aa, auth, bank, budgets, budget_intelligence_v2,
     budget_suggestion, consent, copilot_v2, dashboard_v2,
     expenses, financial_health, goal_planning_v2, health_v2, import_preference,
     ml, receipt_ocr_v2, recommendations, recurring,
@@ -32,6 +32,9 @@ router.include_router(bank.router, tags=["bank"])
 router.include_router(consent.router, tags=["consent"])
 router.include_router(import_preference.router, tags=["import_preference"])
 router.include_router(sync.router, tags=["sync"])
+
+# Account Aggregator Sandbox (Setu AA Sandbox / Demo)
+router.include_router(aa.router, tags=["account-aggregator"])
 
 # AI & V2 Intelligence Engines
 router.include_router(ml.router, tags=["ml"])

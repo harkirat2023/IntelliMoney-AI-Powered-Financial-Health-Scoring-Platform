@@ -1,29 +1,46 @@
 from typing import Any
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.core.security import decode_access_token
+from app.core.clerk import upsert_clerk_user
+from app.core.security import validate_bearer_token
 from app.db.mongodb import get_database
-from app.services.serializers import to_object_id
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> dict[str, Any]:
-    user_id = decode_access_token(token)
-    if not user_id:
+    """Resolve the authenticated Clerk user.
+
+    The frontend attaches the Clerk session token as a Bearer token. The
+    token is verified against Clerk's JWKS and the matching local user
+    profile (keyed by ``clerk_user_id``) is returned.
+
+    Every financial resource is owned by this authenticated user; a
+    client-provided user ID is never trusted for authorization.
+    """
+    if credentials is None or not credentials.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    claims = await validate_bearer_token(credentials.credentials)
+    if not claims:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-    object_id = to_object_id(user_id)
-    user = await db.users.find_one({"_id": object_id})
+    user = await upsert_clerk_user(db, claims)
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
     return user

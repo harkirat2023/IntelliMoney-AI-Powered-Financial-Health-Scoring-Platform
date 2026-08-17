@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import PageLoader from "./components/PageLoader";
+import { useAuth } from "./auth/AuthContext";
 
 const AppLayout = lazy(() => import("./layouts/AppLayout"));
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout"));
@@ -69,6 +70,7 @@ const ManageAccounts = lazy(() => import("./pages/ManageAccounts"));
 const ImportPreference = lazy(() => import("./pages/ImportPreference"));
 const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const CompletePage = lazy(() => import("./pages/CompletePage"));
+const AASandboxPage = lazy(() => import("./pages/AA_Sandbox"));
 
 export default function App() {
   return (
@@ -110,6 +112,7 @@ export default function App() {
           <Route path="recurring" element={<Suspense fallback={<PageLoader />}><Recurring /></Suspense>} />
           <Route path="anomaly" element={<Suspense fallback={<PageLoader />}><Anomaly /></Suspense>} />
           <Route path="bank-accounts" element={<Suspense fallback={<PageLoader />}><ManageAccounts /></Suspense>} />
+          <Route path="aa-sandbox" element={<Suspense fallback={<PageLoader />}><AASandboxPage /></Suspense>} />
           <Route path="sync" element={<Suspense fallback={<PageLoader />}><Sync /></Suspense>} />
           <Route path="sync/history" element={<Suspense fallback={<PageLoader />}><SyncHistory /></Suspense>} />
           <Route path="sync/status" element={<Suspense fallback={<PageLoader />}><SyncStatus /></Suspense>} />
@@ -165,6 +168,6 @@ export default function App() {
 }
 
 function CatchAllRedirect() {
-  const token = localStorage.getItem("intellimoney_token");
-  return <Navigate to={token ? "/app" : "/"} replace />;
+  const { user } = useAuth();
+  return <Navigate to={user ? "/app" : "/"} replace />;
 }

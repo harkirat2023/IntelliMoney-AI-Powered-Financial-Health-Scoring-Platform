@@ -1,33 +1,36 @@
 import asyncio
+import os
 from datetime import date, timedelta
 
-from app.core.security import hash_password
+from bson import ObjectId
+
 from app.db.mongodb import close_mongo_connection, connect_to_mongo, get_database
 from app.services.ml_service import categorizer
 from app.services.serializers import date_to_datetime, utc_now
 
 
 DEMO_EMAIL = "demo@example.com"
-DEMO_PASSWORD = "password123"
+DEMO_CLERK_USER_ID = os.getenv("DEMO_CLERK_USER_ID", "")
 
 
 async def seed() -> None:
     await connect_to_mongo()
     db = get_database()
+
     existing = await db.users.find_one({"email": DEMO_EMAIL})
     if existing:
         user_id = existing["_id"]
-        await db.users.update_one(
-            {"_id": user_id},
-            {"$set": {"hashed_password": hash_password(DEMO_PASSWORD), "monthly_income": 60000}},
-        )
     else:
         result = await db.users.insert_one(
             {
+                "_id": ObjectId(),
                 "name": "Demo User",
                 "email": DEMO_EMAIL,
-                "hashed_password": hash_password(DEMO_PASSWORD),
+                "clerk_user_id": DEMO_CLERK_USER_ID or "demo_clerk_user",
                 "monthly_income": 60000,
+                "is_verified": True,
+                "is_onboarded": True,
+                "auth_provider": "clerk",
                 "created_at": utc_now(),
             }
         )
@@ -71,7 +74,7 @@ async def seed() -> None:
         )
 
     await close_mongo_connection()
-    print(f"Seeded demo account: {DEMO_EMAIL} / {DEMO_PASSWORD}")
+    print(f"Seeded demo account: {DEMO_EMAIL} (Clerk user: {DEMO_CLERK_USER_ID or 'demo_clerk_user'})")
 
 
 if __name__ == "__main__":

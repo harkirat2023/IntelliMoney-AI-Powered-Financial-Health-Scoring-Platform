@@ -57,6 +57,7 @@ module.exports = (env, argv) => {
         "process.env": JSON.stringify({
           API_BASE_URL: process.env.API_BASE_URL || "/api/v1",
           VITE_WS_HOST: process.env.VITE_WS_HOST || "",
+          VITE_CLERK_PUBLISHABLE_KEY: process.env.VITE_CLERK_PUBLISHABLE_KEY || "",
         }),
       }),
     ],

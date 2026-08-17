@@ -29,6 +29,7 @@ async def connect_to_mongo() -> None:
         )
         database = client[settings.mongodb_db]
         await database.users.create_index("email", unique=True)
+        await database.users.create_index("clerk_user_id", unique=True, sparse=True)
         connection_error = None
     except Exception as exc:
         connection_error = f"{type(exc).__name__}: {exc}"
@@ -67,6 +68,13 @@ async def connect_to_mongo() -> None:
     await database.consents.create_index([("user_id", 1), ("bank_account_id", 1)])
     await database.consents.create_index([("bank_account_id", 1)])
     await database.consents.create_index([("consent_status", 1), ("expires_at", 1)])
+
+    await database.aa_consents.create_index([("user_id", 1), ("created_at", -1)])
+    await database.aa_consents.create_index([("consent_handle", 1)], unique=True)
+    await database.aa_consents.create_index([("consent_status", 1)])
+    await database.aa_data_sessions.create_index([("user_id", 1), ("created_at", -1)])
+    await database.aa_data_sessions.create_index([("session_id", 1)], unique=True)
+    await database.aa_data_sessions.create_index([("consent_id", 1), ("data_status", 1)])
 
     await database.import_preferences.create_index(
         [("user_id", 1), ("bank_account_id", 1)], unique=True,

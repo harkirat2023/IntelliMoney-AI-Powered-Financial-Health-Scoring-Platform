@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 
-import tiktoken
 from langchain_groq import ChatGroq
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
@@ -11,18 +10,21 @@ logger = logging.getLogger(__name__)
 
 
 class TokenCounter:
-    _enc = tiktoken.get_encoding("cl100k_base")
+    """Lightweight token estimator (used for usage reporting only).
+
+    The backend LLM is Groq; we do not depend on an OpenAI tokenizer.
+    """
 
     @classmethod
     def count(cls, text: str) -> int:
-        return len(cls._enc.encode(text))
+        return max(1, len(text) // 4)
 
     @classmethod
     def truncate(cls, text: str, max_tokens: int = 3000) -> str:
-        tokens = cls._enc.encode(text)
-        if len(tokens) <= max_tokens:
+        max_chars = max_tokens * 4
+        if len(text) <= max_chars:
             return text
-        return cls._enc.decode(tokens[:max_tokens])
+        return text[:max_chars]
 
 
 class LLMService:

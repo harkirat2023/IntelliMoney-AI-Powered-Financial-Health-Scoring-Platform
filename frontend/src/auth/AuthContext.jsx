@@ -1,98 +1,98 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useAuth as useClerkAuth, useUser as useClerkUser } from "@clerk/clerk-react";
 
+import { CLERK_PUBLISHABLE_KEY } from "../config";
 import { api } from "../api/client";
-
-const TOKEN_KEY = "intellimoney_token";
-const REFRESH_KEY = "intellimoney_refresh";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+function UnconfiguredProvider({ children }) {
+  const value = useMemo(
+    () => ({
+      user: null,
+      loading: false,
+      isSignedIn: false,
+      clerkConfigured: false,
+      logout: async () => {},
+      completeOnboarding: async () => null,
+      refreshUser: async () => null,
+      getToken: async () => null,
+    }),
+    [],
+  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function ClerkAuthProvider({ children }) {
+  const { isLoaded: clerkLoaded, isSignedIn, getToken, signOut } = useClerkAuth();
+  const { user: clerkUser } = useClerkUser();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const refreshingRef = useRef(false);
+  const [syncing, setSyncing] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    api
-      .get("/auth/me")
-      .then((response) => setUser(response.data))
-      .catch(() => { clearAuth(); })
-      .finally(() => setLoading(false));
-  }, []);
-
-  function clearAuth() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-    setUser(null);
-  }
-
-  function storeAuth(accessToken, refreshToken, userData) {
-    localStorage.setItem(TOKEN_KEY, accessToken);
-    if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
-    setUser(userData);
-  }
-
-  async function refreshToken() {
-    const storedRefresh = localStorage.getItem(REFRESH_KEY);
-    if (!storedRefresh) {
-      clearAuth();
+  const syncUser = useCallback(async () => {
+    if (!isSignedIn || !clerkUser) {
+      setUser(null);
       return null;
     }
     try {
-      const res = await api.post("/auth/refresh", { refresh_token: storedRefresh });
-      const { access_token, refresh_token, user: userData } = res.data;
-      localStorage.setItem(TOKEN_KEY, access_token);
-      if (refresh_token) localStorage.setItem(REFRESH_KEY, refresh_token);
-      setUser(userData);
-      return access_token;
-    } catch {
-      clearAuth();
+      const res = await api.post("/auth/clerk-sync", {
+        name: clerkUser.fullName || clerkUser.firstName || "",
+        email: clerkUser.primaryEmailAddress?.emailAddress || "",
+        monthly_income: clerkUser.unsafeMetadata?.monthly_income || null,
+      });
+      setUser(res.data);
+      return res.data;
+    } catch (err) {
+      setUser(null);
       return null;
     }
-  }
+  }, [isSignedIn, clerkUser]);
 
-  async function login(email, password) {
-    const response = await api.post("/auth/login", { email, password });
-    storeAuth(response.data.access_token, response.data.refresh_token, response.data.user);
-  }
+  useEffect(() => {
+    if (!clerkLoaded) return;
+    if (isSignedIn) {
+      setSyncing(true);
+      syncUser().finally(() => setSyncing(false));
+    } else {
+      setUser(null);
+      setSyncing(false);
+    }
+  }, [clerkLoaded, isSignedIn, syncUser]);
 
-  async function register(payload) {
-    const response = await api.post("/auth/register", payload);
-    storeAuth(response.data.access_token, response.data.refresh_token, response.data.user);
-  }
+  const completeOnboarding = useCallback(async () => {
+    const res = await api.post("/auth/onboarding/complete");
+    setUser(res.data);
+    return res.data;
+  }, []);
 
-  async function sendOtp() {
-    const response = await api.post("/auth/send-otp");
-    return response.data;
-  }
+  const refreshUser = useCallback(() => syncUser(), [syncUser]);
 
-  async function verifyOtp(otp) {
-    const response = await api.post("/auth/verify-otp", { otp });
-    storeAuth(response.data.access_token, response.data.refresh_token, response.data.user);
-  }
+  const logout = useCallback(() => signOut(), [signOut]);
 
-  async function completeOnboarding() {
-    const response = await api.post("/auth/onboarding/complete");
-    setUser(response.data);
-  }
-
-  function logout() {
-    clearAuth();
-  }
+  const loading = !clerkLoaded || syncing;
 
   const value = useMemo(
     () => ({
-      user, loading, login, register, logout, refreshToken, refreshingRef,
-      sendOtp, verifyOtp, completeOnboarding,
+      user,
+      loading,
+      isSignedIn,
+      clerkConfigured: true,
+      logout,
+      completeOnboarding,
+      refreshUser,
+      getToken,
     }),
-    [user, loading, refreshToken],
+    [user, loading, isSignedIn, logout, completeOnboarding, refreshUser, getToken],
   );
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function AuthProvider({ children }) {
+  if (!CLERK_PUBLISHABLE_KEY) {
+    return <UnconfiguredProvider>{children}</UnconfiguredProvider>;
+  }
+  return <ClerkAuthProvider>{children}</ClerkAuthProvider>;
 }
 
 export function useAuth() {
