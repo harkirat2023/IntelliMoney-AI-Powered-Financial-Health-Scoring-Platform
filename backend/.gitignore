@@ -1,2 +1,22 @@
-# Created by venv; see https://docs.python.org/3/library/venv.html
-*
+# Python / virtual environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Caches & tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environment (secrets stay out of git)
+.env
+
+# Generated / runtime data
+app/copilot/data/
+*.joblib
+
+# Logs
+logs/
+*.log
