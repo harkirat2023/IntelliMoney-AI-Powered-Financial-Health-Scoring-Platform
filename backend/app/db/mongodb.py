@@ -62,7 +62,7 @@ async def connect_to_mongo() -> None:
     await database.subscriptions.create_index([("user_id", 1), ("next_payment_date", 1)])
     await database.bank_accounts.create_index([("user_id", 1), ("connection_status", 1)])
     await database.bank_accounts.create_index([("user_id", 1), ("provider", 1)])
-    await database.bank_accounts.create_index([("consent_handle", 1)])
+    await database.bank_accounts.create_index([("consent_handle", 1)], unique=True, sparse=True)
     await database.bank_accounts.create_index([("consent_expiry", 1)], expireAfterSeconds=0)
 
     await database.consents.create_index([("user_id", 1), ("bank_account_id", 1)])
