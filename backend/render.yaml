@@ -47,7 +47,7 @@ services:
       - key: CLERK_SECRET_KEY
         sync: false
       - key: CLERK_JWT_AUTHORIZED_PARTIES
-        sync: false
+        value: https://intellimoney.vercel.app,http://localhost:5173
       - key: SETU_CLIENT_ID
         sync: false
       - key: SETU_CLIENT_SECRET

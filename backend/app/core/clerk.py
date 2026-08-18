@@ -49,19 +49,40 @@ class ClerkVerifier:
         return bool(self._frontend_api)
 
     @property
-    def app_id(self) -> str | None:
-        """Derive the Clerk application ID from the publishable key.
+    def issuer(self) -> str | None:
+        """Expected ``iss`` claim: ``https://<CLERK_FRONTEND_API>``.
 
-        Publishable keys look like ``pk_test_<application_id>`` or
-        ``pk_live_<application_id>``. The token's ``azp`` claim must match
-        this value when it is available.
+        Clerk session tokens are always issued by the frontend API
+        domain of the Clerk instance that minted them.
         """
-        if not self._publishable_key:
-            return None
-        for prefix in ("pk_test_", "pk_live_"):
-            if self._publishable_key.startswith(prefix):
-                return self._publishable_key[len(prefix):]
-        return None
+        return f"https://{self._frontend_api}" if self._frontend_api else None
+
+    @property
+    def authorized_parties(self) -> set[str]:
+        """Origins allowed to present a token for this application.
+
+        Clerk puts the requesting application origin in the ``azp`` claim
+        (for example ``https://intellimoney.vercel.app``). The allow-list
+        comes from ``CLERK_JWT_AUTHORIZED_PARTIES`` (comma separated) and
+        always includes the Clerk frontend API origin, matching Clerk's own
+        SDK behaviour.
+        """
+        raw = get_settings().clerk_jwt_authorized_parties or ""
+        parties = {p.strip().rstrip("/") for p in raw.split(",") if p.strip()}
+        if self.issuer:
+            parties.add(self.issuer)
+        return parties
+
+    @property
+    def azp_check_enabled(self) -> bool:
+        """Whether the ``azp`` origin allow-list is configured.
+
+        Mirroring Clerk's SDK, the origin check is only enforced when the
+        operator has explicitly configured ``CLERK_JWT_AUTHORIZED_PARTIES``.
+        Signature + issuer + subject + session checks always apply.
+        """
+        raw = (get_settings().clerk_jwt_authorized_parties or "").strip()
+        return bool(raw)
 
     async def _load_jwks(self) -> None:
         if not self.configured:
@@ -116,13 +137,27 @@ class ClerkVerifier:
         except JWTError as exc:
             raise ClerkError(f"Invalid Clerk token: {exc}") from exc
 
+        return self._validate_claims(claims)
+
+    def _validate_claims(self, claims: dict[str, Any]) -> dict[str, Any]:
+        """Validate the identity claims of a verified Clerk token.
+
+        The signature is already pinned to this Clerk instance through its
+        JWKS; these checks additionally bind the token to the expected
+        issuer and, when an origin allow-list is configured, to an
+        authorized party. Neither check weakens authentication.
+        """
         subject = claims.get("sub")
         if not subject:
             raise ClerkError("Clerk token has no subject")
 
-        app_id = self.app_id
-        if app_id and claims.get("azp") and claims.get("azp") != app_id:
-            raise ClerkError("Clerk token issued for a different application")
+        issuer = self.issuer
+        if issuer and claims.get("iss") and claims.get("iss") != issuer:
+            raise ClerkError("Clerk token issued by an unexpected application")
+
+        azp = claims.get("azp")
+        if azp and self.azp_check_enabled and azp not in self.authorized_parties:
+            raise ClerkError("Clerk token issued for an unexpected authorized party")
 
         if not claims.get("sid"):
             raise ClerkError("Clerk token has no session id")
@@ -142,12 +177,16 @@ async def verify_clerk_token(token: str) -> dict[str, Any]:
     return await _verifier.verify(token)
 
 
-async def upsert_clerk_user(db, claims: dict[str, Any]) -> dict[str, Any]:
+async def upsert_clerk_user(db, claims: dict[str, Any]) -> tuple[dict[str, Any], bool]:
     """Find or create the local user profile for an authenticated Clerk user.
 
     The user's ``clerk_user_id`` references the Clerk identity. The
     ``_id`` remains a Mongo ``ObjectId`` so that every existing
     user-owned financial record keeps working unchanged.
+
+    Returns ``(user, created)`` where ``created`` is ``True`` only when the
+    profile document was just inserted (i.e. the Clerk subject is new to
+    IntelliMoney).
     """
     from bson import ObjectId
 
@@ -156,7 +195,7 @@ async def upsert_clerk_user(db, claims: dict[str, Any]) -> dict[str, Any]:
     clerk_sub = claims["sub"]
     user = await db.users.find_one({"clerk_user_id": clerk_sub})
     if user:
-        return user
+        return user, False
 
     email = ""
     for ident in claims.get("claims", {}).get("email_addresses", []):
@@ -185,8 +224,8 @@ async def upsert_clerk_user(db, claims: dict[str, Any]) -> dict[str, Any]:
     except Exception:
         existing = await db.users.find_one({"clerk_user_id": clerk_sub})
         if existing:
-            return existing
+            return existing, False
         raise
     document["_id"] = result.inserted_id
     logger.info("Created local user profile for Clerk user", extra={"clerk_user_id": clerk_sub})
-    return document
+    return document, True

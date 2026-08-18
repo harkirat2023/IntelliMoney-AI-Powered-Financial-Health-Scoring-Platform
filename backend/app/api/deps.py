@@ -37,7 +37,7 @@ async def get_current_user(
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = await upsert_clerk_user(db, claims)
+    user, _ = await upsert_clerk_user(db, claims)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

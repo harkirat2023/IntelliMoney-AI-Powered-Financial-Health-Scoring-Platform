@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Landmark, CreditCard, ArrowRight, Shield, AlertCircle, Loader2 } from "lucide-react";
 import { bankApi } from "../api/bank";
+import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 
 const providers = [
@@ -33,7 +34,7 @@ const providers = [
 
 export default function ConnectBank() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -61,6 +62,24 @@ export default function ConnectBank() {
         return;
       }
       setError(err.response?.data?.detail || "Failed to connect. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await api.post("/auth/onboarding/complete");
+      await refreshUser();
+      navigate("/app", { replace: true });
+    } catch (err) {
+      if (err.response?.status === 401) {
+        navigate("/login", { replace: true });
+        return;
+      }
+      setError(err.response?.data?.detail || "Could not skip setup right now. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -159,6 +178,14 @@ export default function ConnectBank() {
             <><ArrowRight size={18} /> {selected ? `Connect via ${selected.name}` : "Select a Provider"}
             </>
           )}
+        </button>
+
+        <button
+          onClick={handleSkip}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 mt-3 text-sm font-medium text-neutral-600 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Skip for now
         </button>
       </div>
     </div>

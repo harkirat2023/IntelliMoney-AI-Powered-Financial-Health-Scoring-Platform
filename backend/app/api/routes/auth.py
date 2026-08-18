@@ -43,7 +43,7 @@ async def clerk_sync(
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = await upsert_clerk_user(db, claims)
+    user, is_new_user = await upsert_clerk_user(db, claims)
     update: dict[str, Any] = {}
     if payload and payload.name:
         update["name"] = payload.name
@@ -55,7 +55,7 @@ async def clerk_sync(
         update["updated_at"] = utc_now()
         await db.users.update_one({"_id": user["_id"]}, {"$set": update})
         user = await db.users.find_one({"_id": user["_id"]})
-    return UserPublic(**serialize_document(user))
+    return UserPublic(**serialize_document(user), is_new_user=is_new_user)
 
 
 @router.post("/onboarding/complete", response_model=UserPublic)

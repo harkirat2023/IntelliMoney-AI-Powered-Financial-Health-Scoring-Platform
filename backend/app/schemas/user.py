@@ -12,6 +12,7 @@ class UserPublic(BaseModel):
     monthly_income: float
     is_verified: bool = False
     is_onboarded: bool = False
+    is_new_user: bool = False
     clerk_user_id: str | None = None
     created_at: datetime
     updated_at: datetime | None = None

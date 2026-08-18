@@ -56,5 +56,9 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
+  if (!user.is_onboarded) {
+    return <Navigate to="/connect-bank" replace />;
+  }
+
   return children;
 }

@@ -163,7 +163,7 @@ def test_clerk_token_validation_and_current_user_dependency():
             "created_at": utc_now(),
         }
         await db_.users.insert_one(doc)
-        return doc
+        return doc, True
 
     original_verify = deps.validate_bearer_token
     original_upsert = deps.upsert_clerk_user

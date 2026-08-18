@@ -2,26 +2,32 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle, ArrowRight, Building2, ExternalLink, Loader2 } from "lucide-react";
 import { bankApi } from "../api/bank";
+import { api } from "../api/client";
 import { BankCard } from "../components/bank/BankCard";
 import { useAuth } from "../auth/AuthContext";
 
 export default function ConnectSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const [accounts, setAccounts] = useState(location.state?.accounts || []);
   const [loading, setLoading] = useState(!accounts.length);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/login", { replace: true }); return; }
+    if (!user.is_onboarded) {
+      api.post("/auth/onboarding/complete")
+        .then(() => refreshUser())
+        .catch(() => {});
+    }
     if (!accounts.length) {
       bankApi.getAccounts()
         .then((res) => setAccounts(res.data))
         .catch(() => navigate("/connect-bank", { replace: true }))
         .finally(() => setLoading(false));
     }
-  }, [user, accounts.length, navigate]);
+  }, [user, authLoading, accounts.length, navigate, refreshUser]);
 
   if (loading) {
     return (
