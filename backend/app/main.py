@@ -12,7 +12,6 @@ from app.core.middleware.error_handler import global_exception_handler
 from app.core.middleware.request_id import RequestIDMiddleware
 from app.core.middleware.request_logger import RequestLoggerMiddleware
 from app.db.mongodb import close_mongo_connection, connect_to_mongo
-from app.infrastructure.cache.redis import cache_client
 from app.services.ml_service import categorizer
 
 
@@ -28,14 +27,9 @@ async def lifespan(app: FastAPI):
             logger.exception("%s failed to connect", name)
 
     await _run_task(connect_to_mongo(), "MongoDB")
-    asyncio.create_task(_run_task(cache_client.connect(), "Redis"))
     categorizer.load()
     logger.info("IntelliMoney backend started successfully")
     yield
-    try:
-        await cache_client.close()
-    except Exception:
-        pass
     try:
         await close_mongo_connection()
     except Exception:
@@ -100,6 +94,9 @@ async def health() -> dict:
 
 @app.get("/api/{path:path}")
 async def legacy_redirect(path: str):
+    if path.startswith("v1/"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Not Found")
     if path == "health":
         return await health()
     return RedirectResponse(url=f"/api/v1/{path}")

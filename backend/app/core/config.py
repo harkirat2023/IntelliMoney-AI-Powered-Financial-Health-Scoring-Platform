@@ -22,19 +22,10 @@ class Settings(BaseSettings):
     rate_limit_auth_enabled: bool = True
     rate_limit_auth_max_requests: int = 10
     rate_limit_auth_window_seconds: int = 60
-    smtp_host: str = ""
-    smtp_port: int = 587
-    smtp_user: str = ""
-    smtp_password: str = ""
-    smtp_from_email: str = ""
-    smtp_from_name: str = "IntelliMoney"
-    resend_api_key: str = ""
-    resend_from_email: str = "IntelliMoney <onboarding@resend.dev>"
     otp_expire_minutes: int = 10
     frontend_base_url: str = "http://localhost:5173"
     mongodb_url: str = "mongodb://localhost:27017"
     mongodb_db: str = "IntelliMoney"
-    redis_url: str = ""
     log_level: str = "INFO"
     cors_origins: Annotated[list[str], NoDecode] = Field(
         default=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:80", "http://localhost"],
@@ -63,9 +54,6 @@ class Settings(BaseSettings):
     groq_temperature: float = 0.3
     groq_max_tokens: int = 1024
     upload_dir: str = "uploads/receipts"
-
-    supabase_url: str = ""
-    supabase_service_key: str = ""
     ml_allow_fallback: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

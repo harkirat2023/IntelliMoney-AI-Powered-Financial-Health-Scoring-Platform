@@ -28,8 +28,5 @@ class StorageBackend(ABC):
 def get_storage_backend() -> StorageBackend:
     from app.core.config import get_settings
     settings = get_settings()
-    if settings.supabase_url and settings.supabase_service_key:
-        from app.infrastructure.storage.supabase import SupabaseStorage
-        return SupabaseStorage(settings.supabase_url, settings.supabase_service_key, "receipts")
     from app.infrastructure.storage.local import LocalStorage
     return LocalStorage(settings.upload_dir)
