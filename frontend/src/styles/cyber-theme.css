@@ -303,64 +303,6 @@
   color: var(--neutral-400);
 }
 
-/* ── Auth Pages ── */
-.auth-page {
-  background: var(--color-bg) !important;
-  background-image:
-    radial-gradient(ellipse at 20% 30%, rgba(16, 185, 129, 0.04) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 70%, rgba(59, 130, 246, 0.04) 0%, transparent 55%) !important;
-}
-
-.auth-panel {
-  background: var(--color-surface) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  border: 1px solid var(--neutral-200) !important;
-  border-radius: 16px !important;
-  box-shadow: var(--shadow-lg) !important;
-}
-
-.auth-panel h1,
-.auth-panel p {
-  color: var(--color-text) !important;
-}
-
-.auth-panel label {
-  color: var(--color-text-secondary) !important;
-}
-
-.auth-panel input {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--neutral-300) !important;
-  color: var(--color-text) !important;
-  border-radius: 10px !important;
-  min-height: 48px !important;
-}
-
-.auth-panel input:focus {
-  border-color: var(--brand-500) !important;
-  outline: 2px solid rgba(16, 185, 129, 0.15) !important;
-  outline-offset: -1px !important;
-}
-
-.auth-panel button[type="submit"] {
-  background: var(--brand-500) !important;
-  border: none !important;
-  color: #ffffff !important;
-  border-radius: 10px !important;
-  min-height: 44px !important;
-  font-weight: 600 !important;
-  transition: all 0.2s ease !important;
-}
-
-.auth-panel button[type="submit"]:hover {
-  background: var(--brand-600) !important;
-}
-
-.auth-panel a {
-  color: var(--brand-600) !important;
-}
-
 /* ── Override dashboard sub-navigation (light theme) ── */
 .dash-sub-nav {
   border-bottom: 1px solid var(--neutral-200) !important;

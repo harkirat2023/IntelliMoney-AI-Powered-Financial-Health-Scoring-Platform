@@ -168,6 +168,6 @@ export default function App() {
 }
 
 function CatchAllRedirect() {
-  const { user } = useAuth();
-  return <Navigate to={user ? "/app" : "/"} replace />;
+  const { isSignedIn } = useAuth();
+  return <Navigate to={isSignedIn ? "/app" : "/"} replace />;
 }

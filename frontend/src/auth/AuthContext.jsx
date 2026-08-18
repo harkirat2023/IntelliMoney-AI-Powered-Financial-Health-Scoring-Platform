@@ -11,10 +11,10 @@ function UnconfiguredProvider({ children }) {
     () => ({
       user: null,
       loading: false,
+      clerkLoaded: false,
       isSignedIn: false,
       clerkConfigured: false,
       logout: async () => {},
-      completeOnboarding: async () => null,
       refreshUser: async () => null,
       getToken: async () => null,
     }),
@@ -59,12 +59,6 @@ function ClerkAuthProvider({ children }) {
     }
   }, [clerkLoaded, isSignedIn, syncUser]);
 
-  const completeOnboarding = useCallback(async () => {
-    const res = await api.post("/auth/onboarding/complete");
-    setUser(res.data);
-    return res.data;
-  }, []);
-
   const refreshUser = useCallback(() => syncUser(), [syncUser]);
 
   const logout = useCallback(() => signOut(), [signOut]);
@@ -75,14 +69,14 @@ function ClerkAuthProvider({ children }) {
     () => ({
       user,
       loading,
+      clerkLoaded,
       isSignedIn,
       clerkConfigured: true,
       logout,
-      completeOnboarding,
       refreshUser,
       getToken,
     }),
-    [user, loading, isSignedIn, logout, completeOnboarding, refreshUser, getToken],
+    [user, loading, clerkLoaded, isSignedIn, logout, refreshUser, getToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
