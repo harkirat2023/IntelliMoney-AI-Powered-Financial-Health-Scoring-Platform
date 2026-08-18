@@ -55,7 +55,7 @@ class SuggestionResponse(BaseModel):
 
 
 class CopilotSettings(BaseModel):
-    model: str = "gpt-4o"
+    model: str = "llama3-8b-8192"
     temperature: float = Field(default=0.3, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, ge=64, le=4096)
     use_streaming: bool = True

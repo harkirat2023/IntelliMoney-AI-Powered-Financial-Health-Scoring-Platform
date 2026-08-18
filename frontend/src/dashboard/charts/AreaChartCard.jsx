@@ -1,7 +1,7 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { currency } from "../../utils/format";
 
-export default function AreaChartCard({ data, dataKey, color = "#2563eb", height = 260, title }) {
+export default function AreaChartCard({ data, dataKey, color = "#2563eb", height = 260, title, xDataKey = "month" }) {
   return (
     <article className="dash-panel">
       {title && <h3 className="dash-panel-title">{title}</h3>}
@@ -14,7 +14,7 @@ export default function AreaChartCard({ data, dataKey, color = "#2563eb", height
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5eaf2" />
-          <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#65738b" }} />
+          <XAxis dataKey={xDataKey} tick={{ fontSize: 12, fill: "#65738b" }} />
           <YAxis tick={{ fontSize: 12, fill: "#65738b" }} />
           <Tooltip formatter={(value) => currency(value)} />
           <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} fill={`url(#grad-${dataKey})`} />

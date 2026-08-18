@@ -69,7 +69,7 @@ export default function ReceiptsOverviewPage() {
       ) : (
         <div className="receipt-grid">
           {receipts.map((r) => (
-            <div key={r.id} className="receipt-card" onClick={() => navigate(`/app/receipts/${r.id}`)}>
+            <div key={r.id} className="receipt-card" onClick={() => navigate(`/app/receipts/review?id=${r.id}`)}>
               {r.image_preview_url && (
                 <img src={receiptsApi.getImageUrl(r.id)} alt={r.filename}
                   className="receipt-card-preview" onError={(e) => { e.target.style.display = "none"; }} />

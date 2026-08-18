@@ -27,7 +27,11 @@ export default function HealthHistoryPage() {
 
       <motion.div className="health-card" variants={item}>
         <h3>Score Over Time</h3>
-        <LineChartCard data={chartData} title="" lines={["Score", "Savings Rate", "Budget Adherence"]} colors={["#10b981", "#3b82f6", "#f59e0b"]} />
+        <LineChartCard data={chartData} title="" xDataKey="label" lines={[
+          { dataKey: "Score", color: "#10b981" },
+          { dataKey: "Savings Rate", color: "#3b82f6" },
+          { dataKey: "Budget Adherence", color: "#f59e0b" },
+        ]} />
       </motion.div>
 
       <motion.div className="health-card" variants={item}>

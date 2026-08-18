@@ -14,7 +14,7 @@ class HealthStore {
   }
 
   subscribe(fn) { this._listeners.push(fn); return () => { this._listeners = this._listeners.filter((l) => l !== fn); }; }
-  _notify() { this._listeners.forEach((fn) => fn(this)); }
+  _notify() { const snapshot = { ...this }; this._listeners.forEach((fn) => fn(snapshot)); }
   _set(key, val) { this[key] = val; this._notify(); }
 
   async calculate() {

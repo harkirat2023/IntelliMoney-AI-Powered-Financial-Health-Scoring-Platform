@@ -29,7 +29,7 @@ export default function ConsentPage() {
     if (!consentHandle || !provider) {
       navigate("/connect-bank", { replace: true });
     }
-    if (state && user?._id && state !== user._id) {
+    if (state && user?.id && state !== user.id) {
       setError("Invalid request. Please restart the connection.");
     }
   }, [user, authLoading, consentHandle, provider, state, navigate]);

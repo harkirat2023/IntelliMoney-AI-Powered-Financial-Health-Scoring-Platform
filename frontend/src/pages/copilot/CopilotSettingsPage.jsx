@@ -23,7 +23,7 @@ export default function CopilotSettingsPage() {
       <div className="settings-card">
         <div className="setting-row">
           <span className="setting-label">Model</span>
-          <span className="setting-value">{settings?.model || "gpt-4o"}</span>
+          <span className="setting-value">{settings?.model || "llama3-8b-8192"}</span>
         </div>
         <div className="setting-row">
           <span className="setting-label">Temperature</span>

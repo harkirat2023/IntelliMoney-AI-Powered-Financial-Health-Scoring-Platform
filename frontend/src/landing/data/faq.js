@@ -12,7 +12,7 @@ export const faqItems = [
   {
     question: "Is my financial data secure?",
     answer:
-      "Absolutely. All data is encrypted in transit via TLS 1.3 and at rest using AES-256. We use JWT-based authentication with bcrypt password hashing. Your data never leaves our secure infrastructure without your explicit consent.",
+      "Absolutely. All data is encrypted in transit via TLS 1.3 and at rest using AES-256. Sign-in is handled securely by Clerk, so IntelliMoney never stores passwords. Your data never leaves our secure infrastructure without your explicit consent.",
   },
   {
     question: "Can I connect my bank account?",
@@ -27,7 +27,7 @@ export const faqItems = [
   {
     question: "How does the AI Copilot work?",
     answer:
-      "The AI Copilot uses LangChain and GPT-based models to understand natural language questions about your finances. Ask things like 'What was my biggest expense last month?' or 'Can I afford a \u20b950,000 vacation?' and get instant, personalized answers based on your actual data.",
+      "The AI Copilot uses LangChain and Groq-hosted LLMs to understand natural language questions about your finances. Ask things like 'What was my biggest expense last month?' or 'Can I afford a \u20b950,000 vacation?' and get instant, personalized answers based on your actual data.",
   },
   {
     question: "Can I export my data?",

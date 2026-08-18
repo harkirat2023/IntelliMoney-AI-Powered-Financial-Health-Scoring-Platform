@@ -39,12 +39,12 @@ export default function HealthTrendsPage() {
 
       <motion.div className="health-card" variants={item}>
         <h3>Score Trend <span className={trendClass}>{trendLabel}</span></h3>
-        <AreaChartCard data={chartData} title="" dataKey="Score" color="#10b981" />
+        <AreaChartCard data={chartData} title="" dataKey="Score" color="#10b981" xDataKey="label" />
       </motion.div>
 
       <motion.div className="health-card" variants={item}>
         <h3>Period-over-Period Delta</h3>
-        <AreaChartCard data={chartData} title="" dataKey="Delta" color="#f59e0b" />
+        <AreaChartCard data={chartData} title="" dataKey="Delta" color="#f59e0b" xDataKey="label" />
       </motion.div>
     </motion.div>
   );

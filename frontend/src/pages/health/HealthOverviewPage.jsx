@@ -59,11 +59,11 @@ export default function HealthOverviewPage() {
       <motion.div className="health-grid-2" variants={item}>
         <div className="health-card">
           <h3>Factor Contribution</h3>
-          <PieChartCard data={pieData} title="" />
+          <PieChartCard data={pieData} title="" dataKey="value" nameKey="name" />
         </div>
         <div className="health-card">
           <h3>All Factors</h3>
-          <BarChartCard data={barData} title="" dataKey="value" />
+          <BarChartCard data={barData} title="" dataKey="value" xDataKey="name" />
         </div>
       </motion.div>
 
