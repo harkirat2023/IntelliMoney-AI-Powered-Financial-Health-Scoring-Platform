@@ -95,13 +95,13 @@ class ClerkVerifier:
 
         await self._load_jwks()
 
-        unverified_headers = jwt.get_unverified_headers(token)
-        kid = unverified_headers.get("kid")
-        key = next((k for k in (self._jwks or []) if k.get("kid") == kid), None)
-        if key is None:
-            raise ClerkError("Clerk token signed with an unknown key")
-
         try:
+            unverified_headers = jwt.get_unverified_headers(token)
+            kid = unverified_headers.get("kid")
+            key = next((k for k in (self._jwks or []) if k.get("kid") == kid), None)
+            if key is None:
+                raise ClerkError("Clerk token signed with an unknown key")
+
             claims = jwt.decode(
                 token,
                 key,

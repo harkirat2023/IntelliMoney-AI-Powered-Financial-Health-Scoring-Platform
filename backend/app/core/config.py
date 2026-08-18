@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     otp_expire_minutes: int = 10
     frontend_base_url: str = "http://localhost:5173"
     mongodb_url: str = "mongodb://localhost:27017"
-    mongodb_db: str = "intellimoney"
+    mongodb_db: str = "IntelliMoney"
     redis_url: str = ""
     log_level: str = "INFO"
     cors_origins: Annotated[list[str], NoDecode] = Field(
