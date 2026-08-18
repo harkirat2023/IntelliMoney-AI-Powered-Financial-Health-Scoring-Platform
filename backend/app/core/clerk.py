@@ -155,7 +155,7 @@ class ClerkVerifier:
         if issuer and claims.get("iss") and claims.get("iss") != issuer:
             raise ClerkError("Clerk token issued by an unexpected application")
 
-        azp = claims.get("azp")
+        azp = (claims.get("azp") or "").rstrip("/")
         if azp and self.azp_check_enabled and azp not in self.authorized_parties:
             raise ClerkError("Clerk token issued for an unexpected authorized party")
 

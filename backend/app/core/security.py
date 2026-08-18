@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import Any
 
 from app.core.clerk import ClerkError, verify_clerk_token
+from app.core.logging import logger
 
 
 async def validate_bearer_token(token: str) -> dict[str, Any] | None:
@@ -25,5 +26,6 @@ async def validate_bearer_token(token: str) -> dict[str, Any] | None:
         return None
     try:
         return await verify_clerk_token(token)
-    except ClerkError:
+    except ClerkError as exc:
+        logger.warning("Clerk token verification failed: %s", exc)
         return None
