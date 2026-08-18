@@ -47,6 +47,8 @@ async def clerk_sync(
     update: dict[str, Any] = {}
     if payload and payload.name:
         update["name"] = payload.name
+    if payload and payload.email:
+        update["email"] = payload.email.strip().lower()
     if payload and payload.monthly_income is not None:
         update["monthly_income"] = payload.monthly_income
     if update:

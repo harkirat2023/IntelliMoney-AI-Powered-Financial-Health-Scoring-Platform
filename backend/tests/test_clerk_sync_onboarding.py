@@ -72,6 +72,15 @@ def make_claims(sub="user_new_1", email="aarav@example.com"):
     }
 
 
+def make_claims_without_email(sub="user_new_2"):
+    return {
+        "sub": sub,
+        "sid": f"session_{sub}",
+        "first_name": "Aarav",
+        "last_name": "Sharma",
+    }
+
+
 def bearer(token="clerk-test-token"):
     return HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
 
@@ -167,6 +176,34 @@ def test_clerk_sync_missing_credentials_rejected():
         run(auth.clerk_sync(payload=None, credentials=None, db=FakeDb()))
 
     assert excinfo.value.status_code == 401
+
+
+def test_clerk_sync_uses_client_email_when_token_has_none(monkeypatch):
+    db = FakeDb()
+    set_valid_token(monkeypatch, make_claims_without_email())
+    from app.schemas.user import ClerkSyncRequest
+
+    result = run(
+        auth.clerk_sync(
+            payload=ClerkSyncRequest(name="Aarav Sharma", email="aarav@example.com"),
+            credentials=bearer(),
+            db=db,
+        )
+    )
+
+    assert result.is_new_user is True
+    assert result.email == "aarav@example.com"
+    assert run(db.users.find_one({"clerk_user_id": "user_new_2"}))["email"] == "aarav@example.com"
+
+
+def test_clerk_sync_tolerates_missing_email(monkeypatch):
+    db = FakeDb()
+    set_valid_token(monkeypatch, make_claims_without_email())
+
+    result = run(auth.clerk_sync(payload=None, credentials=bearer(), db=db))
+
+    assert result.email is None
+    assert len(db.users.items) == 1
 
 
 def test_complete_onboarding_persists_flag(monkeypatch):
