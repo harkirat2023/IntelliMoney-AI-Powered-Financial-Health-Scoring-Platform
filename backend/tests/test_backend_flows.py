@@ -7,10 +7,9 @@ from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
 from app.api.deps import get_current_user
-from app.api.routes import alerts, auth, budgets, expenses, financial_health, ml
+from app.api.routes import alerts, auth, budgets, expenses, financial_health
 from app.schemas.budget import BudgetCreate, BudgetUpdate
 from app.schemas.expense import ExpenseCreate, ExpenseUpdate
-from app.schemas.ml import CategorizeRequest
 from app.services import analytics_service
 from app.services.budget_service import get_budget_status
 
@@ -277,7 +276,7 @@ def test_budget_crud_status_and_analytics_summary():
     assert run(budgets.list_budgets(user, db)) == []
 
 
-def test_financial_score_and_ml_endpoint():
+def test_financial_score_and_categorization_endpoint():
     db, _, user = make_user("score@example.com")
     today = date.today()
     run(
@@ -299,7 +298,12 @@ def test_financial_score_and_ml_endpoint():
     assert score.risk_level in {"Excellent", "Good", "Moderate", "Needs Attention"}
     assert len(db.financial_scores.items) == 1
 
-    prediction = run(ml.categorize(CategorizeRequest(description="metro card recharge")))
+    prediction = run(
+        expenses.categorize_expense(
+            expenses.CategorizeRequest(description="metro card recharge"),
+            user,
+        )
+    )
     assert prediction.category == "Transport"
     assert prediction.confidence > 0
 

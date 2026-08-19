@@ -4,7 +4,7 @@ from app.api.routes import (
     alerts, analytics, anomaly, aa, auth, bank, budgets, budget_intelligence_v2,
     budget_suggestion, consent, copilot_v2, dashboard_v2,
     expenses, financial_health, goal_planning_v2, health_v2, import_preference,
-    ml, receipt_ocr_v2, recommendations, recurring,
+    receipt_ocr_v2, recommendations, recurring,
     reports, subscriptions, sync,
 )
 from app.api.v1 import websocket
@@ -37,7 +37,6 @@ router.include_router(sync.router, tags=["sync"])
 router.include_router(aa.router, tags=["account-aggregator"])
 
 # AI & V2 Intelligence Engines
-router.include_router(ml.router, tags=["ml"])
 router.include_router(dashboard_v2.router, tags=["dashboard"])
 router.include_router(budget_intelligence_v2.router, tags=["budget-intelligence"])
 router.include_router(health_v2.router, tags=["health"])

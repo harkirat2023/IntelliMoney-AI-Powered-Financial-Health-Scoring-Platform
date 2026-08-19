@@ -4,15 +4,35 @@ from typing import Any
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pydantic import BaseModel, Field
 
 from app.api.deps import get_current_user
 from app.db.mongodb import get_database
 from app.schemas.expense import ExpenseCreate, ExpensePublic, ExpenseUpdate
-from app.services.ml_service import categorizer
+from app.services.category_service import suggest_category
 from app.services.serializers import date_to_datetime, serialize_document, to_object_id, utc_now
 
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
+
+
+class CategorizeRequest(BaseModel):
+    description: str = Field(min_length=1, max_length=500)
+
+
+class CategorizeResponse(BaseModel):
+    category: str
+    confidence: float
+
+
+@router.post("/categorize", response_model=CategorizeResponse)
+async def categorize_expense(
+    payload: CategorizeRequest,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> CategorizeResponse:
+    """Suggest a category using deterministic keyword logic (no ML)."""
+    category, confidence = suggest_category(payload.description)
+    return CategorizeResponse(category=category, confidence=confidence)
 
 
 @router.post("", response_model=ExpensePublic, status_code=201)
@@ -21,7 +41,7 @@ async def create_expense(
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> ExpensePublic:
-    category = payload.category or categorizer.predict(payload.description)[0]
+    category = payload.category or suggest_category(payload.description)[0]
     document = {
         "user_id": current_user["_id"],
         "amount": payload.amount,

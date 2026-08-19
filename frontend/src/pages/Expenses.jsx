@@ -33,7 +33,7 @@ export default function Expenses() {
 
   async function predictCategory() {
     if (!form.description.trim()) return;
-    const response = await api.post("/ml/categorize", { description: form.description });
+    const response = await api.post("/expenses/categorize", { description: form.description });
     setPrediction(response.data);
     setForm((current) => ({ ...current, category: response.data.category }));
   }

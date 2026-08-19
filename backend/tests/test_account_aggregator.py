@@ -17,6 +17,8 @@ from fastapi import Depends
 from fastapi.testclient import TestClient
 
 from app.api.deps import get_current_user
+from app.core.exceptions import BankConnectionException
+from app.infrastructure.bank_integration.mock_provider import MockBankProvider
 from app.main import app
 from app.utils.date_utils import utc_now
 
@@ -117,6 +119,7 @@ class FakeDb:
         self.aa_data_sessions = FakeCollection()
         self.bank_transactions = FakeCollection()
         self.bank_accounts = FakeCollection()
+        self.consents = FakeCollection()
         self.users = FakeCollection()
 
     def __getitem__(self, key):
@@ -163,6 +166,8 @@ def setup_module():
     fake_db.aa_consents.items = []
     fake_db.aa_data_sessions.items = []
     fake_db.bank_transactions.items = []
+    fake_db.bank_accounts.items = []
+    fake_db.consents.items = []
 
 
 def test_aa_full_sandbox_flow():
@@ -171,71 +176,98 @@ def test_aa_full_sandbox_flow():
     original = auto_processing_service.AutoProcessingService.process_synced
     auto_processing_service.AutoProcessingService.process_synced = _stub_process_synced
 
-    with TestClient(app) as client:
-        # 1. Create consent
-        res = client.post("/api/v1/aa/consents", json={"provider": "mock"})
-        assert res.status_code == 200, res.text
-        body = res.json()
-        consent_id = body["id"]
-        assert body["consent_status"] == "PENDING"
-        assert body["sandbox"] is True
-        assert "sandbox" in body["label"].lower()
+    # The mock provider injects a ~5% transient failure seeded by the current
+    # time; make it deterministic for tests.
+    orig_initiate = MockBankProvider.initiate_consent
 
-        # 2. Consent status still pending
-        status = client.get(f"/api/v1/aa/consents/{consent_id}")
-        assert status.status_code == 200
-        assert status.json()["consent_status"] == "PENDING"
+    async def _resilient_initiate(self, user_id, consent_version, redirect_url):
+        for _ in range(8):
+            try:
+                return await orig_initiate(self, user_id, consent_version, redirect_url)
+            except BankConnectionException:
+                continue
+        raise BankConnectionException("Mock provider temporarily unavailable")
 
-        # 3. Reject path
-        rejected = client.post(f"/api/v1/aa/consents/{consent_id}/reject")
-        assert rejected.json()["consent_status"] == "REJECTED"
+    MockBankProvider.initiate_consent = _resilient_initiate
+    try:
+        with TestClient(app) as client:
+            # 1. Create consent
+            res = client.post("/api/v1/aa/consents", json={"provider": "mock"})
+            assert res.status_code == 200, res.text
+            body = res.json()
+            consent_id = body["id"]
+            assert body["consent_status"] == "PENDING"
+            assert body["sandbox"] is True
+            assert "sandbox" in body["label"].lower()
 
-        # 4. Data session must fail while rejected
-        session = client.post("/api/v1/aa/data-sessions", json={"consent_id": consent_id})
-        assert session.status_code == 400
+            # 2. Consent status still pending
+            status = client.get(f"/api/v1/aa/consents/{consent_id}")
+            assert status.status_code == 200
+            assert status.json()["consent_status"] == "PENDING"
 
-        # 5. Approve path (new consent)
-        res2 = client.post("/api/v1/aa/consents", json={"provider": "mock"})
-        consent2 = res2.json()["id"]
-        approved = client.post(f"/api/v1/aa/consents/{consent2}/approve")
-        assert approved.json()["consent_status"] in ("APPROVED", "ACTIVE")
+            # 3. Reject path
+            rejected = client.post(f"/api/v1/aa/consents/{consent_id}/reject")
+            assert rejected.json()["consent_status"] == "REJECTED"
 
-        # 6. Create data session
-        session = client.post("/api/v1/aa/data-sessions", json={"consent_id": consent2})
-        assert session.status_code == 200, session.text
-        session_body = session.json()
-        assert session_body["data_status"] == "READY"
-        session_id = session_body["id"]
+            # 4. Data session must fail while rejected
+            session = client.post("/api/v1/aa/data-sessions", json={"consent_id": consent_id})
+            assert session.status_code == 400
 
-        # 7. Fetch sandbox data -> normalize -> import
-        fetched = client.post(f"/api/v1/aa/data-sessions/{session_id}/fetch")
-        assert fetched.status_code == 200, fetched.text
-        fetch_body = fetched.json()
-        assert fetch_body["sandbox"] is True
-        assert fetch_body["transactions_fetched"] > 0
-        assert fetch_body["transactions_imported"] > 0
+            # 5. Approve path (new consent)
+            res2 = client.post("/api/v1/aa/consents", json={"provider": "mock"})
+            consent2 = res2.json()["id"]
+            approved = client.post(f"/api/v1/aa/consents/{consent2}/approve")
+            assert approved.json()["consent_status"] in ("APPROVED", "ACTIVE")
 
-        # 8. Imported transactions land in the shared bank_transactions pipeline
-        assert len(fake_db.bank_transactions.items) > 0
-        imported_user = fake_db.bank_transactions.items[0]["user_id"]
-        assert imported_user == str(_AA_USER["_id"])
+            # 6. Create data session
+            session = client.post("/api/v1/aa/data-sessions", json={"consent_id": consent2})
+            assert session.status_code == 200, session.text
+            session_body = session.json()
+            assert session_body["data_status"] == "READY"
+            session_id = session_body["id"]
 
-        # 9. Sandbox status endpoint
-        st = client.get("/api/v1/aa/status")
-        assert st.status_code == 200
-        assert st.json()["mode"] == "sandbox"
-        assert "not production" in st.json()["message"].lower()
+            # 7. Fetch sandbox data -> normalize -> import
+            fetched = client.post(f"/api/v1/aa/data-sessions/{session_id}/fetch")
+            assert fetched.status_code == 200, fetched.text
+            fetch_body = fetched.json()
+            assert fetch_body["sandbox"] is True
+            assert fetch_body["transactions_fetched"] > 0
+            assert fetch_body["transactions_imported"] > 0
 
-        # 10. Notification endpoint
-        notification = client.post("/api/v1/aa/notifications", json={
-            "id": "setu-consent-1",
-            "type": "CONSENT_APPROVED",
-            "data": {},
-        })
-        assert notification.status_code == 200
-        assert notification.json()["received"] is True
+            # 8. Imported transactions land in the shared bank_transactions pipeline
+            assert len(fake_db.bank_transactions.items) > 0
+            imported_user = fake_db.bank_transactions.items[0]["user_id"]
+            assert imported_user == str(_AA_USER["_id"])
 
-    auto_processing_service.AutoProcessingService.process_synced = original
+            # 8b. The AA-created account has an encrypted token and a matching
+            #     active consent doc so the standard SyncService path works.
+            account = fake_db.bank_accounts.items[-1]
+            assert account["consent_token"] != account["consent_handle"]
+            assert account["consent_token"].startswith("gAAAA")  # Fernet-encrypted
+            matching_consent = [
+                c for c in fake_db.consents.items
+                if str(c["bank_account_id"]) == str(account["_id"])
+                and c["consent_status"] == "granted"
+            ]
+            assert matching_consent
+
+            # 9. Sandbox status endpoint
+            st = client.get("/api/v1/aa/status")
+            assert st.status_code == 200
+            assert st.json()["mode"] == "sandbox"
+            assert "not production" in st.json()["message"].lower()
+
+            # 10. Notification endpoint
+            notification = client.post("/api/v1/aa/notifications", json={
+                "id": "setu-consent-1",
+                "type": "CONSENT_APPROVED",
+                "data": {},
+            })
+            assert notification.status_code == 200
+            assert notification.json()["received"] is True
+    finally:
+        MockBankProvider.initiate_consent = orig_initiate
+        auto_processing_service.AutoProcessingService.process_synced = original
 
 
 def test_aa_ownership_enforced():

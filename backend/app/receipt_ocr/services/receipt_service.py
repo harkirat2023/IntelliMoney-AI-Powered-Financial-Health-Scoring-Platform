@@ -19,7 +19,7 @@ from app.receipt_ocr.services.ocr_service import OCRService
 from app.receipt_ocr.services.receipt_validation_service import (
     ReceiptValidationService,
 )
-from app.services.ml_service import ExpenseCategorizer
+from app.services.category_service import suggest_category
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class ReceiptService:
         self._image_processor = ImageProcessingService()
         self._ocr = OCRService()
         self._validator = ReceiptValidationService()
-        self._categorizer = ExpenseCategorizer()
+        self._categorizer = suggest_category
         self._storage = get_storage_backend()
 
     async def upload(self, user_id: str, file_bytes: bytes, filename: str,

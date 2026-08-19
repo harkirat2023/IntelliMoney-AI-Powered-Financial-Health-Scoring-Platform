@@ -12,7 +12,6 @@ from app.core.middleware.error_handler import global_exception_handler
 from app.core.middleware.request_id import RequestIDMiddleware
 from app.core.middleware.request_logger import RequestLoggerMiddleware
 from app.db.mongodb import close_mongo_connection, connect_to_mongo
-from app.services.ml_service import categorizer
 
 
 @asynccontextmanager
@@ -27,7 +26,6 @@ async def lifespan(app: FastAPI):
             logger.exception("%s failed to connect", name)
 
     await _run_task(connect_to_mongo(), "MongoDB")
-    categorizer.load()
     logger.info("IntelliMoney backend started successfully")
     yield
     try:
@@ -80,7 +78,6 @@ async def health() -> dict:
             db_ping = True
         except Exception:
             pass
-    model_ok = categorizer._model is not None
     return {
         "status": "ok" if db_ping else "degraded",
         "service": settings.app_name,
@@ -88,7 +85,6 @@ async def health() -> dict:
         "environment": settings.environment,
         "database": "connected" if db_ping else "disconnected",
         "connection_error": connection_error,
-        "ml_model": "loaded" if model_ok else "not_loaded",
     }
 
 

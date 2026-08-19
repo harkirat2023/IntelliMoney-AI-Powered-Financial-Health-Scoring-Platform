@@ -4,7 +4,7 @@
 **Reference:** Payro — Personal Finance App concept on Dribbble  
 **Purpose:** Translate the visual/UX direction of the reference into IntelliMoney without copying it and without adding new product features.
 
-> The reference is used for visual and interaction inspiration only. IntelliMoney's existing product scope, business logic, ML pipeline and minimal tech stack remain unchanged.
+> The reference is used for visual and interaction inspiration only. IntelliMoney's existing product scope, business logic, deterministic financial engine and minimal tech stack remain unchanged.
 
 ---
 
@@ -409,7 +409,7 @@ Optional fields should remain hidden behind an expandable section where appropri
 
 ### Important
 
-The user should not have to understand the ML system.
+The user should not have to understand the AI system.
 
 The UI should simply say:
 
@@ -423,7 +423,7 @@ AI categorized
 
 # 14. Expense Categorization UX
 
-When ML predicts a category:
+When the backend suggests a category (deterministic keyword logic, no ML):
 
 ```text
 Category
@@ -1068,7 +1068,7 @@ Required:
 |---|---|
 | Dashboard | Financial summary + trends |
 | Expenses | Transaction list + quick add |
-| ML Categorization | Category suggestion |
+| Deterministic Categorization | Category suggestion (no ML) |
 | Budgets | Budget progress |
 | Budget Intelligence | Explanations/recommendations |
 | Financial Health | Score + factor breakdown |
@@ -1090,7 +1090,7 @@ The visual redesign must not break:
 - existing API contracts;
 - authentication;
 - MongoDB schemas;
-- ML categorization;
+- deterministic categorization;
 - Financial Health calculations;
 - Budget Intelligence;
 - Goals logic;

@@ -22,13 +22,12 @@ banking connectivity. Setu-specific calls stay behind the
 only orchestrates the demonstration states.
 
 Imported transactions feed the SAME pipeline as manual transactions:
-bank transactions -> ML categorization -> budgets -> cash flow ->
+bank transactions -> deterministic categorization -> budgets -> cash flow ->
 financial health. No second analytics system is created.
 """
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Any
 
 from bson import ObjectId
@@ -42,22 +41,12 @@ from app.db.mongodb import get_database
 from app.infrastructure.bank_integration import MockBankProvider
 from app.infrastructure.bank_integration.consent_manager import (
     BankProviderRegistry,
-    ConsentManager,
 )
 from app.infrastructure.bank_integration.setu_sandbox import (
     SANDBOX_MODE_LABEL,
     setu_sandbox_provider,
 )
-from app.infrastructure.database.repositories.bank_repository import (
-    MongoBankAccountRepository,
-)
-from app.infrastructure.database.repositories.consent_repository import (
-    MongoConsentRepository,
-)
-from app.services.auto_processing_service import AutoProcessingService
-from app.services.consent_grant_service import ConsentGrantService
-from app.services.sync_service import SyncService
-from app.schemas.consent import ConsentGrantRequest
+from app.services.aa_data_service import import_aa_data_session
 from app.utils.date_utils import utc_now
 
 router = APIRouter(prefix="/aa", tags=["account-aggregator"])
@@ -329,114 +318,18 @@ async def fetch_sandbox_data(
     """Fetch sandbox data, normalize, import into the existing pipeline.
 
     The fetched data is persisted as bank transactions and then runs the
-    same ML categorization / budget / cash-flow / financial-health engine
-    used for every other transaction source.
+    same deterministic categorization / budget / cash-flow / financial-health
+    engine used for every other transaction source.
     """
     session = await _get_data_session(db, str(user["_id"]), session_id)
-    consent = await db.aa_consents.find_one({"_id": session["consent_id"]})
 
     registry = _get_registry()
     adapter = registry.get(session["provider"])
-    consent_handle = session.get("consent_handle") or consent.get("consent_handle", "")
 
-    # Fetch sandbox FI data through the AA provider interface.
-    provider_accounts = await adapter.fetch_accounts(consent_handle, consent_handle)
-    provider_txs = []
-    for account in provider_accounts:
-        provider_txs.extend(
-            await adapter.fetch_transactions(
-                consent_handle=consent_handle,
-                consent_token=consent_handle,
-                account_id=account.provider_account_id,
-                from_date=utc_now() - timedelta(days=730),
-                to_date=utc_now(),
-            )
-        )
-
-    # Ensure a real bank account document exists so the imported transactions
-    # flow through the SAME pipeline as any other sync (ML categorization,
-    # budgets, cash flow, financial health, notifications).
-    account_doc = await db.bank_accounts.find_one({
-        "user_id": ObjectId(str(user["_id"])),
-        "consent_handle": consent_handle,
-        "provider": session["provider"],
-        "source": "aa_sandbox",
-    })
-    if account_doc:
-        bank_account_id = account_doc["_id"]
-    else:
-        bank_account_doc = {
-            "_id": ObjectId(),
-            "user_id": ObjectId(str(user["_id"])),
-            "provider": session["provider"],
-            "consent_handle": consent_handle,
-            "provider_account_id": f"aa-{str(session['_id'])}",
-            "bank_name": "Setu AA Sandbox",
-            "masked_account_number": "••••0000",
-            "account_type": "savings",
-            "account_holder_name": "Sandbox Demo",
-            "ifsc_code": "SANDB000",
-            "connection_status": "active",
-            "consent_status": "active",
-            "consent_token": consent_handle,
-            "consent_version": "1.0",
-            "source": "aa_sandbox",
-            "created_at": utc_now(),
-            "updated_at": utc_now(),
-        }
-        await db.bank_accounts.insert_one(bank_account_doc)
-        bank_account_id = bank_account_doc["_id"]
-
-    imported = 0
-    skipped = 0
-    seen: set[str] = set()
-    for ptx in provider_txs:
-        key = f"{ptx.transaction_id}"
-        if key in seen:
-            skipped += 1
-            continue
-        seen.add(key)
-        existing = await db.bank_transactions.find_one(
-            {"provider_account_id": ptx.transaction_id, "transaction_id": ptx.transaction_id}
-        )
-        if existing:
-            skipped += 1
-            continue
-        await db.bank_transactions.insert_one({
-            "user_id": str(user["_id"]),
-            "bank_account_id": bank_account_id,
-            "sync_log_id": "",
-            "provider_account_id": ptx.transaction_id,
-            "transaction_id": ptx.transaction_id,
-            "description": ptx.description,
-            "amount": ptx.amount,
-            "transaction_type": ptx.transaction_type,
-            "transaction_date": ptx.transaction_date,
-            "category": ptx.category,
-            "reference": ptx.reference,
-            "source": "aa_sandbox",
-            "created_at": utc_now(),
-        })
-        imported += 1
-
-    await db.aa_data_sessions.update_one(
-        {"_id": session["_id"]},
-        {"$set": {"data_status": "IMPORTED", "transactions_imported": imported, "updated_at": utc_now()}},
-    )
-
-    processing = await AutoProcessingService(db).process_synced(str(user["_id"]), str(bank_account_id))
-
-    return {
-        "session_id": str(session["_id"]),
-        "transactions_fetched": len(provider_txs),
-        "transactions_imported": imported,
-        "transactions_skipped": skipped,
-        "categorized": processing.get("categorized", 0),
-        "processed": processing.get("processed", 0),
-        "health_recalculated": processing.get("health_recalculated", False),
-        "sandbox": True,
-        "label": SANDBOX_LABEL,
-    }
+    result = await import_aa_data_session(db, str(user["_id"]), session, adapter)
+    result["sandbox"] = True
+    result["label"] = SANDBOX_LABEL
+    return result
 
 
 @router.get("/status")

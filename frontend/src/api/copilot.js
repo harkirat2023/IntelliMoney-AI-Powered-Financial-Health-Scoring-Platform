@@ -8,4 +8,7 @@ export const copilotApi = {
   submitFeedback: (data) => api.post("/copilot/feedback", data),
   getSuggestions: () => api.get("/copilot/suggestions"),
   getSettings: () => api.get("/copilot/settings"),
+  getProposal: (proposalId) => api.get(`/copilot/proposals/${proposalId}`),
+  confirmProposal: (proposalId, data = {}) => api.post(`/copilot/proposals/${proposalId}/confirm`, data),
+  cancelProposal: (proposalId) => api.post(`/copilot/proposals/${proposalId}/cancel`),
 };

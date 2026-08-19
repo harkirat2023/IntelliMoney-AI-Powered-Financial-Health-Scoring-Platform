@@ -7,7 +7,8 @@ class CopilotStore {
     this.messages = [];
     this.suggestions = [];
     this.settings = null;
-    this.loading = { chat: false, sessions: false, history: false, suggestions: false };
+    this.pendingProposal = null;
+    this.loading = { chat: false, sessions: false, history: false, suggestions: false, proposal: false };
     this.errors = {};
     this._listeners = [];
   }
@@ -21,6 +22,7 @@ class CopilotStore {
     try {
       const res = await copilotApi.chat({ session_id: sessionId, message });
       this._set("currentSessionId", res.data.session_id);
+      this._set("pendingProposal", res.data.proposal || null);
       return res.data;
     } catch (e) {
       this.errors.chat = e;
@@ -29,6 +31,42 @@ class CopilotStore {
       this.loading.chat = false;
       this._notify();
     }
+  }
+
+  async confirmProposal(proposalId) {
+    this.loading.proposal = true; this._notify();
+    try {
+      const res = await copilotApi.confirmProposal(proposalId);
+      this._set("pendingProposal", res.data);
+      this.errors.proposal = null;
+      return res.data;
+    } catch (e) {
+      this.errors.proposal = e;
+      throw e;
+    } finally {
+      this.loading.proposal = false;
+      this._notify();
+    }
+  }
+
+  async cancelProposal(proposalId) {
+    this.loading.proposal = true; this._notify();
+    try {
+      const res = await copilotApi.cancelProposal(proposalId);
+      this._set("pendingProposal", res.data);
+      this.errors.proposal = null;
+      return res.data;
+    } catch (e) {
+      this.errors.proposal = e;
+      throw e;
+    } finally {
+      this.loading.proposal = false;
+      this._notify();
+    }
+  }
+
+  clearProposal() {
+    this._set("pendingProposal", null);
   }
 
   async fetchSessions() {

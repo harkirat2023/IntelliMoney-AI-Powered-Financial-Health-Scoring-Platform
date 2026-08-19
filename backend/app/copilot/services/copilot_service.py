@@ -8,9 +8,8 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.copilot.prompts import FINANCIAL_CONTEXT_PROMPT, SYSTEM_PROMPT
 from app.copilot.schemas import CopilotSettings
-from app.copilot.services.llm_service import LLMService, TokenCounter
+from app.copilot.services.llm_service import LLMService
 from app.copilot.services.memory_service import MemoryService
-from app.copilot.services.rag_service import RAGService
 from app.copilot.services.tool_registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
@@ -18,11 +17,10 @@ logger = logging.getLogger(__name__)
 
 class CopilotService:
     def __init__(self, db: AsyncIOMotorDatabase, memory_service: MemoryService,
-                 llm_service: LLMService, rag_service: RAGService):
+                 llm_service: LLMService):
         self._db = db
         self._memory = memory_service
         self._llm = llm_service
-        self._rag = rag_service
         self._settings = CopilotSettings()
 
     async def process_message(self, user_id: str, message: str,
@@ -59,11 +57,6 @@ class CopilotService:
         ai_msg = await self._memory.add_message(user_id, session.id, "assistant", response_text)
 
         pii_masked = self._mask_pii(response_text)
-
-        await self._rag.index_document(
-            f"User: {message}\nAssistant: {pii_masked}",
-            {"user_id": user_id[:8], "session_id": session.id, "timestamp": datetime.utcnow().isoformat()},
-        )
 
         return {"session_id": session.id, "message": pii_masked,
                 "message_id": ai_msg.id, "sources": []}

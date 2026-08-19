@@ -6,32 +6,36 @@
 
 ## 1. Product Vision
 
-IntelliMoney is a personal financial analytics platform that lets users manage financial data, understand spending, create budgets and goals, evaluate financial health, detect unusual spending, track recurring expenses and subscriptions, connect to a **Setu Account Aggregator Sandbox demonstration flow**, and receive AI-powered financial guidance.
+IntelliMoney is an AI-first personal finance platform where users can understand, manage and act on their finances through a secure **LangChain agent powered by Groq**, while the Dashboard, Financial Health and Goals provide structured visual control surfaces.
 
 **Core principle:**
 
-Enter/manage financial data → IntelliMoney organizes it → analyzes it → explains it → recommends practical actions.
+User intent → Agent understands → Agent reads the user's real financial data through scoped tools → Agent asks for missing information when necessary → Agent proposes changes → User confirms → Tools execute deterministic operations → Dashboard and visual modules reflect the results.
 
 IntelliMoney supports two sources of financial information:
 
-1. Manually entered/demo financial data.
-2. Account Aggregator data obtained through the **Setu AA Sandbox/mock environment** for demonstration.
+1. Manually entered financial data.
+2. Account Aggregator data obtained through the **Setu AA Sandbox/demo environment** for demonstration.
 
-The Account Aggregator implementation is **sandbox/demo only**. It must not be represented as a production banking integration.
+The Account Aggregator implementation is **sandbox/demo only** and must never be represented as production banking connectivity.
 
-### Scope decision
+### AI-first scope decision
 
-Production banking connectivity, UPI integration, live bank synchronization and payment processing are outside the product scope.
+The Copilot is the primary interaction layer for financial actions. Users can still use manual UI flows for Expenses/Spending, Budgets, Goals and other retained visual modules, but the application should not require users to navigate multiple independent management screens for routine actions.
 
-However, IntelliMoney will include an **AA-ready integration architecture using Setu AA Sandbox/mock data** so the complete consent → approval/rejection → data-ready → data-fetch demonstration flow can be shown without depending on real bank accounts.
+The agent can read the user's complete financial context through authenticated, user-scoped tools and can perform approved write actions through tools. The LLM never receives direct database access and never becomes the source of financial truth.
 
-The AA integration must be isolated behind a dedicated service/provider boundary so that it can later be replaced or extended without rewriting the core financial modules.
+### Financial intelligence decision
 
-Authentication is handled entirely by **Clerk**.
+The previous ML-based expense categorization pipeline is removed. The platform no longer requires TF-IDF, Logistic Regression or a trained expense-classifier artifact. Expense categorization and natural-language interpretation are handled through the agent/tool layer, while all authoritative financial calculations remain deterministic backend logic.
 
-IntelliMoney does **not** implement its own JWT authentication, password hashing, login credential storage or parallel authentication mechanism.
+### Mutation safety
 
----
+Any create/update/delete financial action follows:
+
+User request → Agent plan → Proposed changes → User confirmation → Tool execution.
+
+The agent must ask follow-up questions whenever critical information is missing. No financial value, date, goal amount, budget amount or intent may be invented or hallucinated.
 
 ## 2. Target User
 
@@ -53,44 +57,41 @@ Individuals who want to:
 
 | Principle | Requirement |
 |---|---|
-| Simplicity | Minimum technology and architecture required |
+| Simplicity | Prefer one agent + domain tools over multiple overlapping intelligence systems |
 | Reliability | Make existing features work before improving them |
-| Explainability | Scores/recommendations must be understandable |
-| Privacy | Financial data is user-specific |
-| Deterministic finance | Financial calculations do not depend on an LLM |
-| AI where useful | Groq + LangChain power the Copilot |
-| AA-ready | Setu AA Sandbox is supported for demonstration |
+| Explainability | Scores, recommendations and proposed actions must be understandable |
+| Privacy | Financial data is user-specific and isolated by authenticated Clerk identity |
+| Deterministic finance | Financial calculations and database mutations are never delegated to the LLM |
+| AI-first interaction | LangChain Agent + Groq are the primary natural-language interaction layer |
+| Human confirmation | All write/destructive financial actions require explicit user confirmation |
+| No hallucinations | Missing critical information must trigger a clarification question |
+| AA-ready | Setu AA Sandbox is supported as a demonstration workflow |
 | No production banking | No live bank connectivity is required |
 | Clerk authentication | Clerk is the only application authentication system |
 | No custom JWT | Do not implement or maintain application-managed JWT authentication |
 | Responsive | Mobile, tablet, laptop and desktop |
-| Maintainability | Avoid duplicate services/routes/state systems |
-
----
+| Maintainability | Avoid duplicate routes, services, state systems and intelligence engines |
 
 ## 4. Core Features
 
 | Feature | Purpose | Implementation |
 |---|---|---|
 | Authentication | Secure access | Clerk |
-| Dashboard | Financial overview | React + FastAPI |
-| Expenses | Record/analyze spending | CRUD + MongoDB |
-| Budgets | Spending limits | CRUD + deterministic calculations |
-| Financial Health | 0–100 financial score | Weighted rule-based engine |
-| Budget Intelligence | Budget analysis | Rule-based financial analysis |
-| Expense Categorization | Automatic classification | TF-IDF + Logistic Regression + rule fallback |
-| Reports | Financial analytics | Aggregated APIs + charts |
-| Recurring Expenses | Track recurring commitments | Recurring expense service |
-| Subscriptions | Track subscriptions | CRUD + analysis |
+| Dashboard | Central structured financial workspace and visual reporting | React + FastAPI |
+| Expenses / Spending | Record, review and analyze spending | CRUD + MongoDB + agent tools |
+| Budgets | Spending limits and monitoring | CRUD + deterministic calculations + agent tools |
+| Financial Health | 0–100 financial score | Weighted deterministic rule-based engine |
+| Budget Intelligence | Financial/budget visualization and reporting | Deterministic analytics + Dashboard visualizations |
+| Expense Categorization | Classify transactions without the old ML pipeline | Agent/tool-based categorization |
+| Reports | Financial analytics | Aggregated APIs + charts + agent read tools |
+| Recurring Expenses | Track recurring commitments | CRUD + agent tools |
+| Subscriptions | Track subscriptions | CRUD + analysis + agent tools |
 | Anomaly Detection | Detect unusual spending | Lightweight statistical/rule logic |
-| Goals | Track savings targets | CRUD + progress calculations |
+| Goals | Track savings targets | Manual UI + agent tools |
 | Receipt/OCR | Extract receipt data | Existing OCR implementation |
-| AI Copilot | Natural-language financial help | LangChain + Groq |
-| Notifications | Financial alerts | In-app alert logic |
-| Account Aggregator Sandbox | Demonstrate consented financial-data acquisition | Setu AA Sandbox/mock integration |
-| Demo Data | Easy demonstration | Existing synthetic/demo dataset |
-
----
+| AI Copilot | Primary natural-language financial interface | LangChain Agent + Groq + scoped tools |
+| Notifications | Financial alerts | Deterministic backend events |
+| Account Aggregator Sandbox | Demonstrate consented financial-data acquisition | Setu AA Sandbox/demo |
 
 ## 5. Explicitly Out of Scope
 
@@ -135,70 +136,121 @@ Setu's AA flow is based around consent, data fetching and notifications, and its
 
 | Layer | Technology | Responsibility |
 |---|---|---|
-| Frontend | React.js | UI |
+| Frontend | React.js | UI and client-side application |
 | Styling | Tailwind CSS / existing styling | Responsive design |
-| Authentication | Clerk | User authentication and identity |
-| Charts | Existing chart library | Visualization |
-| Backend | FastAPI | REST APIs/business logic |
-| Language | Python | Backend + ML |
-| Database | MongoDB | Application data |
-| ML | scikit-learn | Expense categorization |
-| Data Processing | Pandas + NumPy | ML/financial calculations |
-| NLP | TF-IDF | Transaction text features |
-| Classifier | Logistic Regression | Category prediction |
-| AI | Groq | Copilot LLM |
-| AI Framework | LangChain | LLM orchestration |
+| Authentication | Clerk | Authentication, sessions and user identity |
+| Backend | FastAPI | REST APIs and business logic |
+| Language | Python | Backend, deterministic financial calculations and integrations |
+| Database | MongoDB | Application and financial data |
+| AI | Groq | LLM used by the agent |
+| AI Framework | LangChain | Agent orchestration, tool calling and structured outputs |
 | Account Aggregator | Setu AA Sandbox | Demonstration financial-data integration |
-| OCR | Existing implementation | Receipt extraction |
+| OCR | Existing OCR implementation | Receipt extraction |
+| Charts | Existing chart library | Financial visualization |
 | Containers | Docker/Compose if already used | Local environment |
-| Source Control | Git/GitHub | Version control |
 | Testing | Pytest + existing frontend tests | Verification |
+| Source Control | Git/GitHub | Version control |
 
 **Rule:** Do not introduce another library when the current stack already solves the requirement.
 
----
+The previous scikit-learn / TF-IDF / Logistic Regression expense-classification stack is intentionally removed from the approved architecture.
 
 ## 7. Architecture
 
 ```text
-React.js
-   ↓
+React + Tailwind
+      ↓
 Clerk Authentication
-   ↓
-API Client
-   ↓
-FastAPI
-   ↓
-Routers
-   ↓
-Services
-   ↓
+      ↓
+FastAPI API
+      ↓
+Agent / Domain Services
+      ↓
 Repositories
-   ↓
+      ↓
 MongoDB
+```
+
+### AI-first architecture
+
+```text
+User
+  ↓
+AI Copilot UI
+  ↓
+FastAPI Copilot Endpoint
+  ↓
+LangChain Agent
+  ↓
+Groq
+  ↓
+Scoped Financial Tools
+  ↓
+Deterministic Domain Services
+  ↓
+Repositories
+  ↓
+MongoDB
+```
+
+The agent may read the user's complete financial context through user-scoped tools, but never receives direct MongoDB access.
+
+### Tool categories
+
+```text
+READ TOOLS
+  expenses / budgets / income / goals / reports / health /
+  subscriptions / recurring / anomalies / notifications / accounts / AA
+
+WRITE TOOLS
+  create / update / delete / import / sync actions
+
+CALCULATION TOOLS
+  financial health / budget usage / cash flow /
+  savings / goal progress / reports / anomaly calculations
+```
+
+### Mutation flow
+
+```text
+User Request
+    ↓
+Agent understands intent
+    ↓
+Agent asks clarification if required
+    ↓
+Agent selects tools
+    ↓
+Proposed Changes
+    ↓
+User Confirmation
+    ↓
+Tool Execution
+    ↓
+Deterministic Backend Result
+    ↓
+Dashboard / Health / Goals / Reports refresh
 ```
 
 ### Financial intelligence
 
-```text
 Manual Data ─────────────┐
-                         │
+                         ↓
 Setu AA Sandbox ─────────┤
                          ↓
-                 Financial Data
+                  Normalized Financial Data
                          ↓
-                 Normalization
+                  Deterministic Domain Services
                          ↓
         ┌────────────────┼────────────────┐
         ↓                ↓                ↓
-   ML Categorizer     Budgets       Financial Health
+     Budgets       Financial Health    Analytics
         ↓                ↓                ↓
         └────────────────┼────────────────┘
                          ↓
-                    Dashboard
+                     Dashboard
                          ↓
-                 Recommendations
-```
+                  Agent / Copilot
 
 ### Account Aggregator boundary
 
@@ -215,88 +267,93 @@ Consent / Notification / Data Fetch
      ↓
 Normalized Financial Data
      ↓
-Existing IntelliMoney Financial Pipeline
+Existing Transaction Pipeline
 ```
 
-The Setu integration must remain isolated from core financial calculations.
-
-### AI
+### Agent knowledge boundary
 
 ```text
-AI Copilot
-    ↓
-FastAPI
-    ↓
-Relevant Financial Data
-    ↓
-Structured Context
-    ↓
-LangChain
-    ↓
-Groq
-    ↓
-Natural-language Answer
+Clerk User Identity
+      ↓
+Authenticated Tool Context
+      ↓
+User-scoped queries
+      ↓
+MongoDB
 ```
 
----
+The agent must never query another user's financial information and must never access secrets directly.
 
 ## 8. Customer Journey
 
-### Manual/demo flow
+### Existing user
 
 ```text
 Landing Page
  ↓
-Sign Up / Sign In
+Sign In
  ↓
 Clerk Authentication
  ↓
+Account Sync
+ ↓
+Existing User Detected
+ ↓
 Dashboard
- ↓
-Add/manage expenses
- ↓
-Create budgets
- ↓
-View analytics
- ↓
-Check Financial Health
- ↓
-Create goals
- ↓
-Review recurring/subscriptions
- ↓
-Ask AI Copilot
 ```
 
-### Account Aggregator demonstration flow
+### New user
+
+```text
+Landing Page
+ ↓
+Sign Up
+ ↓
+Clerk Authentication
+ ↓
+Account Sync
+ ↓
+New User Detected
+ ↓
+Connect Account
+ ├── Connect via AA Sandbox
+ │      ↓
+ │   Optional Import
+ │      ↓
+ │   Dashboard
+ │
+ └── Skip for now
+        ↓
+     Dashboard
+```
+
+### AI-first daily flow
 
 ```text
 Dashboard
  ↓
-Connect Financial Data
+AI Copilot
  ↓
-Setu AA Sandbox
+Natural-language request
  ↓
-Create Consent
+Agent reads data / asks questions
  ↓
-User Consent / Approval
+Proposed changes when required
  ↓
-Consent Approved
+User confirms
  ↓
-Data Session
+Tools execute
  ↓
-Setu Sandbox Financial Data
- ↓
-Normalize Transactions
- ↓
-Import into IntelliMoney
- ↓
-Categorization / Analytics / Health
+Visual modules refresh
 ```
 
-The AA flow is a demonstration/sandbox workflow and does not require real bank credentials.
+### Important planning behavior
 
----
+For a request such as:
+
+> "My monthly income is ₹60,000. I want to spend ₹5,000 on food, ₹5,000 on travel and save the rest."
+
+the agent must extract the known values but must NOT assume whether the remaining ₹50,000 should become a savings goal, a planned savings amount, or another financial object. It must ask the user what they want the remaining amount to represent, then present a proposed plan for confirmation.
 
 ## 9. Expense Management
 
@@ -335,45 +392,29 @@ Imported AA transactions must pass through the same normalization and categoriza
 
 ---
 
-## 10. Expense Categorization / ML
+## 10. Expense Categorization / AI Tool
+
+The previous TF-IDF + Logistic Regression model is removed.
+
+Expense categorization is now handled through an authenticated agent/tool capability.
 
 ```text
-Expense Description
- ↓
-Text Cleaning
- ↓
-TF-IDF
- ↓
-Logistic Regression
- ↓
-Category + Confidence
- ↓
+Transaction Description
+        ↓
+Agent / Categorization Tool
+        ↓
+Category + Explanation
+        ↓
+User-confirmed write when required
+        ↓
 MongoDB
 ```
 
-Example:
+The categorization tool may use Groq structured output where natural-language classification is needed, but it must never invent transactions or financial values.
 
-`Swiggy order → Food`
+Manual category selection remains available in the Spending UI.
 
-Possible categories:
-
-- Food
-- Shopping
-- Transport
-- Entertainment
-- Bills
-- Healthcare
-- Education
-- Travel
-- Rent
-- Utilities
-- Other
-
-If the trained model is unavailable or unsuitable, retain the existing keyword/rule-based fallback so expense creation does not fail.
-
-AA-imported transactions use the same categorization mechanism.
-
----
+The categorization layer is not the source of truth for financial calculations.
 
 ## 11. Budget Management
 
@@ -567,56 +608,98 @@ Avoid duplicate navigation bars and redundant widgets.
 
 ## 20. AI Financial Copilot
 
-**Technology:**
+The Copilot is the primary interaction layer for IntelliMoney.
+
+### Technology
 
 ```text
-React
- ↓
+React Copilot UI
+      ↓
 FastAPI
- ↓
-Copilot Service
- ↓
-LangChain
- ↓
+      ↓
+LangChain Agent
+      ↓
 Groq
+      ↓
+Typed Financial Tools
+      ↓
+Domain Services / MongoDB
 ```
 
-Example questions:
+### Agent capabilities
 
-- How much did I spend on food?
-- Where am I overspending?
-- Can I save ₹10,000 this month?
-- Why did my health score decrease?
-- Which budget should I reduce?
-- How much should I save for my goal?
+The agent can:
 
-Preferred flow:
+- answer questions about the user's finances;
+- inspect the user's complete financial context through scoped read tools;
+- create, update and delete expenses;
+- create, update and delete budgets;
+- set or update income;
+- create, update and delete goals;
+- manage recurring expenses and subscriptions;
+- calculate and explain financial health;
+- inspect budget intelligence;
+- generate reports from real data;
+- detect/explain anomalies;
+- manage notifications where supported;
+- inspect account/sync status;
+- initiate and inspect approved AA Sandbox actions;
+- import approved AA Sandbox data when the user requests it.
+
+### Read vs write actions
+
+Read-only requests may execute immediately.
+
+Write and destructive requests MUST use:
 
 ```text
-Question
+User Request
  ↓
-Backend retrieves relevant financial data
+Agent Plan
  ↓
-Structured context
+Proposed Changes
  ↓
-LangChain
+User Confirmation
  ↓
-Groq
- ↓
-Answer
+Tool Execution
 ```
 
-### Non-negotiable AI rules
+### Clarification rule
+
+The agent must ask follow-up questions whenever critical information is missing.
+
+Examples:
+
+- "Make me a budget." → ask monthly income and other critical planning inputs.
+- "Save the rest." → ask whether the remainder should be a savings goal, planned savings amount, or another explicit target.
+- "Delete that expense." → identify the exact transaction before proposing deletion.
+
+No assumptions or hallucinations are allowed.
+
+### Suggested questions
+
+Show approximately 4–6 dynamic suggestions based on the user's current financial state, such as:
+
+- How much did I spend this month?
+- Where am I overspending?
+- Create a budget for me.
+- How can I reach my savings goal?
+- Why did my health score change?
+- Analyze my subscriptions.
+
+### External knowledge boundary
+
+The user's full financial database is an external knowledge source exposed only through authenticated, user-scoped tools. The LLM never receives raw MongoDB access.
+
+### AI rules
 
 - Groq is the only LLM provider.
 - OpenAI must not be introduced.
 - No second LLM provider.
-- Groq API credentials remain server-side.
-- The LLM must not invent transactions.
-- The LLM must not become the source of financial calculations.
-- Backend calculations remain the source of truth.
-
----
+- Groq credentials remain server-side.
+- The LLM must not invent transactions, balances, scores or financial values.
+- The LLM must not directly mutate the database.
+- Tool outputs and deterministic backend calculations are the source of truth.
 
 ## 21. Account Aggregator Sandbox Integration
 
@@ -628,95 +711,66 @@ Provide a realistic demonstration of consented financial-data acquisition withou
 
 **Setu AA Sandbox**
 
-Setu's AA platform exposes sandbox/mock financial-data capabilities for FIU development and supports consent, notification and data-fetch flows.
+### User experience
+
+The AA Sandbox is a dedicated demonstration/integration page, not the primary financial-management workflow.
+
+The user may:
+
+1. Create a sandbox consent.
+2. Review/approve/reject the consent in the supported demo flow.
+3. Inspect consent state.
+4. Create a data session when consent is approved.
+5. Inspect data-session state.
+6. Optionally fetch/import approved sandbox data.
+
+### Import semantics
+
+AA Sandbox import is optional/manual from the user's perspective.
+
+- If the user rejects consent or does not request import, no financial data is imported.
+- If the user approves the consent and explicitly proceeds with the available import/fetch action, the returned sandbox data is automatically normalized and inserted into the same financial transaction pipeline used by manual transactions.
+- Imported transactions must then participate in dashboard spending, budgets, cash flow, financial health, reports and other downstream calculations.
 
 ### Required demonstration capabilities
 
-1. Start AA connection.
-2. Create consent request.
-3. Display/redirect/embed the Setu consent experience where supported.
-4. Handle approval/rejection.
-5. Receive sandbox notification events.
-6. Initiate data session after approved consent.
-7. Fetch sandbox financial data.
-8. Normalize the returned data.
-9. Map it into IntelliMoney transactions.
-10. Run existing categorization and financial analytics.
-
-Setu's current documentation describes consent flow, data-fetch flow and notifications as the three major integration areas.
+- AA consent creation;
+- consent status handling;
+- consent approval/rejection demonstration;
+- sandbox notification handling where supported;
+- data-session creation;
+- data-ready status handling;
+- sandbox financial-data fetch;
+- mapping sandbox data into IntelliMoney's transaction model;
+- transaction import and duplicate prevention.
 
 ### Architectural rule
 
-Do not place Setu API calls directly inside:
-
-- dashboard components;
-- expense components;
-- financial-health services;
-- budget services;
-- ML services.
-
-Use a dedicated AA integration boundary.
-
-### Suggested logical structure
-
 ```text
-backend/
-  integrations/
-    account_aggregator/
-      interface.py
-      setu_sandbox.py
-      models.py
-      mapper.py
-      service.py
-```
-
-The exact repository structure must follow the existing project architecture if an equivalent structure already exists.
-
-### Data normalization
-
-```text
-Setu Sandbox Data
-       ↓
-AA Mapper
-       ↓
+Frontend
+  ↓
+FastAPI AA Service
+  ↓
+AA Provider Interface
+  ↓
+Setu Sandbox Adapter
+  ↓
 Normalized Transaction
-       ↓
-Expense Service
-       ↓
-Categorization
-       ↓
-MongoDB
-       ↓
-Analytics
+  ↓
+Existing Transaction/Financial Pipeline
 ```
 
-Do not create a separate financial-data model for every downstream feature unless the existing implementation requires it.
-
-### Security
-
-Setu credentials must be stored in environment variables.
-
-Never:
-
-- commit credentials;
-- expose credentials to React;
-- log secrets;
-- place secrets in frontend code.
+Setu-specific calls must remain behind the provider boundary.
 
 ### Sandbox-only labeling
 
-The UI and documentation should clearly identify the feature as:
+The UI must clearly display:
 
 **Account Aggregator Sandbox / Demo**
 
-It must not claim:
+It must state that it is not connected to real production bank accounts.
 
-- production bank connectivity;
-- live bank synchronization;
-- live financial institution access;
-- production AA certification.
-
----
+Never claim production banking connectivity.
 
 ## 22. Receipt/OCR
 
@@ -887,42 +941,116 @@ Every financial document must be associated with the authenticated Clerk user.
 
 ## 27. Frontend Logical Routes
 
-Follow existing repository routes; do not duplicate pages.
+### Public
 
 ```text
 /
- /login
- /register
- /app/dashboard
- /app/expenses
- /app/budgets
- /app/reports
- /app/recurring
- /app/subscriptions
- /app/anomaly
- /app/health
- /app/budget-intelligence
- /app/goals
- /app/receipts
- /app/copilot
- /app/account-aggregator
+/login
+/register
 ```
+
+### Primary authenticated routes
+
+```text
+/app/dashboard
+/app/health
+/app/goals
+/app/copilot
+/app/budget-intelligence
+/app/aa-sandbox
+```
+
+### Dashboard sub-routes
+
+```text
+/app/dashboard/overview
+/app/dashboard/analytics
+/app/dashboard/spending
+/app/dashboard/cashflow
+/app/dashboard/budgets
+/app/dashboard/insights
+/app/dashboard/notifications
+```
+
+### Retained feature routes
+
+```text
+/app/reports
+/app/recurring
+/app/subscriptions
+/app/anomaly
+/app/receipts
+```
+
+### Legacy compatibility
+
+If the repository currently exposes `/app/expenses` or `/app/budgets`, migrate their implementation to the Dashboard sub-routes and optionally redirect legacy URLs to:
+
+```text
+/app/expenses → /app/dashboard/spending
+/app/budgets → /app/dashboard/budgets
+```
+
+Do not maintain duplicate page implementations.
 
 The exact AA route should follow the existing repository routing conventions if an equivalent route already exists.
 
----
-
 ## 28. UI Requirements
 
-Use the existing IntelliMoney landing-page theme:
+Use the existing IntelliMoney visual language from `IntelliMoney_DESIGN.md`.
 
-- light/clean background;
-- green primary accent;
-- subtle gradients;
-- dark navy text;
-- rounded cards;
-- restrained shadows;
-- consistent spacing.
+### Primary left sidebar
+
+The sidebar must be intentionally small:
+
+```text
+CORE
+- Dashboard
+- Health Score
+- Goals
+- AI Copilot
+
+INTEGRATIONS
+- Account Aggregator
+```
+
+Do NOT show Expenses or Budgets as top-level sidebar items.
+
+Bank Accounts, Data Sync and similar operational integration pages should be handled through the Account Aggregator area and/or agent tools unless the approved design explicitly requires a separate page.
+
+### Dashboard navigation
+
+Dashboard contains structured financial workspaces such as:
+
+- Overview
+- Analytics
+- Spending
+- Cash Flow
+- Budgets
+- Insights
+- Notifications
+
+### AI Copilot UI
+
+The Copilot should feel like a first-class application surface and include:
+
+- conversation;
+- dynamic suggested questions;
+- tool/action plan cards;
+- confirmation controls;
+- execution status;
+- results;
+- loading/error states.
+
+### Goals and Health
+
+Goals and Health Score remain dedicated sidebar modules because users need visual, persistent views of progress and financial health.
+
+### Budget Intelligence
+
+Budget Intelligence remains a visual/reporting area, not a second conversational AI system.
+
+### Responsive behavior
 
 Every page must work on:
 
@@ -933,14 +1061,12 @@ Every page must work on:
 
 Avoid:
 
-- horizontal overflow;
-- duplicate navigation;
-- blank pages;
+- duplicated navigation;
+- excessive nested navigation;
+- large unexplained empty areas;
+- blank states without guidance;
 - broken charts;
-- fake financial data;
 - misleading production banking claims.
-
----
 
 ## 29. Security
 
@@ -1012,7 +1138,7 @@ Required environment configuration should include only the credentials actually 
 ```text
 MONGODB_URL
 CLERK_SECRET_KEY
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY / equivalent frontend Clerk configuration
+VITE_CLERK_PUBLISHABLE_KEY
 GROQ_API_KEY
 SETU_CLIENT_ID
 SETU_CLIENT_SECRET
@@ -1032,77 +1158,117 @@ Never commit real credentials.
 
 Verify:
 
-- Clerk authentication;
+### Authentication
+
+- Clerk sign-up/sign-in;
 - protected routes;
-- user authorization;
+- user ownership;
+- existing-user → Dashboard;
+- new-user → Connect Account;
+- new-user Skip → Dashboard;
+- no redirect loops;
+- no duplicate sync requests.
+
+### Agent
+
+- read-only questions;
+- missing-information clarification;
+- proposed write actions;
+- confirmation/cancel flow;
+- tool execution;
+- multi-tool plans;
+- partial failure handling;
+- user ownership;
+- no hallucinated results.
+
+### Financial tools
+
 - expense CRUD;
-- categorization;
-- budgets;
-- health score;
+- budget CRUD;
+- income updates;
 - goals;
-- reports;
 - recurring expenses;
 - subscriptions;
+- reports;
+- health calculations;
 - anomaly detection;
-- notifications;
-- Copilot;
-- OCR;
-- AA consent creation;
-- AA approval/rejection handling;
-- AA sandbox notification handling;
-- AA sandbox data fetch;
-- AA data normalization;
-- imported transaction creation;
-- all routes;
-- API calls;
-- loading/error states;
-- responsive layouts.
+- notifications.
 
-### Critical integration flow
+### AA Sandbox
+
+- consent creation;
+- approval/rejection;
+- data-session creation;
+- data-ready state;
+- fetch/import;
+- duplicate prevention;
+- user ownership;
+- downstream transaction propagation.
+
+### Frontend
+
+- routes;
+- dashboard sub-routes;
+- Clerk state;
+- forms;
+- API integration;
+- loading/error states;
+- responsive layouts;
+- Copilot confirmation UI;
+- AA Sandbox UI.
+
+### Critical agent flow
 
 ```text
-Clerk Authentication
+User Request
  ↓
-Account Aggregator Sandbox / Manual Expense
+Agent
  ↓
-Expense / Transaction
+Clarification if necessary
  ↓
-Categorization
+Tools / Financial Data
  ↓
-Budget Update
+Proposed Changes
  ↓
-Financial Health
+User Confirmation
  ↓
-Dashboard
+Tool Execution
  ↓
-Recommendation / Alert
+Dashboard / Health / Goals refresh
 ```
-
----
 
 ## 33. Definition of Done
 
 - Clerk registration/login works.
 - No custom JWT authentication remains.
+- Existing users go directly to Dashboard after login.
+- New users go to Connect Account after signup.
+- Skip from Connect Account goes to Dashboard.
 - Protected routes work.
 - User-level authorization works.
+- Copilot is a real LangChain Agent powered by Groq.
+- Agent uses scoped tools for financial reads and writes.
+- Read-only requests can execute without confirmation.
+- Write/destructive requests require explicit confirmation.
+- Agent asks follow-up questions when critical information is missing.
+- Agent cannot directly access MongoDB.
+- Agent cannot access another user's financial data.
+- No financial hallucinations are accepted as tool results.
 - Expense CRUD works.
-- Categorization works with ML/fallback.
+- Old TF-IDF/Logistic Regression categorization pipeline is removed.
 - Budgets and thresholds work.
-- Health score is deterministic and 0–100.
+- Financial Health is deterministic and 0–100.
 - Health history works.
-- Goals work and affect insights.
-- Recurring/subscription features work.
+- Goals work manually and through the agent.
+- Budget Intelligence remains available as visualization/reporting.
 - Reports use real stored data.
+- Recurring/subscription features work.
 - Anomaly detection works.
-- Copilot works with Groq.
-- Groq is the only LLM provider.
 - OCR works where implemented.
 - Notifications work.
 - Setu AA Sandbox demonstration flow works where credentials/configuration are available.
-- AA consent states are handled correctly.
-- AA sandbox data can be normalized into IntelliMoney financial data.
-- AA credentials are never exposed to the frontend.
+- AA import is optional/manual and only imports when the user proceeds.
+- Approved AA imports flow through the same financial pipeline as manual transactions.
 - No production banking integration is claimed.
 - No UPI integration exists.
 - No payment processing exists.
@@ -1110,56 +1276,78 @@ Recommendation / Alert
 - No broken imports/API mismatches.
 - No exposed secrets.
 - All pages are responsive.
-- Project remains understandable and interview-friendly.
-
----
+- Project remains simple and interview-friendly.
 
 ## 34. Final Product Scope
 
 ```text
 Clerk Authentication
         ↓
-Expense Management
+Dashboard
         ↓
-Setu AA Sandbox / Demo Data Import
+┌──────────────────────────────────────────────┐
+│ AI Copilot Agent                             │
+│ LangChain + Groq + Authenticated Tools      │
+└──────────────────────────────────────────────┘
         ↓
-ML Expense Categorization
+Financial Domain Tools
         ↓
-Budget Management
+Expenses / Budgets / Income / Goals /
+Recurring / Subscriptions / Reports /
+Health / Anomaly / Notifications / AA
         ↓
-Budget Intelligence
-        ↓
-Financial Health
-        ↓
-Reports & Analytics
-        ↓
-Recurring Expenses
-        ↓
-Subscriptions
-        ↓
-Anomaly Detection
-        ↓
-Goals
-        ↓
-Receipt/OCR
-        ↓
-AI Financial Copilot
-        ↓
+MongoDB
+```
+
+### Primary navigation
+
+```text
+CORE
+- Dashboard
+- Health Score
+- Goals
+- AI Copilot
+
+INTEGRATIONS
+- Account Aggregator
+```
+
+### Dashboard workspace
+
+```text
+Overview
+Analytics
+Spending
+Cash Flow
+Budgets
+Insights
 Notifications
 ```
 
 ### Final rules
 
 1. **Clerk is the only authentication provider.**
-2. **Do not implement JWT authentication.**
-3. **Setu AA Sandbox is the only Account Aggregator integration required.**
-4. **AA integration is sandbox/demo-ready, not production banking integration.**
-5. **Groq is the only LLM provider.**
-6. **Do not add OpenAI.**
-7. **Do not add another LLM provider.**
-8. **Financial calculations remain deterministic.**
-9. **Existing ML remains TF-IDF + Logistic Regression unless a clearly justified requirement changes it.**
-10. **Do not introduce microservices, Kafka, Kubernetes or unnecessary infrastructure.**
-11. **Do not invent features outside this PRD.**
-12. **The three specification documents are the source of truth.**
-13. **The goal is to make IntelliMoney reliable, secure, maintainable, demonstrable and interview-friendly.**
+2. **Do not implement application-managed JWT authentication.**
+3. **Groq is the only LLM provider.**
+4. **LangChain Agent is the primary natural-language interaction layer.**
+5. **Financial mutations happen only through validated tools after explicit user confirmation.**
+6. **The agent must ask for missing critical information instead of guessing.**
+7. **The agent has no direct MongoDB access and cannot cross user boundaries.**
+8. **The previous TF-IDF + Logistic Regression expense-classification system is removed.**
+9. **Financial calculations remain deterministic backend logic.**
+10. **Health Score and Goals remain dedicated visual modules.**
+11. **Budget Intelligence becomes primarily a visualization/reporting area, while Copilot is its interaction layer.**
+12. **Expenses move to `/app/dashboard/spending`.**
+13. **Budgets move to `/app/dashboard/budgets`.**
+14. **Expenses and Budgets are removed from the primary left sidebar.**
+15. **The primary sidebar contains Dashboard, Health Score, Goals and AI Copilot.**
+16. **The Integrations section contains Account Aggregator.**
+17. **Setu AA Sandbox remains a demonstration integration, never production banking connectivity.**
+18. **AA imports are optional/manual and only occur when the user proceeds with the approved flow.**
+19. **AA-imported transactions use the same downstream financial pipeline as manual transactions.**
+20. **No OpenAI or second LLM provider.**
+21. **No microservices, Kafka or Kubernetes.**
+22. **Do not invent features outside this PRD.**
+23. **The three specification documents plus these approved AI-first changes are the source of truth.**
+24. **The goal is to make IntelliMoney smaller, clearer, safer, more agentic and easier to demonstrate.**
+

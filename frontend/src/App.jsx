@@ -7,18 +7,12 @@ import PageLoader from "./components/PageLoader";
 
 const AppLayout = lazy(() => import("./layouts/AppLayout"));
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout"));
-const Budgets = lazy(() => import("./pages/Budgets"));
-const BudgetOptimizer = lazy(() => import("./pages/BudgetOptimizer"));
-const Expenses = lazy(() => import("./pages/Expenses"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Recurring = lazy(() => import("./pages/Recurring"));
 const Anomaly = lazy(() => import("./pages/Anomaly"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Subscriptions = lazy(() => import("./pages/Subscriptions"));
-const Sync = lazy(() => import("./pages/Sync"));
-const SyncHistory = lazy(() => import("./pages/SyncHistory"));
-const SyncStatus = lazy(() => import("./pages/SyncStatus"));
 const OverviewPage = lazy(() => import("./dashboard/pages/OverviewPage"));
 const AnalyticsPage = lazy(() => import("./dashboard/pages/AnalyticsPage"));
 const SpendingPage = lazy(() => import("./dashboard/pages/SpendingPage"));
@@ -107,18 +101,18 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="expenses" element={<Suspense fallback={<PageLoader />}><Expenses /></Suspense>} />
-          <Route path="budgets" element={<Suspense fallback={<PageLoader />}><Budgets /></Suspense>} />
-          <Route path="budget-optimizer" element={<Suspense fallback={<PageLoader />}><BudgetOptimizer /></Suspense>} />
+          <Route path="expenses" element={<Navigate to="/app/dashboard/spending" replace />} />
+          <Route path="budgets" element={<Navigate to="/app/dashboard/budgets" replace />} />
+          <Route path="budget-optimizer" element={<Navigate to="/app/budget-intelligence" replace />} />
           <Route path="reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
           <Route path="subscriptions" element={<Suspense fallback={<PageLoader />}><Subscriptions /></Suspense>} />
           <Route path="recurring" element={<Suspense fallback={<PageLoader />}><Recurring /></Suspense>} />
           <Route path="anomaly" element={<Suspense fallback={<PageLoader />}><Anomaly /></Suspense>} />
-          <Route path="bank-accounts" element={<Suspense fallback={<PageLoader />}><ManageAccounts /></Suspense>} />
+          <Route path="bank-accounts" element={<Navigate to="/app/aa-sandbox" replace />} />
           <Route path="aa-sandbox" element={<Suspense fallback={<PageLoader />}><AASandboxPage /></Suspense>} />
-          <Route path="sync" element={<Suspense fallback={<PageLoader />}><Sync /></Suspense>} />
-          <Route path="sync/history" element={<Suspense fallback={<PageLoader />}><SyncHistory /></Suspense>} />
-          <Route path="sync/status" element={<Suspense fallback={<PageLoader />}><SyncStatus /></Suspense>} />
+          <Route path="sync" element={<Navigate to="/app/aa-sandbox" replace />} />
+          <Route path="sync/history" element={<Navigate to="/app/aa-sandbox" replace />} />
+          <Route path="sync/status" element={<Navigate to="/app/aa-sandbox" replace />} />
           <Route path="dashboard" element={<Suspense fallback={<PageLoader />}><DashboardLayout /></Suspense>}>
             <Route index element={<Suspense fallback={<PageLoader />}><OverviewPage /></Suspense>} />
             <Route path="overview" element={<Suspense fallback={<PageLoader />}><OverviewPage /></Suspense>} />

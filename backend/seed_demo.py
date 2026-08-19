@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from bson import ObjectId
 
 from app.db.mongodb import close_mongo_connection, connect_to_mongo, get_database
-from app.services.ml_service import categorizer
+from app.services.category_service import suggest_category
 from app.services.serializers import date_to_datetime, utc_now
 
 
@@ -49,7 +49,7 @@ async def seed() -> None:
         (750, "pharmacy medicines", "Cash", today - timedelta(days=7)),
     ]
     for amount, description, payment_method, expense_date in sample_expenses:
-        category, _ = categorizer.predict(description)
+        category, _ = suggest_category(description)
         await db.expenses.insert_one(
             {
                 "user_id": user_id,

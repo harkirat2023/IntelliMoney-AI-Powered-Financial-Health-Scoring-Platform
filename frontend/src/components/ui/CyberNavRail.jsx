@@ -3,41 +3,29 @@ import { motion } from "framer-motion";
 import { useAuth } from "../../auth/AuthContext";
 
 import {
-  Activity, AlertTriangle, BarChart3, Bot, Building2,
-  CreditCard, Database, FileText, LayoutDashboard, PieChart,
-  Receipt, LogOut, RefreshCw, Settings, Target, WalletCards,
-  ShieldCheck,
+  Activity, AlertTriangle, BarChart3, Bot,
+  CreditCard, FileText, LayoutDashboard, LogOut, PieChart,
+  Receipt, RefreshCw, ShieldCheck, Target,
 } from "lucide-react";
 
-const iconMap = {
-  Activity, AlertTriangle, BarChart3, Bot, Building2,
-  CreditCard, Database, FileText, LayoutDashboard, PieChart,
-  Receipt, RefreshCw, Settings, ShieldCheck, Target, WalletCards,
-};
-
-const navItems = [
-  { to: "/app/dashboard", label: "Dashboard", icon: BarChart3, end: true },
-  { to: "/app/expenses", label: "Expenses", icon: CreditCard },
-  { to: "/app/budgets", label: "Budgets", icon: WalletCards },
-  { to: "/app/budget-intelligence", label: "Budget Intel", icon: PieChart },
+const coreItems = [
+  { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/app/health", label: "Health Score", icon: Activity },
-  { to: "/app/copilot", label: "AI Copilot", icon: Bot },
   { to: "/app/goals", label: "Goals", icon: Target },
+  { to: "/app/copilot", label: "AI Copilot", icon: Bot },
 ];
 
 const integrationsItems = [
-  { to: "/app/bank-accounts", label: "Bank Accounts", icon: Building2 },
-  { to: "/app/aa-sandbox", label: "AA Sandbox", icon: ShieldCheck },
-  { to: "/app/sync", label: "Data Sync", icon: Database },
+  { to: "/app/aa-sandbox", label: "Account Aggregator", icon: ShieldCheck },
 ];
 
-const v2Items = [
+const toolsItems = [
+  { to: "/app/budget-intelligence", label: "Budget Intelligence", icon: PieChart },
   { to: "/app/reports", label: "Reports", icon: FileText },
   { to: "/app/recurring", label: "Recurring", icon: RefreshCw },
+  { to: "/app/subscriptions", label: "Subscriptions", icon: CreditCard },
   { to: "/app/anomaly", label: "Anomaly", icon: AlertTriangle },
-  { to: "/app/subscriptions", label: "Subscriptions", icon: RefreshCw },
   { to: "/app/receipts", label: "Receipts", icon: Receipt },
-  { to: "/app/budget-optimizer", label: "Budget Optimizer", icon: Settings },
 ];
 
 function NavItem({ to, label, icon: Icon, end }) {
@@ -73,7 +61,7 @@ export default function CyberNavRail() {
         <div className="neon-mono" style={{padding:"4px 14px 8px",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase"}}>
           Core
         </div>
-        {navItems.map((item) => (
+        {coreItems.map((item) => (
           <NavItem key={item.to} {...item} />
         ))}
         <div className="neon-mono" style={{padding:"16px 14px 8px",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase"}}>
@@ -83,9 +71,9 @@ export default function CyberNavRail() {
           <NavItem key={item.to} {...item} />
         ))}
         <div className="neon-mono" style={{padding:"16px 14px 8px",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase"}}>
-          Insights
+          Tools
         </div>
-        {v2Items.map((item) => (
+        {toolsItems.map((item) => (
           <NavItem key={item.to} {...item} />
         ))}
       </nav>

@@ -1,8 +1,8 @@
 # IntelliMoney — Minimal Tech Stack
 
-**Version:** 2.0
+**Version:** 3.0
 
-**Purpose:** Keep IntelliMoney technically simple, reliable, interview-friendly and easy to maintain while preserving every approved core feature, including the Setu AA Sandbox demonstration and Clerk authentication.
+**Purpose:** Keep IntelliMoney technically simple, AI-first, reliable, interview-friendly and easy to maintain while preserving every approved core feature, including the Setu AA Sandbox demonstration and Clerk authentication.
 
 ---
 
@@ -14,32 +14,34 @@
 | Styling | Tailwind CSS | Responsive UI and design system |
 | Authentication | Clerk | Authentication, sessions and user identity |
 | Backend | FastAPI | REST API and business logic |
-| Language | Python | Backend + ML |
+| Language | Python | Backend and deterministic financial calculations |
 | Database | MongoDB | User and financial data |
-| ML | scikit-learn | Expense categorization |
-| Data Processing | Pandas + NumPy | ML preprocessing and financial calculations |
-| NLP | TF-IDF | Expense-description features |
-| Classifier | Logistic Regression | Expense category prediction |
-| AI | Groq | Financial Copilot LLM |
-| AI Orchestration | LangChain | Groq/Copilot integration |
+| AI | Groq | LLM used by the financial agent |
+| AI Orchestration | LangChain | Agent orchestration, tool calling and structured outputs |
 | Account Aggregator | Setu AA Sandbox | Demonstration financial-data integration |
-| OCR | Existing OCR library | Receipt data extraction |
+| OCR | Existing OCR implementation | Receipt extraction |
 | Charts | Existing chart library | Financial visualizations |
-| Containers | Docker Compose | Simple local environment |
+| Containers | Docker Compose | Simple local environment, if already used |
 | Testing | Pytest + existing frontend tests | Verification |
 | Version Control | Git + GitHub | Source control |
 
+### Removed from the approved architecture
+
+The old expense-categorization ML stack is intentionally removed:
+
+- scikit-learn expense classifier;
+- TF-IDF expense features;
+- Logistic Regression expense classifier;
+- trained expense-classifier artifact;
+- ML training pipeline used solely for expense categorization.
+
+The project should not retain these dependencies or artifacts unless another independently verified feature still requires them.
+
 **Authentication is Clerk-only.**
 
-Do not introduce:
+**LLM is Groq-only.**
 
-- custom JWT;
-- password hashing;
-- local password authentication;
-- another identity provider;
-- a parallel authentication system.
-
----
+**Agent orchestration is LangChain.**
 
 ## 2. Architecture
 
@@ -48,13 +50,65 @@ React + Tailwind
        ↓
 Clerk Authentication
        ↓
-    FastAPI
+FastAPI
        ↓
-    Services
+Agent / Domain Services
        ↓
-  Repositories
+Repositories
        ↓
-    MongoDB
+MongoDB
+```
+
+### AI-first architecture
+
+```text
+User
+ ↓
+Copilot UI
+ ↓
+FastAPI
+ ↓
+LangChain Agent
+ ↓
+Groq
+ ↓
+User-scoped Financial Tools
+ ↓
+Deterministic Domain Services
+ ↓
+Repositories
+ ↓
+MongoDB
+```
+
+### Tool boundary
+
+The agent receives tools, not raw database access.
+
+```text
+Agent
+ ↓
+Typed Tool
+ ↓
+Service
+ ↓
+Repository
+ ↓
+MongoDB
+```
+
+### Mutation flow
+
+```text
+User Request
+ ↓
+Agent Plan
+ ↓
+Proposed Changes
+ ↓
+User Confirmation
+ ↓
+Tool Execution
 ```
 
 ### Financial pipeline
@@ -68,36 +122,34 @@ Setu AA Sandbox       │
        │              │
        └──────┬───────┘
               ↓
-       Financial Data
+       Normalized Financial Data
               ↓
-         Normalization
+      Deterministic Domain Services
               ↓
-        ML Categorizer
+    Budgets / Health / Reports / Dashboard
               ↓
-       Budgets / Health
-              ↓
-          Dashboard
+              Copilot
 ```
 
-### AI
+### Account Aggregator boundary
 
 ```text
-AI Copilot
-    ↓
 FastAPI
-    ↓
-Financial Context
-    ↓
-LangChain
-    ↓
-Groq
+  ↓
+Account Aggregator Service
+  ↓
+AA Provider Interface
+  ↓
+Setu Sandbox Adapter
+  ↓
+Normalized Transaction
+  ↓
+Existing Financial Pipeline
 ```
 
-Keep this as a **modular monolith**.
+Keep the application a modular monolith.
 
 Do not introduce microservices.
-
----
 
 ## 3. Frontend
 
@@ -212,10 +264,10 @@ Responsible for:
 - Clerk authentication integration;
 - authorization;
 - validation;
-- business logic;
-- financial calculations;
-- ML integration;
-- Copilot integration;
+- deterministic financial business logic;
+- domain services;
+- LangChain agent integration;
+- tool execution;
 - OCR processing;
 - Setu AA integration;
 - notifications.
@@ -225,16 +277,16 @@ Use:
 ```text
 Router
   ↓
-Service
+Authentication / Authorization
+  ↓
+Service / Tool
   ↓
 Repository
   ↓
 MongoDB
 ```
 
-Do not create unnecessary layers or abstractions.
-
----
+The LLM must not contain authoritative business logic.
 
 ## 6. Database
 
@@ -403,63 +455,55 @@ No production banking integration is required.
 
 ---
 
-## 8. ML Stack
+## 8. AI / Agent Stack
 
-### Expense Categorization
+### LangChain Agent
 
-```text
-Expense Description
-       ↓
-Text Cleaning
-       ↓
-TF-IDF
-       ↓
-Logistic Regression
-       ↓
-Category + Confidence
-```
-
-Use:
-
-- Pandas;
-- NumPy;
-- scikit-learn;
-- TF-IDF;
-- Logistic Regression.
-
-Keep the existing rule/keyword fallback so missing ML artifacts do not break expense creation.
-
-### ML training
+The primary AI architecture is a real tool-using agent:
 
 ```text
-Labeled Dataset
- ↓
-Preprocessing
- ↓
-Train/Test Split
- ↓
-TF-IDF
- ↓
-Logistic Regression
- ↓
-Evaluation
- ↓
-Saved Model
+User Request
+    ↓
+LangChain Agent
+    ↓
+Groq
+    ↓
+Tool Selection
+    ↓
+Tool Execution
+    ↓
+Tool Result
+    ↓
+Agent Response
 ```
 
-The model is trained separately, not on every API request.
+The agent must:
 
-Do not introduce new ML models without a clear product requirement.
+- understand intent;
+- inspect user-scoped financial data;
+- ask clarifying questions;
+- generate proposed write actions;
+- wait for confirmation;
+- execute approved tools;
+- explain tool results.
 
----
+### No direct database access
+
+The agent never receives a MongoDB client, connection string, collection handle or unrestricted query mechanism.
+
+### No hallucinated financial data
+
+Financial values must come from tools/backend calculations.
+
+### Expense categorization
+
+The former TF-IDF + Logistic Regression categorizer is removed. Expense categorization is now an agent/tool capability. Manual category selection remains available.
 
 ## 9. Financial Intelligence
 
-Do **not** use an LLM for deterministic financial calculations.
-
 ### Financial Health
 
-Use Python-based deterministic calculations for:
+Use deterministic Python/domain services for:
 
 - savings rate;
 - debt ratio;
@@ -469,19 +513,10 @@ Use Python-based deterministic calculations for:
 - goal completion;
 - expense stability;
 - income stability;
-- investment habit;
+- investment habit where data exists;
 - financial trend.
 
-Output:
-
-```text
-Score
-Grade
-Risk
-Factor Contributions
-Recommendations
-Trend
-```
+The LLM can explain these results but cannot become their source of truth.
 
 ### Budget Intelligence
 
@@ -491,54 +526,100 @@ Use deterministic calculations for:
 - remaining budget;
 - overspending;
 - category performance;
-- recommendations.
+- savings opportunities;
+- trend analysis;
+- optimization calculations.
+
+Budget Intelligence is primarily a visualization/reporting module. The Copilot is the natural-language interaction layer.
 
 ### Anomaly Detection
 
-Use lightweight statistical/rule-based logic.
+Use lightweight explainable statistical/rule-based logic. Do not introduce a new anomaly ML platform.
 
-Do not add another complex ML framework.
+### Deterministic finance rule
 
-AA-imported transactions may participate in these calculations after normalization.
-
----
+Authoritative numbers must originate from backend calculations or database queries, not from model arithmetic or model memory.
 
 ## 10. Groq + LangChain
 
-### Purpose
+### Groq
 
-Groq is the **only LLM provider**.
+Groq is the ONLY LLM provider.
 
-It is used for natural-language generation where appropriate, primarily the AI Financial Copilot.
+### LangChain Agent
+
+Use LangChain to orchestrate the financial agent and tool calls.
 
 ```text
-User Question
+User
  ↓
-FastAPI
+Copilot
  ↓
-Retrieve relevant financial data
- ↓
-Structured context
- ↓
-LangChain
+LangChain Agent
  ↓
 Groq
  ↓
-Natural-language response
+Typed Financial Tools
+ ↓
+Deterministic Domain Services
 ```
 
-### Rules
+### Tool classes
 
-- Groq API key stays on the backend.
-- Never expose the key in React.
+Read tools:
+- expenses;
+- budgets;
+- income;
+- goals;
+- recurring;
+- subscriptions;
+- reports;
+- health;
+- anomaly;
+- notifications;
+- accounts;
+- AA state/import.
+
+Write tools:
+- create/update/delete operations;
+- approved import/sync operations.
+
+Destructive tools:
+- delete expense;
+- delete budget;
+- delete goal;
+- delete recurring/subscription records;
+- other irreversible operations.
+
+### Confirmation
+
+All write/destructive operations follow:
+
+```text
+Request
+ ↓
+Agent Plan
+ ↓
+Proposed Changes
+ ↓
+User Confirmation
+ ↓
+Tool Execution
+```
+
+### Clarification
+
+The agent must ask questions when required information is missing.
+
+No assumptions or hallucinations are allowed.
+
+### Security
+
+- Groq API key remains backend-only.
+- Never expose Groq credentials to React.
 - Do not use OpenAI.
 - Do not add another LLM provider.
-- Do not create multiple LLM abstraction providers unless genuinely required.
-- Do not let the LLM invent financial numbers.
-- Do not let the LLM replace deterministic calculations.
-- Backend calculations remain the source of truth.
-
----
+- Do not let the LLM mutate MongoDB directly.
 
 ## 11. OCR
 
@@ -580,50 +661,50 @@ Do not add multiple chart libraries.
 
 ### Backend
 
-Use:
-
-```text
-Pytest
-```
-
-Test:
+Use Pytest to test:
 
 - Clerk authentication;
 - authorization;
-- expenses;
-- categorization;
-- budgets;
-- financial health;
+- user ownership;
+- expense CRUD;
+- budget CRUD;
+- income updates;
+- health calculations;
 - goals;
-- reports;
 - recurring expenses;
 - subscriptions;
+- reports;
 - anomalies;
 - notifications;
-- Copilot;
+- Copilot tools;
+- agent confirmation flow;
+- clarification behavior;
+- multi-tool execution;
+- partial failure handling;
 - OCR;
-- AA consent flow;
-- AA notification flow;
-- AA data-fetch flow;
-- AA data normalization.
+- AA consent;
+- AA data session;
+- AA import;
+- AA ownership.
 
 ### Frontend
-
-Use the project's existing testing setup.
 
 Verify:
 
 - routes;
 - Clerk authentication state;
+- dashboard sub-routes;
 - forms;
 - API integration;
-- loading states;
-- error states;
+- Copilot UI;
+- proposed-action confirmation UI;
+- loading/error states;
 - responsive layouts;
-- AA connection UI;
-- consent states.
+- AA Sandbox flow.
 
----
+### Agent test principle
+
+Never mark an agent feature as passing merely because the LLM returns a plausible sentence. Verify that the correct tool was invoked and that the resulting state/data is correct.
 
 ## 14. Docker
 
@@ -660,7 +741,7 @@ Examples:
 ```text
 MONGODB_URL
 CLERK_SECRET_KEY
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+VITE_CLERK_PUBLISHABLE_KEY
 GROQ_API_KEY
 SETU_CLIENT_ID
 SETU_CLIENT_SECRET
@@ -694,32 +775,31 @@ These are development tools, not runtime dependencies.
 
 ## 17. Core Features That Must Not Break
 
-The tech-stack cleanup/refactor must preserve:
+The AI-first refactor must preserve:
 
 1. Clerk authentication
-2. Expense management
-3. ML expense categorization
+2. Dashboard
+3. Expense / Spending management
 4. Budgets
-5. Budget Intelligence
+5. Budget Intelligence visualization/reporting
 6. Financial Health Score
 7. Financial Health history/trends
-8. Dashboard
-9. Reports
-10. Recurring expenses
-11. Subscriptions
-12. Anomaly detection
-13. Goals
-14. Receipt/OCR
-15. AI Financial Copilot
-16. Notifications
-17. Setu AA Sandbox demonstration
-18. Responsive UI
+8. Reports
+9. Recurring expenses
+10. Subscriptions
+11. Anomaly detection
+12. Goals
+13. Receipt/OCR
+14. AI Copilot Agent
+15. Notifications
+16. Setu AA Sandbox demonstration
+17. Responsive UI
 
----
+Expenses and Budgets move under Dashboard sub-routes; their functionality is not removed.
 
 ## 18. Explicitly Avoid
 
-Do **not** introduce:
+Do NOT introduce:
 
 - custom JWT authentication;
 - password hashing;
@@ -733,16 +813,15 @@ Do **not** introduce:
 - PostgreSQL alongside MongoDB;
 - multiple frontend frameworks;
 - multiple CSS frameworks;
-- unnecessary AI agents;
+- unnecessary AI frameworks;
+- a second agent framework;
 - unnecessary ML models;
-- unnecessary third-party APIs;
+- TF-IDF / Logistic Regression expense-classification infrastructure;
 - production banking integrations;
 - UPI;
 - payment processing;
 - direct bank credentials;
 - live bank synchronization.
-
----
 
 ## 19. Technology Decision Rule
 
@@ -786,15 +865,11 @@ Python + FastAPI
 Database
 MongoDB
 
-ML
-scikit-learn
-Pandas
-NumPy
-TF-IDF
-Logistic Regression
-
 AI
-LangChain + Groq
+LangChain Agent + Groq
+
+Financial Logic
+Deterministic Python/domain services
 
 Account Aggregator
 Setu AA Sandbox
@@ -821,15 +896,19 @@ Git + GitHub + Postman
 Clerk
 ```
 
-**No JWT.**
+**No custom JWT authentication.**
 
 ### LLM rule
 
 ```text
-Groq
+LangChain Agent + Groq
 ```
 
 **No OpenAI. No second LLM provider.**
+
+### Agent rule
+
+The agent is the interaction/orchestration layer. Domain services/tools remain the deterministic source of truth.
 
 ### AA rule
 
@@ -839,32 +918,58 @@ Setu AA Sandbox
 
 **Sandbox/demo integration only.**
 
----
-
 ## 21. Non-Negotiable Rule
 
 **Simplify the implementation, not the product's core functionality.**
 
-Any refactor, dependency removal, architecture change or UI redesign must first verify that the existing core feature continues to work end-to-end:
+The target architecture is:
 
 ```text
-Frontend
+User
  ↓
-Clerk
+AI Copilot
  ↓
-API
+LangChain Agent
  ↓
-Service
+Groq
  ↓
-Database / ML / AI / AA Sandbox
+User-scoped Tools
  ↓
-Response
+Deterministic Domain Services
  ↓
-Frontend
+Repositories
+ ↓
+MongoDB
 ```
 
-No core feature should be removed merely to make the codebase smaller.
+Primary navigation:
+
+```text
+CORE
+- Dashboard
+- Health Score
+- Goals
+- AI Copilot
+
+INTEGRATIONS
+- Account Aggregator
+```
+
+Dashboard sub-navigation:
+
+```text
+Overview
+Analytics
+Spending
+Cash Flow
+Budgets
+Insights
+Notifications
+```
+
+Any refactor must preserve end-to-end behavior, enforce Clerk user ownership, keep financial calculations deterministic, require confirmation for financial writes, and keep Setu AA explicitly sandbox/demo-only.
 
 The final IntelliMoney stack should remain:
 
-**small + explainable + secure + reliable + sandbox-integrated + interview-friendly.**
+**small + explainable + secure + reliable + agentic + sandbox-integrated + interview-friendly.**
+

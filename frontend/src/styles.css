@@ -2488,3 +2488,42 @@ a {
     justify-content: flex-end;
   }
 }
+
+/* Expense & budget management (dashboard) */
+.expense-manager { margin-top: 20px; }
+.expense-form,
+.budget-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.expense-form input[type="number"],
+.expense-form input[type="date"],
+.expense-form input[type="text"],
+.expense-form select,
+.budget-form input,
+.budget-form select { padding: 9px 12px; border: 1px solid #dfe5ee; border-radius: 8px; font-size: 0.88rem; background: #f8fafc; color: #172033; }
+.expense-form input[type="number"] { width: 110px; }
+.expense-form input[type="date"] { width: 150px; }
+.expense-form input[type="text"] { flex: 1; min-width: 180px; }
+.expense-form select,
+.budget-form select { min-width: 140px; }
+.budget-form input { width: 140px; }
+.btn-primary { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary:hover { background: #059669; }
+.btn-secondary { background: #e7f9f1; color: #047857; border: 1px solid #a7f3d0; border-radius: 8px; padding: 9px 14px; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.btn-secondary:hover { background: #d1fae5; }
+.expense-prediction { color: #047857; font-size: 0.8rem; margin-top: 8px; }
+.expense-error { color: #b91c1c; font-size: 0.82rem; margin-top: 8px; }
+.expense-table { display: flex; flex-direction: column; }
+.expense-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid #f1f5f9; }
+.expense-row:last-child { border-bottom: none; }
+.expense-info { flex: 1; display: flex; flex-direction: column; }
+.expense-info small { color: #7a879d; font-size: 0.75rem; margin-top: 2px; }
+.expense-category { background: #eef2ff; color: #4338ca; border-radius: 999px; padding: 3px 10px; font-size: 0.75rem; font-weight: 600; }
+.expense-actions { display: flex; gap: 6px; }
+.expense-actions .icon-button,
+.budget-card-actions .icon-button { min-height: 30px; width: 30px; border-radius: 8px; border: 1px solid #e5eaf2; background: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.expense-actions .icon-button:hover,
+.budget-card-actions .icon-button:hover { background: #f0fdf4; color: #047857; }
+.expense-actions .icon-button.danger:hover,
+.budget-card-actions .icon-button.danger:hover { background: #fef2f2; color: #b91c1c; }
+.budget-form { margin-bottom: 16px; }
+.budget-card-actions { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; }
+.dash-budget-grid { gap: 20px; }

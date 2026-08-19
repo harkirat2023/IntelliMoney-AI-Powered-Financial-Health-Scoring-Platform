@@ -31,6 +31,17 @@ class ChatResponse(BaseModel):
     message: str
     message_id: str
     sources: list[str] = []
+    proposal: dict | None = None
+
+
+class ProposalResponse(BaseModel):
+    id: str
+    status: str
+    actions: list[dict] = []
+    execution: list[dict] = []
+    message: str = ""
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class ChatHistoryResponse(BaseModel):
