@@ -3,9 +3,7 @@ import { api } from "./client";
 export const dashboardV2Api = {
   getOverview: (period) => api.get("/dashboard/overview", { params: { period } }),
   getAnalytics: (period) => api.get("/dashboard/analytics", { params: { period } }),
-  getSpending: (category, period) => api.get("/dashboard/spending", { params: { category, period } }),
   getCashflow: (months) => api.get("/dashboard/cashflow", { params: { months } }),
-  getMonthly: (months) => api.get("/dashboard/monthly", { params: { months } }),
   getBudgets: (period) => api.get("/dashboard/budgets", { params: { period } }),
   getInsights: () => api.get("/dashboard/insights"),
   getNotifications: (unreadOnly, limit, offset) =>

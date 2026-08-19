@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, AlertCircle, CheckCircle, Loader2, Eye, XCircle, Info } from "lucide-react";
 import { bankApi } from "../api/bank";
-import { useAuth } from "../auth/AuthContext";
 
 const consentItems = [
   { icon: Eye, label: "Transaction History", detail: "Read past 12 months of transactions" },
@@ -12,29 +11,20 @@ const consentItems = [
 
 export default function ConsentPage() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const consentHandle = searchParams.get("consent_handle");
   const provider = searchParams.get("provider");
   const consentToken = searchParams.get("consent_token") || "";
-  const state = searchParams.get("state");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) { navigate("/login", { replace: true }); return; }
     if (!consentHandle || !provider) {
       navigate("/connect-bank", { replace: true });
     }
-    if (state && user?.id && state !== user.id) {
-      setError("Invalid request. Please restart the connection.");
-    }
-  }, [user, authLoading, consentHandle, provider, state, navigate]);
-
-  if (authLoading) return null;
+  }, [consentHandle, provider, navigate]);
 
   const handleApprove = async () => {
     setLoading(true);

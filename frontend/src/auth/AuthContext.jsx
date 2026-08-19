@@ -14,6 +14,7 @@ function UnconfiguredProvider({ children }) {
       clerkLoaded: false,
       isSignedIn: false,
       clerkConfigured: false,
+      authError: null,
       logout: async () => {},
       refreshUser: async () => null,
       getToken: async () => null,
@@ -28,25 +29,33 @@ function ClerkAuthProvider({ children }) {
   const { user: clerkUser } = useClerkUser();
   const [user, setUser] = useState(null);
   const [syncing, setSyncing] = useState(false);
+  const [authError, setAuthError] = useState(null);
+
+  const clerkUserId = clerkUser?.id;
+  const clerkName = clerkUser?.fullName || clerkUser?.firstName || "";
+  const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress || "";
+  const clerkIncome = clerkUser?.unsafeMetadata?.monthly_income || null;
 
   const syncUser = useCallback(async () => {
-    if (!isSignedIn || !clerkUser) {
+    if (!isSignedIn || !clerkUserId) {
       setUser(null);
       return null;
     }
     try {
       const res = await api.post("/auth/clerk-sync", {
-        name: clerkUser.fullName || clerkUser.firstName || "",
-        email: clerkUser.primaryEmailAddress?.emailAddress || "",
-        monthly_income: clerkUser.unsafeMetadata?.monthly_income || null,
+        name: clerkName,
+        email: clerkEmail,
+        monthly_income: clerkIncome,
       });
+      setAuthError(null);
       setUser(res.data);
       return res.data;
     } catch (err) {
+      setAuthError(err?.response?.data?.detail || "Account sync failed. Please try again.");
       setUser(null);
       return null;
     }
-  }, [isSignedIn, clerkUser]);
+  }, [isSignedIn, clerkUserId, clerkName, clerkEmail, clerkIncome]);
 
   useEffect(() => {
     if (!clerkLoaded) return;
@@ -55,6 +64,7 @@ function ClerkAuthProvider({ children }) {
       syncUser().finally(() => setSyncing(false));
     } else {
       setUser(null);
+      setAuthError(null);
       setSyncing(false);
     }
   }, [clerkLoaded, isSignedIn, syncUser]);
@@ -72,11 +82,12 @@ function ClerkAuthProvider({ children }) {
       clerkLoaded,
       isSignedIn,
       clerkConfigured: true,
+      authError,
       logout,
       refreshUser,
       getToken,
     }),
-    [user, loading, clerkLoaded, isSignedIn, logout, refreshUser, getToken],
+    [user, loading, clerkLoaded, isSignedIn, authError, logout, refreshUser, getToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

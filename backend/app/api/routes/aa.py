@@ -217,6 +217,7 @@ async def reject_consent(
         "id": str(consent["_id"]),
         "consent_status": "REJECTED",
         "sandbox": True,
+        "label": SANDBOX_LABEL,
         "message": "Consent rejected. No data session can be created.",
     }
 
@@ -228,7 +229,14 @@ async def aa_notifications(
     user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> dict[str, Any]:
-    """Handle sandbox notification events (consent status updates)."""
+    """Handle sandbox notification events (consent status updates).
+
+    SANDBOX / DEMO: this is a simulated notification endpoint used by the
+    sandbox demo flow. It is NOT a production Setu webhook and does not
+    validate Setu signatures. In production the Setu webhook callback
+    would be an unauthenticated public endpoint verified via Setu's
+    signature headers; that is intentionally out of scope here.
+    """
     data = req.data or {}
     consent_handle = req.id or data.get("id") or data.get("consentHandle") or ""
     event_type = (req.type or data.get("type") or "").upper()
@@ -239,13 +247,21 @@ async def aa_notifications(
         "CONSENT_DENIED": "REJECTED",
     }
     new_status = status_mapping.get(event_type)
+    matched = 0
     if consent_handle and new_status:
         result = await db.aa_consents.update_many(
             {"user_id": str(user["_id"]), "consent_handle": consent_handle},
             {"$set": {"consent_status": new_status, "updated_at": utc_now()}},
         )
-        return {"received": True, "event_type": event_type, "matched": result.modified_count}
-    return {"received": True, "event_type": event_type, "matched": 0}
+        matched = result.modified_count
+    return {
+        "received": True,
+        "event_type": event_type,
+        "matched": matched,
+        "sandbox": True,
+        "label": SANDBOX_LABEL,
+        "message": "Sandbox demo notification processed (not a real Setu webhook).",
+    }
 
 
 @router.post("/data-sessions")
@@ -281,7 +297,7 @@ async def create_data_session(
         "data_status": "READY",
         "sandbox": True,
         "label": SANDBOX_LABEL,
-        "message": "Data session ready. Fetch sandbox data to import transactions.",
+        "message": "Data session ready (sandbox demo). In this demo the data-ready transition is simulated; production AA would wait for a real data-ready notification.",
     }
 
 

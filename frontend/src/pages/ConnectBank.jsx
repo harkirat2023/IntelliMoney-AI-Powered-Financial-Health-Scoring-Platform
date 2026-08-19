@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Landmark, CreditCard, ArrowRight, Shield, AlertCircle, Loader2 } from "lucide-react";
 import { bankApi } from "../api/bank";
@@ -34,16 +34,10 @@ const providers = [
 
 export default function ConnectBank() {
   const navigate = useNavigate();
-  const { user, loading: authLoading, refreshUser } = useAuth();
+  const { refreshUser } = useAuth();
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!authLoading && !user) navigate("/login", { replace: true });
-  }, [user, authLoading, navigate]);
-
-  if (authLoading) return null;
 
   const handleConnect = async () => {
     if (!selected) return;

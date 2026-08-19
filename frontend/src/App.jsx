@@ -2,8 +2,8 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import AuthGate from "./components/AuthGate";
 import PageLoader from "./components/PageLoader";
-import { useAuth } from "./auth/AuthContext";
 
 const AppLayout = lazy(() => import("./layouts/AppLayout"));
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout"));
@@ -71,6 +71,7 @@ const ImportPreference = lazy(() => import("./pages/ImportPreference"));
 const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const CompletePage = lazy(() => import("./pages/CompletePage"));
 const AASandboxPage = lazy(() => import("./pages/AA_Sandbox"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 export default function App() {
   return (
@@ -83,13 +84,15 @@ export default function App() {
           <Route path="contact" element={<Suspense fallback={<PageLoader />}><ContactPageLazy /></Suspense>} />
           <Route path="privacy" element={<Suspense fallback={<PageLoader />}><PrivacyPageLazy /></Suspense>} />
           <Route path="terms" element={<Suspense fallback={<PageLoader />}><TermsPageLazy /></Suspense>} />
-          <Route path="connect-bank" element={<Suspense fallback={<PageLoader />}><ConnectBank /></Suspense>} />
-          <Route path="connect-bank/consent" element={<Suspense fallback={<PageLoader />}><ConsentPage /></Suspense>} />
-          <Route path="connect-bank/success" element={<Suspense fallback={<PageLoader />}><ConnectSuccess /></Suspense>} />
-          <Route path="connect-bank/manage" element={<Suspense fallback={<PageLoader />}><ManageAccounts /></Suspense>} />
-          <Route path="connect-bank/import-preference" element={<Suspense fallback={<PageLoader />}><ImportPreference /></Suspense>} />
-          <Route path="connect-bank/review" element={<Suspense fallback={<PageLoader />}><ReviewPage /></Suspense>} />
-          <Route path="connect-bank/complete" element={<Suspense fallback={<PageLoader />}><CompletePage /></Suspense>} />
+          <Route element={<AuthGate requireOnboarding={false} />}>
+            <Route path="connect-bank" element={<Suspense fallback={<PageLoader />}><ConnectBank /></Suspense>} />
+            <Route path="connect-bank/consent" element={<Suspense fallback={<PageLoader />}><ConsentPage /></Suspense>} />
+            <Route path="connect-bank/success" element={<Suspense fallback={<PageLoader />}><ConnectSuccess /></Suspense>} />
+            <Route path="connect-bank/manage" element={<Suspense fallback={<PageLoader />}><ManageAccounts /></Suspense>} />
+            <Route path="connect-bank/import-preference" element={<Suspense fallback={<PageLoader />}><ImportPreference /></Suspense>} />
+            <Route path="connect-bank/review" element={<Suspense fallback={<PageLoader />}><ReviewPage /></Suspense>} />
+            <Route path="connect-bank/complete" element={<Suspense fallback={<PageLoader />}><CompletePage /></Suspense>} />
+          </Route>
         </Route>
         <Route path="/login" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
         <Route path="/register" element={<Suspense fallback={<PageLoader />}><Register /></Suspense>} />
@@ -161,13 +164,8 @@ export default function App() {
             <Route path="history" element={<Suspense fallback={<PageLoader />}><ReceiptHistoryPage /></Suspense>} />
           </Route>
         </Route>
-        <Route path="*" element={<CatchAllRedirect />} />
+        <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
       </Routes>
     </Suspense>
   );
-}
-
-function CatchAllRedirect() {
-  const { isSignedIn } = useAuth();
-  return <Navigate to={isSignedIn ? "/app" : "/"} replace />;
 }
