@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Pencil, Sparkles, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { dashboardV2Store } from "../../store/dashboardV2Store";
 import PieChartCard from "../charts/PieChartCard";
 import AreaChartCard from "../charts/AreaChartCard";
@@ -23,9 +22,9 @@ export default function SpendingPage() {
   const [editingId, setEditingId] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const loadExpenses = useCallback(async () => {
-    const [year, month] = period.split("-");
     try {
       const res = await api.get("/expenses", { params: { start_date: `${period}-01`, end_date: `${period}-31` } });
       setExpenses(res.data);
@@ -49,6 +48,7 @@ export default function SpendingPage() {
 
   async function predictCategory() {
     if (!form.description.trim()) return;
+    setFormError("");
     try {
       const res = await api.post("/expenses/categorize", { description: form.description });
       setPrediction(res.data);
@@ -61,6 +61,7 @@ export default function SpendingPage() {
   async function saveExpense(event) {
     event.preventDefault();
     setFormError("");
+    setSaving(true);
     try {
       const payload = {
         amount: Number(form.amount),
@@ -80,6 +81,8 @@ export default function SpendingPage() {
       await loadExpenses();
     } catch {
       setFormError("Could not save expense.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -113,51 +116,87 @@ export default function SpendingPage() {
   if (loading && !spending) return <DashboardSkeleton />;
 
   return (
-    <motion.div className="dash-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="dash-page-header">
+    <div className="dash-page">
+      <div className="im-page-header">
         <div>
-          <h1 className="dash-title">Spending</h1>
-          <p className="dash-subtitle">Detailed spending analysis and transaction management</p>
+          <h1 className="im-page-title">Spending</h1>
+          <p className="im-page-subtitle">Your transactions and spending breakdown.</p>
         </div>
-        <input type="month" className="dash-period-picker" value={period} onChange={(e) => setPeriod(e.target.value)} />
+        <input type="month" className="im-field dash-period-picker" value={period} onChange={(e) => setPeriod(e.target.value)} />
       </div>
 
-      <div className="dash-stats-grid">
-        <div className="dash-widget stat-widget">
-          <div className="widget-label">Total Spending</div>
-          <div className="dash-stat-value">{currency(spending?.total_spending || 0)}</div>
+      <div className="im-grid im-grid-4">
+        <div className="im-card stat-widget">
+          <span className="widget-label">Total Spending</span>
+          <div className="im-metric-value">{currency(spending?.total_spending || 0)}</div>
         </div>
-        <div className="dash-widget stat-widget">
-          <div className="widget-label">Transactions</div>
-          <div className="dash-stat-value">{spending?.expense_count || 0}</div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">Transactions</span>
+          <div className="im-metric-value">{spending?.expense_count || 0}</div>
         </div>
-        <div className="dash-widget stat-widget">
-          <div className="widget-label">Top Category</div>
-          <div className="dash-stat-value">{spending?.top_category || "N/A"}</div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">Top Category</span>
+          <div className="im-metric-value" style={{ fontSize: "1.4rem" }}>{spending?.top_category || "N/A"}</div>
         </div>
-        <div className="dash-widget stat-widget">
-          <div className="widget-label">Avg per Transaction</div>
-          <div className="dash-stat-value">
-            {spending?.expense_count ? currency(spending.total_spending / spending.expense_count) : currency(0)}
+        <div className="im-card stat-widget">
+          <span className="widget-label">Avg per Transaction</span>
+          <div className="im-metric-value">{spending?.expense_count ? currency(spending.total_spending / spending.expense_count) : currency(0)}</div>
+        </div>
+      </div>
+
+      <div className="im-card">
+        <h3 className="im-h3" style={{ margin: "0 0 16px" }}>{editingId ? "Edit Expense" : "Add Expense"}</h3>
+        <form className="expense-form" onSubmit={saveExpense}>
+          <input className="im-field" type="number" min="1" step="0.01" placeholder="Amount (₹)" value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+          <input className="im-field" placeholder="Description (e.g. Uber ride to office)" value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })} required />
+          <div className="form-row">
+            <select className="im-field" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+              <option value="">Auto categorize</option>
+              {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+            </select>
+            <select className="im-field" value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
+              {PAYMENT_METHODS.map((m) => <option key={m}>{m}</option>)}
+            </select>
+            <input className="im-field" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
           </div>
-        </div>
+          <div className="form-actions">
+            <button className="im-btn im-btn-secondary" type="button" onClick={predictCategory}>
+              <Sparkles size={14} /> Suggest category
+            </button>
+            {editingId && (
+              <button className="im-btn im-btn-ghost" type="button" onClick={cancelEdit}><X size={14} /> Cancel</button>
+            )}
+            <button className="im-btn im-btn-primary" type="submit" disabled={saving}>
+              <Plus size={14} /> {editingId ? "Update" : "Add Expense"}
+            </button>
+          </div>
+        </form>
+        {prediction && (
+          <p className="expense-prediction">
+            <Sparkles size={14} /> Categorized as <strong>{prediction.category}</strong> ({Math.round(prediction.confidence * 100)}% confidence)
+          </p>
+        )}
+        {formError && <p className="expense-error">{formError}</p>}
       </div>
 
-      <div className="dash-overview-grid">
+      <div className="im-grid im-grid-2">
         {spending?.spending_by_category?.length > 0 && (
-          <PieChartCard title="By Category" data={spending.spending_by_category} height={320} />
+          <PieChartCard title="Spending by Category" data={spending.spending_by_category} height={300} />
         )}
         {overview?.monthly_trend?.length > 0 && (
-          <AreaChartCard title="Monthly Trend" data={overview.monthly_trend} dataKey="spending" height={320} />
-        )}
-        {overview?.top_categories?.length > 0 && (
-          <BarChartCard title="Top Categories" data={overview.top_categories} dataKey="amount" height={320} />
+          <AreaChartCard title="Monthly Trend" data={overview.monthly_trend} dataKey="spending" height={300} />
         )}
       </div>
 
+      {overview?.top_categories?.length > 0 && (
+        <BarChartCard title="Top Categories" data={overview.top_categories} dataKey="amount" height={260} />
+      )}
+
       {widgets.spending_heatmap?.length > 0 && (
-        <div className="dash-panel">
-          <h3 className="dash-panel-title">Spending Activity</h3>
+        <div className="im-card">
+          <h3 className="im-h3" style={{ margin: "0 0 16px" }}>Spending Activity</h3>
           <div className="heatmap-grid">
             {widgets.spending_heatmap.map((h, i) => (
               <div className="heatmap-cell" key={i} title={`${h.category}: ${currency(h.amount)}`}>
@@ -168,37 +207,15 @@ export default function SpendingPage() {
         </div>
       )}
 
-      <div className="dash-panel expense-manager">
-        <h3 className="dash-panel-title">{editingId ? "Edit Expense" : "Add Expense"}</h3>
-        <form className="expense-form" onSubmit={saveExpense}>
-          <input type="number" min="1" step="0.01" placeholder="Amount (₹)" value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
-          <input placeholder="Description (e.g. Uber ride to office)" value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })} required />
-          <button className="btn-secondary" type="button" onClick={predictCategory}>
-            <Sparkles size={14} /> Suggest
-          </button>
-          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-            <option value="">Auto categorize</option>
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-          </select>
-          <select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
-            {PAYMENT_METHODS.map((m) => <option key={m}>{m}</option>)}
-          </select>
-          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
-          {editingId && (
-            <button className="btn-ghost" type="button" onClick={cancelEdit}><X size={14} /> Cancel</button>
-          )}
-          <button className="btn-primary" type="submit">{editingId ? "Update" : "Add"}</button>
-        </form>
-        {prediction && <p className="expense-prediction">Suggested: {prediction.category} ({Math.round(prediction.confidence * 100)}%)</p>}
-        {formError && <p className="expense-error">{formError}</p>}
-      </div>
-
-      <div className="dash-panel">
-        <h3 className="dash-panel-title">Transactions</h3>
+      <div className="im-card">
+        <h3 className="im-h3" style={{ margin: "0 0 12px" }}>Transactions</h3>
+        {expenses.length === 0 && (
+          <div className="im-empty">
+            <h3>No expenses yet</h3>
+            <p>Add your first expense above to start understanding your spending.</p>
+          </div>
+        )}
         <div className="expense-table">
-          {expenses.length === 0 && <p className="dash-subtitle">No expenses for this period.</p>}
           {expenses.map((expense) => (
             <div className="expense-row" key={expense.id}>
               <div className="expense-info">
@@ -208,13 +225,13 @@ export default function SpendingPage() {
               <span className="expense-category">{expense.category}</span>
               <strong>{currency(expense.amount)}</strong>
               <div className="expense-actions">
-                <button className="icon-button" onClick={() => editExpense(expense)} aria-label="Edit expense"><Pencil size={14} /></button>
-                <button className="icon-button danger" onClick={() => deleteExpense(expense.id)} aria-label="Delete expense"><Trash2 size={14} /></button>
+                <button className="im-icon-btn" onClick={() => editExpense(expense)} aria-label="Edit expense"><Pencil size={14} /></button>
+                <button className="im-icon-btn danger" onClick={() => deleteExpense(expense.id)} aria-label="Delete expense"><Trash2 size={14} /></button>
               </div>
             </div>
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -49,7 +49,8 @@ class Settings(BaseSettings):
     processing: ProcessingSettings = ProcessingSettings()
 
     groq_api_key: str = ""
-    groq_api_base: str = "https://api.groq.com/openai/v1"
+    # groq SDK >= 0.30 appends /openai/v1 itself; do NOT include it here.
+    groq_api_base: str = "https://api.groq.com"
     groq_model: str = "llama3-8b-8192"
     groq_temperature: float = 0.3
     groq_max_tokens: int = 1024

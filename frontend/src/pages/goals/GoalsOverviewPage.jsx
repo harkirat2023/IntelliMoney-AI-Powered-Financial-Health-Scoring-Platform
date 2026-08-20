@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { goalsStore } from "../../store/goalsStore";
-import { Target, Plus, RefreshCw, Trophy, TrendingUp, AlertTriangle, Loader } from "lucide-react";
+import { Target, Plus, RefreshCw, Trophy, TrendingUp, Loader } from "lucide-react";
 
 export default function GoalsOverviewPage() {
   const [goals, setGoals] = useState([]);
@@ -24,7 +24,7 @@ export default function GoalsOverviewPage() {
     setRecalculating(false);
   }, []);
 
-  if (loading) return <div className="loading-spinner"><Loader className="spin" /></div>;
+  if (loading) return <div className="im-page"><div className="im-skeleton" /></div>;
 
   const stats = {
     total: goals.length,
@@ -34,73 +34,75 @@ export default function GoalsOverviewPage() {
   };
 
   return (
-    <div className="goals-page">
-      <div className="page-header">
-        <h2><Target size={22} /> Financial Goals</h2>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn-secondary" onClick={handleRecalculate} disabled={recalculating}>
-            <RefreshCw size={16} className={recalculating ? "spin" : ""} /> Recalculate
+    <div className="im-page">
+      <div className="im-page-header">
+        <div>
+          <h1 className="im-page-title"><Target size={22} style={{ verticalAlign: "-4px" }} /> Financial Goals</h1>
+          <p className="im-page-subtitle">Track and grow your savings goals.</p>
+        </div>
+        <div className="im-header-actions">
+          <button className="im-btn im-btn-secondary" onClick={handleRecalculate} disabled={recalculating}>
+            <RefreshCw size={14} className={recalculating ? "spin" : ""} /> Recalculate
           </button>
-          <button className="btn-primary" onClick={() => navigate("/app/goals/create")}>
-            <Plus size={16} /> New Goal
+          <button className="im-btn im-btn-primary" onClick={() => navigate("/app/goals/create")}>
+            <Plus size={14} /> New Goal
           </button>
         </div>
       </div>
 
-      <div className="goals-stats">
-        <div className="goal-stat-card">
-          <div className="stat-value" style={{ color: "#8b5cf6" }}>{stats.total}</div>
-          <div className="stat-label">Total Goals</div>
+      <div className="im-grid im-grid-4">
+        <div className="im-card stat-widget">
+          <span className="widget-label">Total Goals</span>
+          <div className="im-metric-value" style={{ color: "#8b5cf6" }}>{stats.total}</div>
         </div>
-        <div className="goal-stat-card">
-          <div className="stat-value" style={{ color: "#10b981" }}>{stats.active}</div>
-          <div className="stat-label">Active</div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">Active</span>
+          <div className="im-metric-value" style={{ color: "var(--ds-ok-strong)" }}>{stats.active}</div>
         </div>
-        <div className="goal-stat-card">
-          <div className="stat-value" style={{ color: "#3b82f6" }}>{stats.completed}</div>
-          <div className="stat-label">Completed</div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">Completed</span>
+          <div className="im-metric-value" style={{ color: "#3b82f6" }}>{stats.completed}</div>
         </div>
-        <div className="goal-stat-card">
-          <div className="stat-value" style={{ color: stats.atRisk > 0 ? "#ef4444" : "#6b7280" }}>{stats.atRisk}</div>
-          <div className="stat-label">At Risk</div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">At Risk</span>
+          <div className="im-metric-value" style={{ color: stats.atRisk > 0 ? "var(--ds-danger-strong)" : "var(--neutral-400)" }}>{stats.atRisk}</div>
         </div>
       </div>
 
       {goals.length === 0 ? (
-        <div className="empty-state">
-          <Target size={48} />
+        <div className="im-empty">
+          <Target size={40} />
           <h3>No financial goals yet</h3>
-          <p>Create your first goal to start tracking progress</p>
-          <button className="btn-primary" onClick={() => navigate("/app/goals/create")}>
-            <Plus size={16} /> Create Goal
+          <p>Create your first goal to start tracking progress.</p>
+          <button className="im-btn im-btn-primary" onClick={() => navigate("/app/goals/create")}>
+            <Plus size={14} /> Create Goal
           </button>
         </div>
       ) : (
-        <div className="goal-grid">
+        <div className="im-grid im-grid-3">
           {goals.map((g) => {
             const pct = g.completion_percentage || 0;
-            const fillClass = pct >= 80 ? "high" : pct >= 40 ? "medium" : "low";
             return (
-              <div key={g.id} className="goal-card" onClick={() => navigate(`/app/goals/${g.id}`)}>
-                <div className="goal-card-header">
-                  <h3>{g.name}</h3>
-                  <span className="goal-type-badge">{g.goal_type.replace(/_/g, " ")}</span>
+              <div key={g.id} className="im-card" style={{ cursor: "pointer" }} onClick={() => navigate(`/app/goals/${g.id}`)}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <strong style={{ fontSize: "0.95rem", color: "var(--neutral-800)" }}>{g.name}</strong>
+                  <span className="im-badge neutral">{g.goal_type.replace(/_/g, " ")}</span>
                 </div>
-                <div className="goal-card-details">
-                  <span><Trophy size={14} /> ₹{g.target_amount?.toLocaleString()}</span>
-                  <span><TrendingUp size={14} /> ₹{g.monthly_contribution?.toLocaleString()}/mo</span>
+                <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
+                  <span style={{ fontSize: "0.82rem", color: "var(--neutral-600)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <Trophy size={14} /> {g.target_amount?.toLocaleString()}
+                  </span>
+                  <span style={{ fontSize: "0.82rem", color: "var(--neutral-600)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <TrendingUp size={14} /> {g.monthly_contribution?.toLocaleString()}/mo
+                  </span>
                 </div>
-                <div className="goal-progress-bar">
-                  <div className={`goal-progress-fill ${fillClass}`} style={{ width: `${pct}%` }} />
+                <div className="im-progress">
+                  <div className="im-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <div className="goal-card-details">
-                  <span>{pct}% complete</span>
-                  <span>{g.estimated_months > 0 ? `${g.estimated_months} months` : "N/A"}</span>
-                </div>
-                <div className="goal-card-footer">
-                  <span className={`goal-status ${g.status}`}>{g.status.replace(/_/g, " ")}</span>
-                  <span style={{ color: "#6b7280", fontSize: "0.75rem" }}>
-                    Score: {g.confidence_score || g.feasibility_score || "—"}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+                  <span style={{ fontSize: "0.82rem", color: "var(--neutral-500)" }}>{pct}% complete · {g.estimated_months > 0 ? `${g.estimated_months} months` : "N/A"}</span>
+                  <span className={`im-badge ${g.status === "at_risk" ? "danger" : g.status === "completed" ? "ok" : "neutral"}`}>
+                    {g.status.replace(/_/g, " ")}
                   </span>
                 </div>
               </div>

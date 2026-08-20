@@ -28,12 +28,30 @@ class TokenCounter:
 
 
 class LLMService:
+    # groq SDK >= 0.30 (required by langchain-groq 0.3.8) uses base URL
+    # ``https://api.groq.com`` and appends ``/openai/v1/chat/completions`` itself.
+    # Older SDKs expected the base to already include ``/openai/v1``. We
+    # normalize the configured base so a ``GROQ_API_BASE`` / ``GROQ_BASE_URL``
+    # env var with the legacy value never produces a doubled URL.
+    DEFAULT_BASE_URL = "https://api.groq.com"
+    LEGACY_PATH = "/openai/v1"
+
     def __init__(self):
         cfg = get_settings()
         self._model = cfg.groq_model
         self._temperature = cfg.groq_temperature
         self._max_tokens = cfg.groq_max_tokens
         self._api_key = cfg.groq_api_key
+        self._base_url = self._normalize_base_url(cfg.groq_api_base)
+
+    @classmethod
+    def _normalize_base_url(cls, base: str) -> str:
+        base = (base or "").strip().rstrip("/")
+        if not base:
+            return cls.DEFAULT_BASE_URL
+        if base.endswith(cls.LEGACY_PATH):
+            return base[: -len(cls.LEGACY_PATH)] or cls.DEFAULT_BASE_URL
+        return base
 
     def _get_llm(self, streaming: bool = False) -> ChatGroq:
         return ChatGroq(
@@ -41,6 +59,7 @@ class LLMService:
             temperature=self._temperature,
             max_tokens=self._max_tokens,
             groq_api_key=self._api_key,
+            groq_api_base=self._base_url,
             streaming=streaming,
         )
 

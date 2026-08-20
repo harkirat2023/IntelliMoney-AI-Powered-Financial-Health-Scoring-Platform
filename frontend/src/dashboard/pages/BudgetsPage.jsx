@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { dashboardV2Store } from "../../store/dashboardV2Store";
 import { dashboardV2Api } from "../../api/dashboardV2";
@@ -80,70 +79,92 @@ export default function BudgetsPage() {
 
   if (!budgets) return <DashboardSkeleton />;
 
+  const totalLimit = budgets.budgets?.reduce((sum, b) => sum + (b.limit || 0), 0) || 0;
+  const totalSpent = budgets.budgets?.reduce((sum, b) => sum + (b.spent || 0), 0) || 0;
+
   return (
-    <motion.div className="dash-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="dash-page-header">
+    <div className="dash-page">
+      <div className="im-page-header">
         <div>
-          <h1 className="dash-title">Budgets</h1>
-          <p className="dash-subtitle">Budget performance for {period}</p>
+          <h1 className="im-page-title">Budgets</h1>
+          <p className="im-page-subtitle">Budget performance for {period}.</p>
         </div>
-        <input type="month" className="dash-period-picker" value={period} onChange={(e) => setPeriod(e.target.value)} />
+        <input type="month" className="im-field dash-period-picker" value={period} onChange={(e) => setPeriod(e.target.value)} />
       </div>
 
-      <div className="budget-summary-strip">
-        <div className="budget-summary-item"><span className="budget-summary-count">{budgets.on_track}</span><span className="budget-summary-label safe">On Track</span></div>
-        <div className="budget-summary-item"><span className="budget-summary-count">{budgets.warning}</span><span className="budget-summary-label warning">Warning</span></div>
-        <div className="budget-summary-item"><span className="budget-summary-count">{budgets.over}</span><span className="budget-summary-label over">Over</span></div>
-        <div className="budget-summary-item"><span className="budget-summary-count">{budgets.budgets?.length || 0}</span><span className="budget-summary-label">Total</span></div>
+      <div className="im-grid im-grid-4">
+        <div className="im-card stat-widget">
+          <span className="widget-label">Total Budget</span>
+          <div className="im-metric-value">{currency(totalLimit)}</div>
+        </div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">Total Spent</span>
+          <div className="im-metric-value">{currency(totalSpent)}</div>
+        </div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">On Track</span>
+          <div className="im-metric-value" style={{ color: "var(--ds-ok-strong)" }}>{budgets.on_track}</div>
+        </div>
+        <div className="im-card stat-widget">
+          <span className="widget-label">Over Budget</span>
+          <div className="im-metric-value" style={{ color: "var(--ds-danger-strong)" }}>{budgets.over}</div>
+        </div>
       </div>
 
-      <div className="dash-panel">
-        <h3 className="dash-panel-title">{editingId ? "Edit Budget" : "Add Budget"}</h3>
-        <form className="budget-form" onSubmit={saveBudget}>
-          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required disabled={!!editingId}>
+      <div className="im-card">
+        <h3 className="im-h3" style={{ margin: "0 0 16px" }}>{editingId ? "Edit Budget" : "Add Budget"}</h3>
+        <form className="budget-form im-inline-form" onSubmit={saveBudget}>
+          <select className="im-field" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required disabled={!!editingId}>
             <option value="">Select category</option>
             {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
           </select>
-          <input type="number" min="1" step="0.01" placeholder="Monthly limit (₹)" value={form.limit}
+          <input className="im-field" type="number" min="1" step="0.01" placeholder="Monthly limit (₹)" value={form.limit}
             onChange={(e) => setForm({ ...form, limit: e.target.value })} required />
           {editingId && (
-            <button className="btn-ghost" type="button" onClick={cancelEdit}><X size={14} /> Cancel</button>
+            <button className="im-btn im-btn-ghost" type="button" onClick={cancelEdit}><X size={14} /> Cancel</button>
           )}
-          <button className="btn-primary" type="submit">{editingId ? "Update" : <><Plus size={14} /> Add Budget</>}</button>
+          <button className="im-btn im-btn-primary" type="submit">{editingId ? "Update" : <><Plus size={14} /> Add Budget</>}</button>
         </form>
         {error && <p className="expense-error">{error}</p>}
       </div>
 
-      <div className="dash-budget-grid">
-        {budgets.budgets?.map((b, i) => {
+      <div className="im-grid im-grid-3">
+        {budgets.budgets?.map((b) => {
           const pct = b.percentage_used || 0;
+          const over = b.state === "over";
+          const danger = b.state === "warning";
           return (
-            <div className={`dash-budget-card ${b.state}`} key={i}>
-              <div className="budget-card-header">
-                <strong>{b.category}</strong>
-                <span className={`budget-state-badge ${b.state}`}>{b.state}</span>
+            <div className="im-card im-budget-card" key={b.id}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <strong style={{ fontSize: "0.95rem", color: "var(--neutral-800)" }}>{b.category}</strong>
+                <span className={`im-badge ${over ? "danger" : danger ? "warning" : "ok"}`}>{b.state}</span>
               </div>
-              <div className="budget-card-amounts">
-                <span>{currency(b.spent)}</span>
-                <span className="budget-limit">/ {currency(b.limit)}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                <strong style={{ fontSize: "1.25rem", color: "var(--neutral-900)" }}>{currency(b.spent)}</strong>
+                <span style={{ color: "var(--neutral-500)", fontSize: "0.82rem" }}>/ {currency(b.limit)}</span>
               </div>
-              <div className="budget-progress-bar">
-                <div className="budget-progress-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
+              <div className="im-progress">
+                <div className="im-progress-fill" style={{ width: `${Math.min(pct, 100)}%`, background: over ? "var(--ds-danger)" : danger ? "var(--ds-warning)" : "var(--ds-primary)" }} />
               </div>
-              <div className="budget-pct">{pct.toFixed(1)}% used</div>
-              <div className="budget-remaining">
-                {b.state === "over"
-                  ? `Over by ${currency(b.spent - b.limit)}`
-                  : `${currency(b.limit - b.spent)} remaining`}
-              </div>
-              <div className="budget-card-actions">
-                <button className="icon-button" onClick={() => editBudget(b)} aria-label="Edit budget"><Pencil size={14} /></button>
-                <button className="icon-button danger" onClick={() => deleteBudget(b.id)} aria-label="Delete budget"><Trash2 size={14} /></button>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+                <span style={{ fontSize: "0.82rem", color: "var(--neutral-500)" }}>
+                  {pct.toFixed(1)}% used · {over ? `Over by ${currency(b.spent - b.limit)}` : `${currency(b.limit - b.spent)} remaining`}
+                </span>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button className="im-icon-btn" onClick={() => editBudget(b)} aria-label="Edit budget"><Pencil size={14} /></button>
+                  <button className="im-icon-btn danger" onClick={() => deleteBudget(b.id)} aria-label="Delete budget"><Trash2 size={14} /></button>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
-    </motion.div>
+      {budgets.budgets?.length === 0 && (
+        <div className="im-empty">
+          <h3>No budgets yet</h3>
+          <p>Create a budget above to start tracking your spending.</p>
+        </div>
+      )}
+    </div>
   );
 }

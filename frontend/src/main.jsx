@@ -9,6 +9,7 @@ import { CLERK_PUBLISHABLE_KEY } from "./config";
 import "./styles.css";
 import "./landing/index.css";
 import "./styles/cyber-theme.css";
+import "./styles/design-system.css";
 
 const toPath = (to) => {
   if (typeof to === "string" && /^https?:\/\//.test(to)) {

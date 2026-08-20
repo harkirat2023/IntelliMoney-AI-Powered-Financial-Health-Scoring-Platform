@@ -63,7 +63,20 @@ async def chat(
 ) -> Any:
     user_id = str(current_user["_id"])
     agent, _ = _get_agent_services(db)
-    result = await agent.process_message(user_id, body.message, body.session_id)
+    try:
+        result = await agent.process_message(user_id, body.message, body.session_id)
+    except Exception as exc:  # noqa: BLE001 - never 500 the chat endpoint
+        logger.error("Copilot chat failed for user %s: %s", user_id, exc)
+        result = {
+            "session_id": body.session_id or "",
+            "message": (
+                "I'm sorry, I couldn't reach the language model right now. "
+                "Please try again in a moment."
+            ),
+            "message_id": "",
+            "sources": [],
+            "proposal": None,
+        }
     return ChatResponse(**result)
 
 
