@@ -32,7 +32,7 @@ ANOMALY_THRESHOLDS = {
 
 REPORT_TYPES = ["weekly", "monthly"]
 
-BUDGET_STATES = ["safe", "warning", "over"]
+BUDGET_STATES = ["safe", "warning", "critical", "over"]
 
 CONFIDENCE_THRESHOLDS = {
     "auto_approved": 0.95,

@@ -132,19 +132,21 @@ export default function BudgetsPage() {
         {budgets.budgets?.map((b) => {
           const pct = b.percentage_used || 0;
           const over = b.state === "over";
-          const danger = b.state === "warning";
+          const danger = b.state === "warning" || b.state === "critical";
+          const badgeClass = over ? "danger" : danger ? "warning" : "ok";
+          const fillColor = over ? "var(--ds-danger)" : b.state === "critical" ? "var(--ds-warning-strong, #f97316)" : danger ? "var(--ds-warning)" : "var(--ds-primary)";
           return (
             <div className="im-card im-budget-card" key={b.id}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <strong style={{ fontSize: "0.95rem", color: "var(--neutral-800)" }}>{b.category}</strong>
-                <span className={`im-badge ${over ? "danger" : danger ? "warning" : "ok"}`}>{b.state}</span>
+                <span className={`im-badge ${badgeClass}`}>{b.state}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
                 <strong style={{ fontSize: "1.25rem", color: "var(--neutral-900)" }}>{currency(b.spent)}</strong>
                 <span style={{ color: "var(--neutral-500)", fontSize: "0.82rem" }}>/ {currency(b.limit)}</span>
               </div>
               <div className="im-progress">
-                <div className="im-progress-fill" style={{ width: `${Math.min(pct, 100)}%`, background: over ? "var(--ds-danger)" : danger ? "var(--ds-warning)" : "var(--ds-primary)" }} />
+                <div className="im-progress-fill" style={{ width: `${Math.min(pct, 100)}%`, background: fillColor }} />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
                 <span style={{ fontSize: "0.82rem", color: "var(--neutral-500)" }}>

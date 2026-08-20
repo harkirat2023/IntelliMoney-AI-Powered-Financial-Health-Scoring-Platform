@@ -317,7 +317,7 @@ def test_budget_tools_report_period_status():
     remaining = next(t for t in tools if t.name == "get_remaining_budget")
 
     out = run(usage.ainvoke({"period": "2026-08"}))
-    assert '"state": "warning"' in out and '"spent": 900' in out
+    assert '"state": "critical"' in out and '"spent": 900' in out
 
     out = run(compare.ainvoke({"period": "2026-08"}))
     assert '"warning": 1' in out and '"over": 0' in out

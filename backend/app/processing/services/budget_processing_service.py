@@ -4,6 +4,7 @@ from collections import defaultdict
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.processing.repositories.budget_usage_repository import MongoBudgetUsageRepository
+from app.utils.budget_state import get_budget_state
 
 logger = logging.getLogger("intellimoney")
 from app.utils.date_utils import month_bounds, utc_now
@@ -46,11 +47,7 @@ class BudgetProcessingService:
             limit = float(budget["limit"])
             spent = round(spent_by_category.get(category, 0), 2)
             percentage = round((spent / limit) * 100, 2) if limit > 0 else 0
-            state = "safe"
-            if percentage >= 100:
-                state = "over"
-            elif percentage >= 80:
-                state = "warning"
+            state = get_budget_state(percentage)
 
             await self._budget_usage_repo.upsert(
                 user_id=user_id,

@@ -33,6 +33,7 @@ from app.core.constants import CATEGORIES
 from app.services.category_service import suggest_category
 from app.services.serializers import date_to_datetime, serialize_document
 from app.utils.date_utils import month_bounds, utc_now
+from app.utils.budget_state import get_budget_state
 from app.utils.object_id import to_object_id
 
 CATEGORIES_JOINED = ", ".join(CATEGORIES)
@@ -302,7 +303,7 @@ def build_tools(db: AsyncIOMotorDatabase, user_id: str, session_id: str = ""):
             spent = round(spent_by_category.get(budget["category"], 0), 2)
             limit = float(budget["limit"])
             percentage = round((spent / limit) * 100, 2) if limit else 0
-            state = "over" if percentage >= 100 else ("warning" if percentage >= 80 else "safe")
+            state = get_budget_state(percentage)
             statuses.append({
                 "id": budget["id"],
                 "category": budget["category"],
@@ -357,7 +358,7 @@ def build_tools(db: AsyncIOMotorDatabase, user_id: str, session_id: str = ""):
             "period": period or "current-month",
             "budgets": statuses,
             "on_track": sum(1 for s in statuses if s["state"] == "safe"),
-            "warning": sum(1 for s in statuses if s["state"] == "warning"),
+            "warning": sum(1 for s in statuses if s["state"] in ("warning", "critical")),
             "over": sum(1 for s in statuses if s["state"] == "over"),
         })
 

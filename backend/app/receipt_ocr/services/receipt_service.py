@@ -123,7 +123,7 @@ class ReceiptService:
                 receipt.status = "review_required"
                 receipt.error_message = "; ".join(validation_errors)
             else:
-                category, confidence = self._categorizer.predict(
+                category, confidence = self._categorizer(
                     receipt.merchant_name or receipt.filename)
                 receipt.predicted_category = category
                 receipt.confidence_score = confidence
@@ -189,7 +189,7 @@ class ReceiptService:
                     "errors": [], "message": "Already completed"}
 
         if not receipt.predicted_category:
-            category, confidence = self._categorizer.predict(
+            category, confidence = self._categorizer(
                 receipt.merchant_name or receipt.filename)
             receipt.predicted_category = category
             receipt.confidence_score = confidence
@@ -236,7 +236,7 @@ class ReceiptService:
         if "predicted_category" in upd:
             receipt.predicted_category = upd["predicted_category"]
         else:
-            category, confidence = self._categorizer.predict(
+            category, confidence = self._categorizer(
                 upd.get("merchant_name", receipt.merchant_name) or receipt.filename)
             upd["predicted_category"] = category
             upd["confidence_score"] = confidence
@@ -281,14 +281,13 @@ class ReceiptService:
                     tx_date = datetime.strptime(receipt.transaction_date, "%Y-%m-%d")
                 except ValueError:
                     pass
-            from datetime import date as date_type
             expense_doc = {
                 "user_id": user_id,
                 "amount": receipt.total_amount,
                 "description": f"{receipt.merchant_name or receipt.filename} (via Receipt OCR)",
                 "category": receipt.predicted_category or "Other",
                 "payment_method": "Receipt OCR",
-                "date": date_type(tx_date.year, tx_date.month, tx_date.day),
+                "date": tx_date,
                 "created_at": datetime.utcnow(),
             }
             result = await self._db.expenses.insert_one(expense_doc)

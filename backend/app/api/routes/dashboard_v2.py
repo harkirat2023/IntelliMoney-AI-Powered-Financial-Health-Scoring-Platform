@@ -8,7 +8,12 @@ from app.dashboard.schemas import (
     AnalyticsResponse, DashboardOverviewResponse, NotificationItem,
     WidgetsResponse,
 )
-from app.dashboard.services import DashboardService, NotificationService, WidgetService
+from app.dashboard.services import (
+    _get_live_dashboard_fallback,
+    DashboardService,
+    NotificationService,
+    WidgetService,
+)
 from app.db.mongodb import get_database
 from app.processing.services.dashboard_read_service import DashboardReadService
 from app.processing.schemas.dashboard import (
@@ -95,12 +100,12 @@ async def dashboard_budgets(
     dash_repo = MongoDashboardMetricsRepository(db)
     dash = await dash_repo.get_by_user_and_period(str(current_user["_id"]), period)
     if not dash:
-        return {"budgets": [], "on_track": 0, "warning": 0, "over": 0}
+        dash = await _get_live_dashboard_fallback(db, str(current_user["_id"]), period)
     overview = dash.budget_overview
     return {
         "budgets": overview,
         "on_track": sum(1 for b in overview if b.get("state") == "safe"),
-        "warning": sum(1 for b in overview if b.get("state") == "warning"),
+        "warning": sum(1 for b in overview if b.get("state") in ("warning", "critical")),
         "over": sum(1 for b in overview if b.get("state") == "over"),
     }
 

@@ -10,6 +10,7 @@ from app.models.documents import FinancialReportDocument
 from app.schemas.report import FinancialReport, ReportSummary
 from app.services.analytics_service import get_month_expenses
 from app.services.serializers import serialize_document, utc_now
+from app.utils.budget_state import get_budget_state
 
 
 async def generate_weekly_report(db: AsyncIOMotorDatabase, user_id: str) -> dict[str, Any]:
@@ -91,12 +92,17 @@ async def _generate_report(
     # Budget performance
     budget_performance = await _calculate_budget_performance(db, user_id, period_start, period_end)
     
-    # Health score
+    # Health score (v2 engine writes financial_health; fall back to legacy collection)
     health_score = None
-    health_doc = await db.financial_scores.find_one(
+    health_doc = await db.financial_health.find_one(
         {"user_id": ObjectId(user_id)},
-        sort=[("calculated_at", -1)]
+        sort=[("period", -1)]
     )
+    if not health_doc:
+        health_doc = await db.financial_scores.find_one(
+            {"user_id": ObjectId(user_id)},
+            sort=[("calculated_at", -1)]
+        )
     if health_doc:
         health_score = health_doc.get("score")
     
@@ -183,7 +189,7 @@ async def _calculate_budget_performance(
             "spent": round(spent, 2),
             "remaining": round(limit - spent, 2),
             "percentage": round(percentage, 2),
-            "status": "over" if percentage >= 100 else "warning" if percentage >= 80 else "safe"
+            "status": get_budget_state(percentage)
         }
     
     return {

@@ -5,6 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.services.analytics_service import get_month_expenses
 from app.services.serializers import serialize_document, utc_now
+from app.utils.budget_state import get_budget_state
 
 
 async def get_budget_status(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[str, Any]]:
@@ -27,11 +28,7 @@ async def get_budget_status(db: AsyncIOMotorDatabase, user_id: str) -> list[dict
         spent = round(spent_by_category.get(budget["category"], 0), 2)
         limit = float(budget["limit"])
         percentage = round((spent / limit) * 100, 2) if limit else 0
-        state = "safe"
-        if percentage >= 100:
-            state = "over"
-        elif percentage >= 80:
-            state = "warning"
+        state = get_budget_state(percentage)
         statuses.append(
             {
                 "id": budget["id"],

@@ -1,5 +1,7 @@
 import logging
+from collections import defaultdict
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -19,10 +21,74 @@ from app.infrastructure.websocket.manager import connection_manager
 from app.processing.repositories.cash_flow_repository import MongoCashFlowRepository
 from app.processing.repositories.dashboard_metrics_repository import MongoDashboardMetricsRepository
 from app.processing.repositories.financial_metrics_repository import MongoFinancialMetricsRepository
+from app.services.analytics_service import get_month_expenses
+from app.services.budget_service import get_budget_status
 from app.utils.date_utils import month_bounds, utc_now
 from app.utils.object_id import to_object_id
 
 logger = logging.getLogger("intellimoney")
+
+
+async def _get_live_dashboard_fallback(db: AsyncIOMotorDatabase, user_id: str, period: str) -> SimpleNamespace:
+    """Build dashboard aggregate values from live authoritative services.
+
+    Used when no processed ``dashboard_metrics`` exist for the period (i.e. the
+    user tracks expenses manually and has not run a bank-sync pipeline). It
+    reuses the existing authoritative services (analytics + budget status)
+    instead of duplicating business logic.
+    """
+    now = utc_now()
+    try:
+        year, month = (int(part) for part in period.split("-"))
+    except (ValueError, AttributeError):
+        year, month = now.year, now.month
+
+    expenses = await get_month_expenses(db, user_id, year, month)
+    total_spending = round(sum(e["amount"] for e in expenses), 2)
+    by_category: dict[str, float] = defaultdict(float)
+    for e in expenses:
+        by_category[e["category"]] += e["amount"]
+    spending_by_category = [
+        {"category": category, "amount": round(amount, 2)}
+        for category, amount in by_category.items()
+    ]
+
+    user = await db.users.find_one({"_id": to_object_id(user_id)})
+    monthly_income = round(float((user or {}).get("monthly_income", 0)), 2)
+
+    monthly_trend: list[dict] = []
+    for offset in range(5, -1, -1):
+        m = month - offset
+        y = year
+        while m <= 0:
+            m += 12
+            y -= 1
+        if offset == 0:
+            trend_expenses = expenses
+            trend_income = monthly_income
+        else:
+            trend_expenses = await get_month_expenses(db, user_id, y, m)
+            trend_income = 0
+        monthly_trend.append({
+            "month": f"{y}-{m:02d}",
+            "spending": round(sum(e["amount"] for e in trend_expenses), 2),
+            "income": round(trend_income, 2),
+        })
+
+    budget_overview = await get_budget_status(db, user_id)
+    net_savings = round(monthly_income - total_spending, 2)
+    savings_rate = round((net_savings / monthly_income) * 100, 2) if monthly_income else 0
+
+    return SimpleNamespace(
+        total_spending=total_spending,
+        expense_count=len(expenses),
+        spending_by_category=spending_by_category,
+        total_income=monthly_income,
+        monthly_trend=monthly_trend,
+        budget_overview=budget_overview,
+        net_savings=net_savings,
+        savings_rate=savings_rate,
+    )
 
 
 class DashboardService:
@@ -35,6 +101,8 @@ class DashboardService:
 
     async def get_overview(self, user_id: str, period: str) -> DashboardOverviewResponse:
         dash = await self._dash_repo.get_by_user_and_period(user_id, period)
+        if dash is None:
+            dash = await _get_live_dashboard_fallback(self._db, user_id, period)
         metrics = await self._metrics_repo.get_latest_by_user(user_id)
         now = utc_now()
         p_start, p_end = month_bounds(now.year, now.month)
@@ -81,7 +149,7 @@ class DashboardService:
                 ))
             if dash.budget_overview:
                 on_track = sum(1 for b in dash.budget_overview if b.get("state") == "safe")
-                warning = sum(1 for b in dash.budget_overview if b.get("state") == "warning")
+                warning = sum(1 for b in dash.budget_overview if b.get("state") in ("warning", "critical"))
                 over = sum(1 for b in dash.budget_overview if b.get("state") == "over")
                 budget_status = BudgetStatusWidget(
                     budget_count=len(dash.budget_overview),
@@ -421,6 +489,8 @@ class WidgetService:
     async def get_widget(self, user_id: str, widget_id: str, period: str) -> object:
         now = utc_now()
         dash = await self._dash_repo.get_by_user_and_period(user_id, period)
+        if dash is None:
+            dash = await _get_live_dashboard_fallback(self._db, user_id, period)
 
         if widget_id == "health_score":
             metrics = await self._metrics_repo.get_latest_by_user(user_id)
@@ -458,7 +528,7 @@ class WidgetService:
             if not dash or not dash.budget_overview:
                 return None
             on_track = sum(1 for b in dash.budget_overview if b.get("state") == "safe")
-            warning = sum(1 for b in dash.budget_overview if b.get("state") == "warning")
+            warning = sum(1 for b in dash.budget_overview if b.get("state") in ("warning", "critical"))
             over = sum(1 for b in dash.budget_overview if b.get("state") == "over")
             return BudgetStatusWidget(
                 budget_count=len(dash.budget_overview), on_track=on_track,
