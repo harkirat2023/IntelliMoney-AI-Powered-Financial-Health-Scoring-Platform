@@ -47,7 +47,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="mt-6 text-lg sm:text-xl text-neutral-500 leading-relaxed max-w-xl mx-auto"
           >
-            Connect your bank accounts, let our AI analyze your spending, and get real-time insights to save smarter.
+            Track your spending, use the optional Account Aggregator sandbox demo, and get practical insights to save smarter.
           </motion.p>
 
           <motion.div
@@ -74,7 +74,7 @@ export function HeroSection() {
           >
             <div className="flex items-center gap-2 text-sm text-neutral-500">
               <Shield size={16} className="text-emerald-600" />
-              <span>RBI Compliant</span>
+              <span>Sandbox banking demo</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-neutral-500">
               <TrendingDown size={16} className="text-emerald-600" />

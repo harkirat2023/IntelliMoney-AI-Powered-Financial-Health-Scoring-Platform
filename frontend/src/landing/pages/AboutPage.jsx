@@ -7,9 +7,9 @@ import { ArrowRight, Target, Users, Shield, Zap } from "lucide-react";
 
 const values = [
   { icon: Target, title: "Our Mission", description: "To democratize financial intelligence for every Indian household. We believe everyone deserves access to world-class financial tools, regardless of their wealth or financial literacy." },
-  { icon: Users, title: "Who We Serve", description: "Salaried professionals, freelancers, small business owners, students, and families across India. Our platform supports 50+ Indian banks and is built specifically for Indian financial systems." },
-  { icon: Shield, title: "Trust & Security", description: "We are registered as a Non-Banking Financial Company (NBFC) and comply with all RBI guidelines. Your data is encrypted with 256-bit AES and stored in India-based servers." },
-  { icon: Zap, title: "Our Technology", description: "Our proprietary AI engine processes millions of transactions daily, learning from spending patterns to deliver personalized insights with 98.5% categorization accuracy." },
+  { icon: Users, title: "Who We Serve", description: "Salaried professionals, freelancers, small business owners, students, and families who want a clearer view of their finances." },
+  { icon: Shield, title: "Trust & Security", description: "The app uses authenticated, user-scoped financial data and does not present its sandbox demonstration as production banking." },
+  { icon: Zap, title: "Our Technology", description: "Deterministic financial services calculate scores and insights, while the Copilot explains approved, user-scoped financial context." },
 ];
 
 const team = [

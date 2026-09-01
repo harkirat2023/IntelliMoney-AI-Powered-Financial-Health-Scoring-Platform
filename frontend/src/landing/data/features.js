@@ -3,21 +3,21 @@ import { Banknote, Brain, Goal, LineChart, Shield, Sparkles, Landmark } from "lu
 export const features = [
   {
     icon: Landmark,
-    title: "Connect Your Bank",
+    title: "Try the Bank Sandbox",
     description:
-      "Securely link your bank accounts via RBI-approved Account Aggregators. Read-only access, credentials never stored.",
+      "Explore the Setu Account Aggregator sandbox with simulated data. It is a demonstration flow, not production banking.",
   },
   {
     icon: Banknote,
-    title: "Automatic Bank Sync",
+    title: "Optional Data Import",
     description:
-      "Connect your accounts securely and sync transactions automatically. No manual entry required — ever.",
+      "Import approved sandbox data when you choose, or add and manage expenses manually.",
   },
   {
     icon: Sparkles,
     title: "AI Expense Categorization",
     description:
-      "Every transaction is intelligently categorized using machine learning. The more you use it, the smarter it gets.",
+      "Use category suggestions and manual selection while deterministic financial calculations remain the source of truth.",
   },
   {
     icon: Brain,

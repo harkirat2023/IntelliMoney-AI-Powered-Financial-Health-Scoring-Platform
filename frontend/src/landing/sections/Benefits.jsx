@@ -4,28 +4,28 @@ import { CheckCircle } from "lucide-react";
 
 const benefits = [
   {
-    title: "Save Thousands Annually",
-    description: "Our users save an average of ₹1,20,000 per year by identifying wasteful subscriptions, optimizing bill payments, and reducing impulse spending.",
+    title: "See Recurring Costs",
+    description: "Track subscriptions and recurring expenses so you can spot commitments that deserve a closer look.",
   },
   {
-    title: "Never Miss a Bill",
-    description: "AI-powered bill reminders and payment scheduling ensure you never pay late fees again. Supports all major Indian billers.",
+    title: "Stay Aware of Due Dates",
+    description: "Keep recurring expenses and subscriptions visible alongside their expected payment dates.",
   },
   {
-    title: "Bank-Grade Security",
-    description: "256-bit AES encryption, RBI-compliant data storage, and biometric authentication. Your financial data is protected with the highest security standards.",
+    title: "User-Scoped Data",
+    description: "Clerk authentication and user-scoped data access keep one customer's financial records separate from another's.",
   },
   {
-    title: "Multi-Bank Aggregation",
-    description: "Connect all your accounts — savings, current, credit cards, and investments — from 50+ Indian banks in one unified view.",
+    title: "Sandbox Account Aggregation",
+    description: "Explore the optional Setu AA sandbox demonstration with simulated data; live bank connectivity is not offered.",
   },
   {
-    title: "Tax-Smart Recommendations",
-    description: "Get personalized tax-saving investment suggestions under Section 80C, 80D, and more. Maximize your refunds with AI-optimized strategies.",
+    title: "Clear Financial Insights",
+    description: "Review deterministic budget, cash-flow, health, goal, and spending insights based on your stored data.",
   },
   {
-    title: "Family Finance Management",
-    description: "Invite family members, set shared goals, and manage household finances together. Perfect for young couples and joint families.",
+    title: "Personal Finance Goals",
+    description: "Create and track your own savings goals with progress, projections, and practical recommendations.",
   },
 ];
 

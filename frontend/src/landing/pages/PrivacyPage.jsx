@@ -4,27 +4,27 @@ import { FadeIn } from "../components/animations/FadeIn";
 const sections = [
   {
     title: "Information We Collect",
-    content: "We collect information you provide directly, including your name, email address, phone number, bank account details, and transaction data. We also automatically collect usage data such as IP address, browser type, and device information to improve our services.",
+    content: "We collect the account and financial information you provide to deliver the application's personal-finance features. The optional Account Aggregator experience uses simulated sandbox data and is not a live banking connection.",
   },
   {
     title: "How We Use Your Data",
-    content: "Your data is used to provide financial analysis, categorize transactions, generate insights, detect fraud, and improve our AI models. We never sell your personal data to third parties. Aggregated, anonymized data may be used for benchmark analytics.",
+    content: "Your data is used to provide financial analysis, categorization, and insights within your account. Deterministic backend services remain the source of truth for financial calculations.",
   },
   {
     title: "Data Storage & Security",
-    content: "All data is stored on India-based servers compliant with RBI guidelines. We use 256-bit AES encryption for data at rest and TLS 1.3 for data in transit. Access to your data is restricted to authorized personnel only.",
+    content: "Access to application data is authenticated and scoped to the signed-in user. Do not treat this demonstration application as a statement of banking, regulatory, or data-residency certification.",
   },
   {
     title: "Bank Account & Transaction Data",
-    content: "Your bank credentials are never stored on our servers. We use RBI-approved account aggregator framework for secure data fetching. Transaction data is encrypted and can be deleted at any time from your account settings.",
+    content: "The optional Account Aggregator flow is a Setu sandbox demonstration with simulated data. It does not collect bank credentials or connect to production bank accounts.",
   },
   {
     title: "Data Retention",
-    content: "We retain your data for as long as your account is active. You can request complete data deletion at any time. Deleted data is permanently removed within 30 days.",
+    content: "Data-retention and deletion commitments require deployment-owner review before they are presented as contractual promises.",
   },
   {
     title: "Your Rights",
-    content: "Under Indian data protection laws, you have the right to access, correct, delete, and port your data. You can manage these settings from your account dashboard or by contacting our support team.",
+    content: "For privacy or data-access requests, contact the deployment owner. This page does not replace a reviewed legal privacy notice.",
   },
   {
     title: "Cookies",
@@ -32,7 +32,7 @@ const sections = [
   },
   {
     title: "Third-Party Services",
-    content: "We integrate with RBI-approved account aggregators and payment gateways. These partners are contractually bound to protect your data and comply with Indian data protection regulations.",
+    content: "The application includes a Setu Account Aggregator sandbox adapter for demonstration. It does not offer payment processing or production banking integration.",
   },
 ];
 

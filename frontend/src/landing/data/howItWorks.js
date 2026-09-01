@@ -11,9 +11,9 @@ export const steps = [
   {
     step: 2,
     icon: Building2,
-    title: "Connect Bank Account",
+    title: "Choose Your Data Source",
     description:
-      "Link your accounts via secure read-only access. We analyze up to 24 months of transaction history.",
+      "Add expenses manually or explore the optional Setu Account Aggregator sandbox demo with simulated data.",
     gradient: "from-blue-400 to-blue-500",
   },
   {
@@ -21,7 +21,7 @@ export const steps = [
     icon: Import,
     title: "Import Your Transactions",
     description:
-      "Import all history, start fresh, or pick a date. Our AI instantly categorizes every transaction.",
+      "Optionally import approved sandbox data, then review and categorize transactions before relying on them.",
     gradient: "from-violet-400 to-violet-500",
   },
   {
