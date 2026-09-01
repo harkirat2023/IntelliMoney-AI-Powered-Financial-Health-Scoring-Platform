@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, RefreshCw, TrendingUp, DollarSign, Target } from "lucide-react";
+import { FileText, Download, TrendingUp, DollarSign, Target } from "lucide-react";
 
 import { api } from "../api/client";
 import { currency } from "../utils/format";
@@ -58,6 +58,20 @@ export default function Reports() {
     }
   }
 
+  async function exportSpending() {
+    try {
+      const response = await api.get("/reports/export.csv", { responseType: "blob" });
+      const url = URL.createObjectURL(new Blob([response.data], { type: "text/csv" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "intellimoney-spending.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Could not export your spending CSV.");
+    }
+  }
+
   function formatDate(date) {
     if (!date) return "";
     const d = new Date(date);
@@ -88,6 +102,10 @@ export default function Reports() {
           <button className="secondary" onClick={generateMonthly}>
             <FileText size={16} />
             Monthly Report
+          </button>
+          <button className="secondary" onClick={exportSpending}>
+            <Download size={16} />
+            Export CSV
           </button>
         </div>
       </header>

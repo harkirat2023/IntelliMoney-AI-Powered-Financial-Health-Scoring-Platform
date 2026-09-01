@@ -59,7 +59,7 @@ export default function ReceiptReviewPage() {
     try {
       const res = await receiptsStore.confirm(receiptId);
       setReceipt(res.receipt);
-      setMessage(`Expense created! ID: ${res.expense_id}`);
+      setMessage(`Expense is already included in your spending. ID: ${res.expense_id}`);
     } catch (e) {
       setMessage("Confirmation failed");
     } finally {
@@ -172,13 +172,13 @@ export default function ReceiptReviewPage() {
                   </button>
                 )}
                 <button className="btn-primary" onClick={handleConfirm} disabled={confirming}>
-                  {confirming ? <Loader className="spin" size={16} /> : <CheckCircle size={16} />} Confirm & Create Expense
+                  {confirming ? <Loader className="spin" size={16} /> : <CheckCircle size={16} />} Confirm Receipt
                 </button>
               </>
             )}
             {receipt.status === "completed" && (
               <p style={{ color: "#10b981", display: "flex", alignItems: "center", gap: 8 }}>
-                <CheckCircle size={16} /> Expense created successfully
+                <CheckCircle size={16} /> Expense included in spending
               </p>
             )}
           </div>

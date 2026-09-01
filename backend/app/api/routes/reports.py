@@ -1,6 +1,9 @@
+import csv
+from io import StringIO
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
@@ -9,6 +12,7 @@ from app.schemas.report import FinancialReport, ReportSummary
 from app.services.report_service import (
     generate_monthly_report,
     generate_weekly_report,
+    get_expenses_for_export,
     get_report,
     get_report_summary,
     get_reports,
@@ -17,6 +21,33 @@ from app.services.report_service import (
 
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+@router.get("/export.csv")
+async def export_spending_csv(
+    current_user: dict[str, Any] = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+) -> StreamingResponse:
+    """Export the user's expense ledger as a portable CSV file."""
+    rows = await get_expenses_for_export(db, current_user["_id"])
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["date", "description", "category", "amount", "payment_method"])
+    for expense in rows:
+        value = expense.get("date")
+        date_value = value.date().isoformat() if hasattr(value, "date") else str(value or "")
+        writer.writerow([
+            date_value,
+            expense.get("description", ""),
+            expense.get("category", ""),
+            f"{float(expense.get('amount', 0)):.2f}",
+            expense.get("payment_method", ""),
+        ])
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=intellimoney-spending.csv"},
+    )
 
 
 @router.get("", response_model=list[FinancialReport])

@@ -80,6 +80,10 @@ export default function AASandboxPage() {
   };
 
   const fetchData = async (sessionId) => {
+    const confirmed = window.confirm(
+      "Import this sandbox's demo transactions into your spending, budgets, and financial health data?"
+    );
+    if (!confirmed) return;
     setBusy(true);
     setError("");
     try {

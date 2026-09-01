@@ -33,6 +33,7 @@ from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.tools import build_tools
 from app.copilot.services.llm_service import LLMService
 from app.copilot.services.memory_service import MemoryService
+from app.services.budget_service import get_budget_status
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +54,13 @@ class AgentCopilotService:
         context = await self._build_context(user_id)
         tools, proposal_created = build_tools(self._db, user_id, session.id)
 
-        messages = self._build_messages(history, message, context)
-        response_text = await self._run_agent_loop(messages, tools)
+        # Budget-status questions have a deterministic, authoritative answer.
+        # Answer these without making a language-model call so a temporary Groq
+        # outage never prevents a user from seeing their actual budget state.
+        response_text = await self._deterministic_answer(user_id, message)
+        if response_text is None:
+            messages = self._build_messages(history, message, context)
+            response_text = await self._run_agent_loop(messages, tools)
 
         await self._memory.add_message(user_id, session.id, "user", message)
         ai_msg = await self._memory.add_message(user_id, session.id, "assistant", response_text)
@@ -67,6 +73,42 @@ class AgentCopilotService:
             "sources": [],
             "proposal": proposal,
         }
+
+    async def _deterministic_answer(self, user_id: str, message: str) -> str | None:
+        normalized = " ".join(message.lower().split())
+        overspending_terms = (
+            "overspending", "overspend", "over budget", "exceeding budget",
+        )
+        if not any(term in normalized for term in overspending_terms):
+            return None
+
+        statuses = await get_budget_status(self._db, user_id)
+        if not statuses:
+            return (
+                "You do not have any budgets for this month yet, so I can't "
+                "identify overspending categories. Create a category budget to "
+                "start tracking it."
+            )
+
+        over = [item for item in statuses if item.get("state") == "over"]
+        warning = [
+            item for item in statuses if item.get("state") in {"warning", "critical"}
+        ]
+        if over:
+            details = "; ".join(
+                f"{item['category']}: ₹{item['spent']:,.2f} of ₹{item['limit']:,.2f} "
+                f"({item['percentage_used']:.0f}%)"
+                for item in over
+            )
+            return f"Yes — you are over budget in {details}."
+        if warning:
+            details = "; ".join(
+                f"{item['category']}: ₹{item['spent']:,.2f} of ₹{item['limit']:,.2f} "
+                f"({item['percentage_used']:.0f}%)"
+                for item in warning
+            )
+            return f"You are not over budget yet, but you are close in {details}."
+        return "No — none of your budgeted categories are overspent this month."
 
     async def _run_agent_loop(self, messages: list, tools: list) -> str:
         llm = self._llm._get_llm()

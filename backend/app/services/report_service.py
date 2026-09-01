@@ -298,6 +298,15 @@ async def get_reports(db: AsyncIOMotorDatabase, user_id: str, report_type: str |
     return [serialize_document(item) async for item in cursor]
 
 
+async def get_expenses_for_export(
+    db: AsyncIOMotorDatabase, user_id: ObjectId | str,
+) -> list[dict[str, Any]]:
+    """Return only the authenticated user's source-of-truth expense ledger."""
+    owner_id = user_id if isinstance(user_id, ObjectId) else ObjectId(user_id)
+    cursor = db.expenses.find({"user_id": owner_id}).sort("date", -1)
+    return [item async for item in cursor]
+
+
 async def get_report(db: AsyncIOMotorDatabase, user_id: str, report_id: str) -> dict[str, Any] | None:
     """Get a specific report."""
     if not ObjectId.is_valid(report_id):

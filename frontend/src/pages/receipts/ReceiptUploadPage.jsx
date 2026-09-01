@@ -39,10 +39,11 @@ export default function ReceiptUploadPage() {
 
   const handleUpload = useCallback(async () => {
     if (!file) return;
-    setUploading(true);
-    setError("");
+      setUploading(true);
+      setError("");
     try {
-      const res = await receiptsStore.upload(file);
+      const uploaded = await receiptsStore.upload(file);
+      const res = await receiptsStore.process(uploaded.receipt.id);
       setResult(res);
     } catch (e) {
       setError(e.response?.data?.detail || "Upload failed");

@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.config import get_settings
@@ -158,11 +159,17 @@ class ReceiptService:
                 "amount": receipt.total_amount,
             })
 
+            # A successful OCR result is a financial transaction. Persist it
+            # once immediately so receipt uploads are reflected in spending;
+            # ``confirm_and_finalize`` remains idempotent for older clients.
             if receipt.status == "processed":
                 expense_id = await self._create_expense(user_id, receipt)
                 if expense_id:
                     receipt.expense_id = expense_id
-                    await self._receipt_repo.update(receipt.id, {"expense_id": expense_id})
+                    receipt.status = "completed"
+                    await self._receipt_repo.update(receipt.id, {
+                        "expense_id": expense_id, "status": "completed",
+                    })
 
             return {"receipt": receipt, "expense_id": receipt.expense_id,
                     "errors": validation_errors if validation_errors else [],
@@ -184,7 +191,7 @@ class ReceiptService:
             return {"receipt": None, "expense_id": "", "errors": ["Receipt not found"],
                     "message": "Receipt not found"}
 
-        if receipt.status == "completed":
+        if receipt.status == "completed" or receipt.expense_id:
             return {"receipt": receipt, "expense_id": receipt.expense_id,
                     "errors": [], "message": "Already completed"}
 
@@ -195,6 +202,9 @@ class ReceiptService:
             receipt.confidence_score = confidence
 
         expense_id = await self._create_expense(user_id, receipt)
+        if not expense_id:
+            return {"receipt": receipt, "expense_id": "",
+                    "errors": ["Could not create the expense"], "message": "Expense creation failed"}
         await self._receipt_repo.update(receipt_id, {
             "status": "completed", "expense_id": expense_id,
             "predicted_category": receipt.predicted_category,
@@ -242,6 +252,31 @@ class ReceiptService:
             upd["confidence_score"] = confidence
 
         await self._receipt_repo.update(receipt_id, upd)
+
+        # Keep the authoritative expense in sync when a receipt is corrected
+        # after automatic OCR import.
+        if receipt.expense_id:
+            expense_updates = {}
+            if "total_amount" in upd:
+                expense_updates["amount"] = upd["total_amount"]
+            if "predicted_category" in upd:
+                expense_updates["category"] = upd["predicted_category"]
+            if "merchant_name" in upd:
+                expense_updates["description"] = (
+                    f"{upd['merchant_name'] or receipt.filename} (via Receipt OCR)"
+                )
+            if "transaction_date" in upd:
+                try:
+                    expense_updates["date"] = datetime.strptime(
+                        upd["transaction_date"], "%Y-%m-%d"
+                    )
+                except (TypeError, ValueError):
+                    pass
+            if expense_updates and ObjectId.is_valid(receipt.expense_id):
+                await self._db.expenses.update_one(
+                    {"_id": ObjectId(receipt.expense_id), "user_id": ObjectId(user_id)},
+                    {"$set": expense_updates},
+                )
         await self._log(receipt_id, user_id, "update", "success",
                         f"Fields updated: {', '.join(upd.keys())}")
 
@@ -258,6 +293,10 @@ class ReceiptService:
             logger.warning(f"Failed to delete receipt image: {e}")
 
         await self._receipt_repo.delete(receipt_id)
+        if receipt.expense_id and ObjectId.is_valid(receipt.expense_id):
+            await self._db.expenses.delete_one({
+                "_id": ObjectId(receipt.expense_id), "user_id": ObjectId(user_id),
+            })
         await self._log(receipt_id, user_id, "delete", "success", "Receipt deleted")
         return True
 
@@ -282,7 +321,7 @@ class ReceiptService:
                 except ValueError:
                     pass
             expense_doc = {
-                "user_id": user_id,
+                "user_id": ObjectId(user_id),
                 "amount": receipt.total_amount,
                 "description": f"{receipt.merchant_name or receipt.filename} (via Receipt OCR)",
                 "category": receipt.predicted_category or "Other",
