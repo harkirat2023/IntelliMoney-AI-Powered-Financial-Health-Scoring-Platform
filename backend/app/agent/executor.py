@@ -21,9 +21,9 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.agent.schemas import (
     ActionExecutionResult,
     ActionKind,
-    ProposedAction,
     Proposal,
     ProposalStatus,
+    ProposedAction,
 )
 from app.services.serializers import date_to_datetime, utc_now
 from app.utils.object_id import to_object_id

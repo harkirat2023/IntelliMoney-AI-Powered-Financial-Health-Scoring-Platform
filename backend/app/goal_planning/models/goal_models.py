@@ -1,6 +1,5 @@
 from datetime import datetime
 
-
 GOAL_TYPES = ["emergency_fund", "vacation", "laptop", "vehicle", "house",
               "education", "wedding", "retirement", "investment", "custom"]
 

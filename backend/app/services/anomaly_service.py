@@ -97,7 +97,7 @@ async def detect_anomalies(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[
         
         severity = get_severity(deviation_percentage)
         message = f"Spending anomaly detected in {category}: ₹{amount:,.2f} spent (avg: ₹{average:,.2f})"
-        get_suggestion(severity, category, deviation_percentage)
+        suggestion = get_suggestion(severity, category, deviation_percentage)
         
         # Check if anomaly already exists for this expense
         existing = await db.spending_anomalies.find_one({

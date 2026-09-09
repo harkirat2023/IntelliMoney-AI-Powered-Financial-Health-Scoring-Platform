@@ -9,9 +9,17 @@ from app.health.repositories.recommendation_repository import (
 )
 from app.health.repositories.risk_repository import MongoRiskRepository
 from app.health.schemas import (
-    FactorDetail, HealthBreakdownResponse, HealthCurrentResponse,
-    HealthFactorGroup, HealthHistoryResponse, HistoryPoint,
-    HealthRecommendationItem, RiskAssessmentResponse, RiskDimension, TrendAnalysis, TrendPoint,
+    FactorDetail,
+    HealthBreakdownResponse,
+    HealthCurrentResponse,
+    HealthFactorGroup,
+    HealthHistoryResponse,
+    HealthRecommendationItem,
+    HistoryPoint,
+    RiskAssessmentResponse,
+    RiskDimension,
+    TrendAnalysis,
+    TrendPoint,
 )
 
 

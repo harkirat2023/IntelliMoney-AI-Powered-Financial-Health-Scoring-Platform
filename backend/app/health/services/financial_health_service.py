@@ -13,12 +13,17 @@ from app.health.repositories.recommendation_repository import (
 )
 from app.health.repositories.risk_repository import MongoRiskRepository
 from app.health.schemas import (
-    CalculateResponse, HealthBreakdownResponse, HealthCurrentResponse,
-    HealthHistoryResponse, HealthRecommendationItem, RiskAssessmentResponse, TrendAnalysis,
+    CalculateResponse,
+    HealthBreakdownResponse,
+    HealthCurrentResponse,
+    HealthHistoryResponse,
+    HealthRecommendationItem,
+    RiskAssessmentResponse,
+    TrendAnalysis,
 )
+from app.health.services.health_aggregation_service import HealthAggregationService
 from app.health.services.health_history_service import HealthHistoryService
 from app.health.services.health_score_calculator import HealthScoreCalculator
-from app.health.services.health_aggregation_service import HealthAggregationService
 from app.health.services.recommendation_engine import RecommendationEngine
 from app.health.services.risk_assessment_service import RiskAssessmentService
 from app.health.services.trend_analysis_service import TrendAnalysisService

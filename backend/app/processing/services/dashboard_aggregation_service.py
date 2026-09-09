@@ -4,14 +4,13 @@ from datetime import datetime
 
 from app.domain.financial_transactions.models import FinancialTransaction
 
+logger = logging.getLogger("intellimoney")
 from app.infrastructure.database.repositories.intelligence.financial_transaction_repository import (
     MongoFinancialTransactionRepository,
 )
 from app.processing.models.dashboard_metrics import DashboardMetrics
 from app.processing.repositories.dashboard_metrics_repository import MongoDashboardMetricsRepository
 from app.utils.date_utils import month_bounds, utc_now
-
-logger = logging.getLogger("intellimoney")
 
 
 class DashboardAggregationService:

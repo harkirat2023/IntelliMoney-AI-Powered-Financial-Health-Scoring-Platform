@@ -4,7 +4,6 @@ from typing import Literal
 from bson import ObjectId
 from pydantic import BaseModel
 
-
 ReviewStatus = Literal["auto_approved", "approved", "review_required"]
 
 

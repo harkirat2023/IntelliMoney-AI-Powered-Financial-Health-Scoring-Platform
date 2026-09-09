@@ -1,7 +1,7 @@
 from app.core.constants import (
+    CATEGORIES,
     CONFIDENCE_THRESHOLDS,
     MERCHANT_CONFIDENCE_WEIGHTS,
-    CATEGORIES,
 )
 from app.core.logging import logger
 

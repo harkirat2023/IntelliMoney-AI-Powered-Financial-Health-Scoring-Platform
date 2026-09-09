@@ -69,7 +69,7 @@ async def root() -> dict[str, str]:
 
 @app.get("/api/health")
 async def health() -> dict:
-    from app.db.mongodb import database, connection_error
+    from app.db.mongodb import connection_error, database
     db_ping = False
     if database is not None:
         try:

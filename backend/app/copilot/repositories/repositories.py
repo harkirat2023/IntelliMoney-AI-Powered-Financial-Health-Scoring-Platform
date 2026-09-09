@@ -4,7 +4,11 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.copilot.models.models import (
-    AiFeedback, ChatMessage, ChatSession, ConversationMemory, ConversationSummary,
+    AiFeedback,
+    ChatMessage,
+    ChatSession,
+    ConversationMemory,
+    ConversationSummary,
 )
 
 

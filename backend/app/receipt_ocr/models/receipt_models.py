@@ -1,6 +1,5 @@
 from datetime import datetime
 
-
 RECEIPT_STATUSES = ["uploaded", "processing", "processed", "review_required", "completed", "failed"]
 EXTRACTION_METHODS = ["ocr", "manual", "auto"]
 

@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.processing.models.processing_batch import ProcessingBatch, ProcessingSummary
-from app.utils.object_id import to_object_id
 from app.utils.date_utils import utc_now
+from app.utils.object_id import to_object_id
 
 
 class ProcessingBatchRepository(ABC):

@@ -13,7 +13,7 @@ class SavingsOpportunityService:
         self._db = db
 
     async def detect(self, user_id: str) -> list[dict]:
-        datetime.utcnow()
+        now = datetime.utcnow()
         opportunities = []
 
         budget_usages = await self._db.budget_usage.find({"user_id": user_id}).to_list(length=None)
@@ -52,8 +52,8 @@ class SavingsOpportunityService:
 
         for bu in budget_usages:
             cat = bu.get("category", "")
-            bu.get("limit", 0)
-            bu.get("spent", 0)
+            limit = bu.get("limit", 0)
+            spent = bu.get("spent", 0)
             percentage = bu.get("percentage_used", 0)
 
             amounts = cat_monthly.get(cat, [])
@@ -96,7 +96,7 @@ class SavingsOpportunityService:
                 )
                 opportunities.append(opp)
 
-        sum(amounts[-1] for amounts in cat_monthly.values() if amounts)
+        total_monthly_spending = sum(amounts[-1] for amounts in cat_monthly.values() if amounts)
         if avg_total > 0:
             savings_target = avg_total * 0.05
             annual = savings_target * 12

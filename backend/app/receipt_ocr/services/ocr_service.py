@@ -5,9 +5,10 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 try:
+    import io
+
     import pytesseract
     from PIL import Image
-    import io
     TESSERACT_AVAILABLE = True
 except ImportError:
     TESSERACT_AVAILABLE = False

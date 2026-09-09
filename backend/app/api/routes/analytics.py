@@ -8,7 +8,6 @@ from app.db.mongodb import get_database
 from app.schemas.analytics import ChartPoint, RecentExpense, SummaryResponse
 from app.services import analytics_service
 
-
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 

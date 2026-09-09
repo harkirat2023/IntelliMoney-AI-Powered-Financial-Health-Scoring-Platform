@@ -5,7 +5,8 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.goal_planning.models.goal_models import FinancialGoal, GoalPrediction
 from app.goal_planning.repositories.goal_repositories import (
-    GoalPredictionRepository, MongoGoalPredictionRepository,
+    GoalPredictionRepository,
+    MongoGoalPredictionRepository,
 )
 
 logger = logging.getLogger(__name__)

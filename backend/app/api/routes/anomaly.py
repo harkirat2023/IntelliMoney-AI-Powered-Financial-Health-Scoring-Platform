@@ -14,7 +14,6 @@ from app.services.anomaly_service import (
     mark_anomaly_read,
 )
 
-
 router = APIRouter(prefix="/anomaly", tags=["anomaly"])
 
 

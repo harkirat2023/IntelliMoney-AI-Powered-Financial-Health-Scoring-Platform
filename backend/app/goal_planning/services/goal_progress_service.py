@@ -5,7 +5,8 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.goal_planning.models.goal_models import FinancialGoal, GoalProgress
 from app.goal_planning.repositories.goal_repositories import (
-    GoalProgressRepository, MongoFinancialGoalRepository,
+    GoalProgressRepository,
+    MongoFinancialGoalRepository,
     MongoGoalProgressRepository,
 )
 

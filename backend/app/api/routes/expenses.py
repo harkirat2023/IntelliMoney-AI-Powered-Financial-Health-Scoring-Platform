@@ -11,7 +11,6 @@ from app.schemas.expense import ExpenseCreate, ExpensePublic, ExpenseUpdate
 from app.services.category_service import suggest_category
 from app.services.serializers import date_to_datetime, serialize_document, to_object_id, utc_now
 
-
 router = APIRouter(prefix="/expenses", tags=["expenses"])
 
 

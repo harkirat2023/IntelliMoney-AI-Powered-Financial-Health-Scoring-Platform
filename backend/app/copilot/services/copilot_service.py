@@ -131,6 +131,7 @@ class CopilotService:
 
     def _build_messages(self, history: list, context: dict, message: str) -> list[dict]:
         msgs = []
+        summary_text = ""
         if history:
             s = history[0]
             if hasattr(s, "session_id"):

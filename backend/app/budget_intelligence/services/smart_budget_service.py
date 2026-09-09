@@ -22,7 +22,7 @@ class SmartBudgetService:
         period = f"{now.year}-{now.month:02d}"
 
         budget_usages = await self._db.budget_usage.find({"user_id": user_id}).to_list(length=None)
-        await self._db.financial_health.find_one(
+        financial_health = await self._db.financial_health.find_one(
             {"user_id": user_id}, sort=[("calculated_at", -1)]
         )
         trends = await self._trend_service.analyze(user_id, 6)

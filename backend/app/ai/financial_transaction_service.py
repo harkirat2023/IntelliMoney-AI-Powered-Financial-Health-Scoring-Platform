@@ -175,7 +175,7 @@ class FinancialTransactionService:
     async def update_transaction(
         self, user_id: str, tx_id: str, update_data: dict,
     ) -> FinancialTransaction:
-        await self.get_transaction(user_id, tx_id)
+        tx = await self.get_transaction(user_id, tx_id)
         updated = await self._financial_tx_repo.update_fields(tx_id, update_data)
         if not updated:
             raise FinancialTransactionNotFoundException()

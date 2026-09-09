@@ -23,7 +23,6 @@ from app.infrastructure.database.repositories.sync_repository import (
 )
 from app.infrastructure.messaging.event_bus import event_bus as global_event_bus
 
-
 _service_instance: FinancialTransactionService | None = None
 
 
@@ -37,7 +36,7 @@ def get_intelligence_service(
     bank_tx_repo = MongoBankTransactionRepository(db)
     financial_tx_repo = MongoFinancialTransactionRepository(db)
     feedback_repo = MongoFeedbackRepository(db)
-    MongoMerchantRepository(db)
+    merchant_repo = MongoMerchantRepository(db)
 
     merchant_service = MerchantNormalizationService()
     category_service = CategoryPredictionService()

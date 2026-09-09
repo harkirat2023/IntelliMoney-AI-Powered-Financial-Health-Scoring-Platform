@@ -10,7 +10,6 @@ from app.infrastructure.database.repositories.import_preference_repository impor
 from app.schemas.import_preference import ImportPreferenceRequest, ImportPreferenceResponse
 from app.services.import_preference_service import ImportPreferenceService
 
-
 router = APIRouter(prefix="/import-preference", tags=["import_preference"])
 
 

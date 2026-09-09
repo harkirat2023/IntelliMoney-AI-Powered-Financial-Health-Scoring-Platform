@@ -12,7 +12,8 @@ from app.infrastructure.messaging.events import Event
 from app.infrastructure.storage import get_storage_backend
 from app.receipt_ocr.models.receipt_models import Receipt, ReceiptProcessingLog
 from app.receipt_ocr.repositories.receipt_repositories import (
-    MongoReceiptProcessingLogRepository, MongoReceiptRepository,
+    MongoReceiptProcessingLogRepository,
+    MongoReceiptRepository,
 )
 from app.receipt_ocr.services.image_processing_service import ImageProcessingService
 from app.receipt_ocr.services.ocr_service import OCRService

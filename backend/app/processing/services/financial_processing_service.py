@@ -3,6 +3,8 @@ from uuid import uuid4
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+logger = logging.getLogger("intellimoney")
+
 from app.domain.financial_transactions.models import FinancialTransaction
 from app.infrastructure.database.repositories.expense_repository import MongoExpenseRepository
 from app.infrastructure.database.repositories.intelligence.financial_transaction_repository import (
@@ -24,8 +26,6 @@ from app.processing.services.expense_generation_service import ExpenseGeneration
 from app.processing.services.financial_metrics_service import FinancialMetricsService
 from app.processing.services.savings_service import SavingsService
 from app.utils.date_utils import month_bounds, utc_now
-
-logger = logging.getLogger("intellimoney")
 
 
 class FinancialProcessingService:

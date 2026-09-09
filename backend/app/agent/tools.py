@@ -24,16 +24,16 @@ from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.schemas import (
     DESTRUCTIVE_KINDS,
     ActionKind,
-    ProposedAction,
     Proposal,
     ProposalStatus,
+    ProposedAction,
     validate_params,
 )
 from app.core.constants import CATEGORIES
 from app.services.category_service import suggest_category
 from app.services.serializers import date_to_datetime, serialize_document
-from app.utils.date_utils import month_bounds, utc_now
 from app.utils.budget_state import get_budget_state
+from app.utils.date_utils import month_bounds, utc_now
 from app.utils.object_id import to_object_id
 
 CATEGORIES_JOINED = ", ".join(CATEGORIES)

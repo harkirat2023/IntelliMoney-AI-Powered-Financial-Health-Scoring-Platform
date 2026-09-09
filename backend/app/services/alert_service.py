@@ -8,7 +8,6 @@ from app.services.analytics_service import get_month_expenses
 from app.services.notification_service import notifier
 from app.services.serializers import serialize_document, utc_now
 
-
 ALERT_THRESHOLDS = [75, 90, 100]
 
 

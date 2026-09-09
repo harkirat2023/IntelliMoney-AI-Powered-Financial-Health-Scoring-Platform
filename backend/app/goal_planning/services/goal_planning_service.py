@@ -4,10 +4,12 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.goal_planning.models.goal_models import (
-    FinancialGoal, GoalRecommendation,
+    FinancialGoal,
+    GoalRecommendation,
 )
 from app.goal_planning.repositories.goal_repositories import (
-    MongoFinancialGoalRepository, MongoGoalPredictionRepository,
+    MongoFinancialGoalRepository,
+    MongoGoalPredictionRepository,
     MongoGoalRecommendationRepository,
 )
 from app.goal_planning.services.goal_feasibility_service import GoalFeasibilityService
@@ -101,7 +103,7 @@ class GoalPlanningService:
         if "target_amount" in update or "monthly_contribution" in update:
             tgt = update.get("target_amount", goal.target_amount)
             mc = update.get("monthly_contribution", goal.monthly_contribution)
-            update.get("current_amount", goal.current_amount)
+            curr = update.get("current_amount", goal.current_amount)
             feasibility = await self._feasibility.analyze(user_id, goal.goal_type, tgt, goal.target_date, mc)
             update["feasibility_score"] = feasibility["feasibility_score"]
             update["affordability_score"] = feasibility["affordability_score"]
@@ -175,7 +177,7 @@ class GoalPlanningService:
             await self._progress.track_progress(goal)
 
         recs = await self._recommendation.generate(user_id)
-        await self._notification.check_and_notify(user_id)
+        notifications = await self._notification.check_and_notify(user_id)
 
         await self._publish_event("goal.updated", user_id, {
             "goals_updated": goals_updated, "predictions": predictions_generated,

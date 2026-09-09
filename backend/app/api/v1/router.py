@@ -1,11 +1,29 @@
 from fastapi import APIRouter
 
 from app.api.routes import (
-    alerts, analytics, anomaly, aa, auth, bank, budgets, budget_intelligence_v2,
-    budget_suggestion, consent, copilot_v2, dashboard_v2,
-    expenses, financial_health, goal_planning_v2, health_v2, import_preference,
-    receipt_ocr_v2, recommendations, recurring,
-    reports, subscriptions, sync,
+    aa,
+    alerts,
+    analytics,
+    anomaly,
+    auth,
+    bank,
+    budget_intelligence_v2,
+    budget_suggestion,
+    budgets,
+    consent,
+    copilot_v2,
+    dashboard_v2,
+    expenses,
+    financial_health,
+    goal_planning_v2,
+    health_v2,
+    import_preference,
+    receipt_ocr_v2,
+    recommendations,
+    recurring,
+    reports,
+    subscriptions,
+    sync,
 )
 from app.api.v1 import websocket
 

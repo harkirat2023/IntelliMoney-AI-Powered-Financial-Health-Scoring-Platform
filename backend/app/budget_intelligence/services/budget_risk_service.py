@@ -41,8 +41,8 @@ class BudgetRiskService:
 
         for bu in budget_usages:
             cat = bu.get("category", "Other")
-            bu.get("limit", 1)
-            bu.get("spent", 0)
+            limit = bu.get("limit", 1)
+            spent = bu.get("spent", 0)
             percentage = bu.get("percentage_used", 0)
 
             amounts = cat_monthly.get(cat, [])
@@ -78,8 +78,8 @@ class BudgetRiskService:
         overall_level = "high" if overall_score >= 70 else "medium" if overall_score >= 40 else "low"
         volatility_score = pstdev(scores) if len(scores) > 1 else 0
 
-        [c for c in categories if c["percentage_used"] > 100]
-        await self._assess_recurring_risk(user_id)
+        overspending = [c for c in categories if c["percentage_used"] > 100]
+        recurring = await self._assess_recurring_risk(user_id)
 
         trend_risk = sum(1 for c in categories if c["trend"] == "increasing")
         total_cat = len(categories)

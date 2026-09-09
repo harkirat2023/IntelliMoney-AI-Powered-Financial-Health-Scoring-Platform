@@ -1,13 +1,11 @@
 import logging
 from statistics import mean, pstdev
 
-
+logger = logging.getLogger("intellimoney")
 from app.infrastructure.database.repositories.expense_repository import MongoExpenseRepository
 from app.processing.models.financial_metrics import FinancialMetrics
 from app.processing.repositories.financial_metrics_repository import MongoFinancialMetricsRepository
 from app.utils.date_utils import month_bounds, utc_now
-
-logger = logging.getLogger("intellimoney")
 
 
 class FinancialMetricsService:

@@ -1,8 +1,8 @@
 import logging
 from typing import Any
 
-from langchain_groq import ChatGroq
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_groq import ChatGroq
 
 from app.core.config import get_settings
 

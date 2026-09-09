@@ -1,7 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
-
 class MongoMerchantRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self._db = db

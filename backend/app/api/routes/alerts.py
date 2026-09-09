@@ -8,7 +8,6 @@ from app.db.mongodb import get_database
 from app.schemas.alert import BudgetAlertPublic
 from app.services.alert_service import list_alerts, mark_alert_read
 
-
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
 
