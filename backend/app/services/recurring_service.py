@@ -7,7 +7,6 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.models.documents import RecurringExpenseDocument
-from app.schemas.recurring import RecurringExpenseSuggestion
 from app.services.serializers import serialize_document, utc_now
 from app.utils.frequency import _calculate_next_date, _detect_frequency
 

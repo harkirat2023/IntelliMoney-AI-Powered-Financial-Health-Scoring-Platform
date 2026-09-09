@@ -8,7 +8,6 @@ from app.db.mongodb import get_database
 from app.schemas.analytics import Recommendation
 from app.services.recommendation_service import generate_recommendations
 
-
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
 

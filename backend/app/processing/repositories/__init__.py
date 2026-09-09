@@ -15,12 +15,12 @@ from app.processing.repositories.financial_metrics_repository import (
     MongoFinancialMetricsRepository,
 )
 from app.processing.repositories.monthly_summary_repository import (
-    MonthlySummaryRepository,
     MongoMonthlySummaryRepository,
+    MonthlySummaryRepository,
 )
 from app.processing.repositories.processing_batch_repository import (
-    ProcessingBatchRepository,
     MongoProcessingBatchRepository,
+    ProcessingBatchRepository,
 )
 
 __all__ = [

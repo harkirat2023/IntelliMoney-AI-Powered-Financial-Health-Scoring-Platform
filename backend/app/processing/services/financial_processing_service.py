@@ -11,7 +11,6 @@ from app.infrastructure.database.repositories.intelligence.financial_transaction
     MongoFinancialTransactionRepository,
 )
 from app.infrastructure.messaging.event_bus import event_bus as global_event_bus
-from app.utils.date_utils import month_bounds
 from app.infrastructure.messaging.events import Event
 from app.processing.models.processing_batch import ProcessingBatch, ProcessingSummary
 from app.processing.repositories.budget_usage_repository import MongoBudgetUsageRepository
@@ -26,7 +25,7 @@ from app.processing.services.dashboard_aggregation_service import DashboardAggre
 from app.processing.services.expense_generation_service import ExpenseGenerationService
 from app.processing.services.financial_metrics_service import FinancialMetricsService
 from app.processing.services.savings_service import SavingsService
-from app.utils.date_utils import utc_now
+from app.utils.date_utils import month_bounds, utc_now
 
 
 class FinancialProcessingService:

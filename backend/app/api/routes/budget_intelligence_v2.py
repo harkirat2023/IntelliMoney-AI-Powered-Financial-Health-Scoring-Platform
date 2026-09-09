@@ -5,8 +5,13 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
 from app.budget_intelligence.schemas import (
-    BudgetIntelligenceResponse, BudgetOptimizationResponse, BudgetRiskResponse,
-    BudgetTrendsResponse, GenerateResponse, RecommendationResponse, SavingsOpportunityResponse,
+    BudgetIntelligenceResponse,
+    BudgetOptimizationResponse,
+    BudgetRiskResponse,
+    BudgetTrendsResponse,
+    GenerateResponse,
+    RecommendationResponse,
+    SavingsOpportunityResponse,
 )
 from app.budget_intelligence.services.budget_intelligence_service import (
     BudgetIntelligenceService,

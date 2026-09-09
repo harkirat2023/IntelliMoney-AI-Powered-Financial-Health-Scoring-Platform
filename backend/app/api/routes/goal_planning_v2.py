@@ -7,9 +7,13 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.api.deps import get_current_user
 from app.db.mongodb import get_database
 from app.goal_planning.schemas import (
-    GoalAnalyzeRequest, GoalAnalyzeResponse, GoalCreateRequest,
-    GoalCreateResponse, GoalPredictionResponse, GoalProgressResponseList,
-    GoalRecommendationResponse, GoalResponse,
+    GoalAnalyzeRequest,
+    GoalAnalyzeResponse,
+    GoalCreateRequest,
+    GoalCreateResponse,
+    GoalProgressResponseList,
+    GoalRecommendationResponse,
+    GoalResponse,
     GoalUpdateRequest,
 )
 from app.goal_planning.services.goal_planning_service import GoalPlanningService

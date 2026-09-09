@@ -5,9 +5,10 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 try:
+    import io
+
     import pytesseract
     from PIL import Image
-    import io
     TESSERACT_AVAILABLE = True
 except ImportError:
     TESSERACT_AVAILABLE = False
@@ -27,7 +28,7 @@ class OCRService:
         try:
             img = Image.open(io.BytesIO(image_bytes))
             raw_text = pytesseract.image_to_string(img, config=self._config)
-            lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
+            lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
 
             merchant = self._extract_merchant(lines)
             total_amount = self._extract_amount(lines)

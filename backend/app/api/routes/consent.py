@@ -17,7 +17,6 @@ from app.schemas.consent import (
 )
 from app.services.consent_grant_service import ConsentGrantService
 
-
 router = APIRouter(prefix="/consent", tags=["consent"])
 
 

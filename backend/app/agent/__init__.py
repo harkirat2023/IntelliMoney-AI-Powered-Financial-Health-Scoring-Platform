@@ -4,9 +4,9 @@ from app.agent.executor import ProposalExecutor
 from app.agent.schemas import (
     ActionExecutionResult,
     ActionKind,
-    ProposedAction,
     Proposal,
     ProposalStatus,
+    ProposedAction,
     validate_params,
 )
 from app.agent.service import AgentCopilotService

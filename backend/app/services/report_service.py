@@ -7,8 +7,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.models.documents import FinancialReportDocument
-from app.schemas.report import FinancialReport, ReportSummary
-from app.services.analytics_service import get_month_expenses
+from app.schemas.report import ReportSummary
 from app.services.serializers import serialize_document, utc_now
 from app.utils.budget_state import get_budget_state
 

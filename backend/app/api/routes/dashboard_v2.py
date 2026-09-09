@@ -5,20 +5,22 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
 from app.dashboard.schemas import (
-    AnalyticsResponse, DashboardOverviewResponse, NotificationItem,
+    AnalyticsResponse,
+    DashboardOverviewResponse,
+    NotificationItem,
     WidgetsResponse,
 )
 from app.dashboard.services import (
-    _get_live_dashboard_fallback,
     DashboardService,
     NotificationService,
     WidgetService,
+    _get_live_dashboard_fallback,
 )
 from app.db.mongodb import get_database
-from app.processing.services.dashboard_read_service import DashboardReadService
 from app.processing.schemas.dashboard import (
     CashFlowPoint,
 )
+from app.processing.services.dashboard_read_service import DashboardReadService
 from app.utils.date_utils import utc_now
 
 

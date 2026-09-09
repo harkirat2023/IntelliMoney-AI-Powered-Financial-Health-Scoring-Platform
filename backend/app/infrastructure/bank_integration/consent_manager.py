@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from app.core.encryption import FieldEncryptor
 from app.core.exceptions import ConsentDeniedException, ConsentExpiredException

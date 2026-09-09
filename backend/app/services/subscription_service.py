@@ -1,13 +1,13 @@
 from collections import defaultdict
 from datetime import date as Date
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.models.documents import SubscriptionDocument
-from app.schemas.subscription import SubscriptionInsights, SubscriptionSuggestion
+from app.schemas.subscription import SubscriptionInsights
 from app.services.serializers import serialize_document, utc_now
 from app.utils.frequency import _calculate_next_date, _detect_frequency
 

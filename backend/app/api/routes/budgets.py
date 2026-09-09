@@ -10,7 +10,6 @@ from app.schemas.budget import BudgetCreate, BudgetPublic, BudgetStatus, BudgetU
 from app.services.budget_service import get_budget_status
 from app.services.serializers import serialize_document, to_object_id
 
-
 router = APIRouter(prefix="/budgets", tags=["budgets"])
 
 

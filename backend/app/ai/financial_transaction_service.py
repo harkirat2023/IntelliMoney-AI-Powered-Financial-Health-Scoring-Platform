@@ -1,13 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.ai.category_service import CategoryPredictionService
-from app.ai.confidence_service import ConfidenceService
 from app.ai.feedback_service import FeedbackLearningService
-from app.ai.income_service import IncomeDetectionService
-from app.ai.merchant_service import MerchantNormalizationService
 from app.ai.pipeline import ProcessingPipeline
-from app.ai.recurring_service import RecurringDetectionService
-from app.ai.validation_service import ValidationService
 from app.core.exceptions import (
     FinancialTransactionNotFoundException,
     ForbiddenException,
@@ -15,8 +9,6 @@ from app.core.exceptions import (
 )
 from app.core.logging import logger
 from app.domain.financial_transactions.models import FinancialTransaction
-from app.domain.financial_transactions.repository import FinancialTransactionRepository
-from app.domain.sync.models import BankTransaction
 from app.domain.sync.repository import BankTransactionRepository
 from app.infrastructure.database.repositories.intelligence.feedback_repository import (
     MongoFeedbackRepository,
@@ -24,20 +16,15 @@ from app.infrastructure.database.repositories.intelligence.feedback_repository i
 from app.infrastructure.database.repositories.intelligence.financial_transaction_repository import (
     MongoFinancialTransactionRepository,
 )
-from app.infrastructure.database.repositories.intelligence.merchant_repository import (
-    MongoMerchantRepository,
-)
 from app.infrastructure.messaging.event_bus import EventBus
 from app.infrastructure.messaging.events import Event
 from app.schemas.ai import (
-    FeedbackResponse,
     IntelligenceStatusResponse,
     ProcessResultResponse,
     ReviewQueueItem,
     ReviewQueueResponse,
     ReviewSubmissionRequest,
 )
-from app.schemas.financial_transactions import FinancialTransactionResponse
 from app.utils.date_utils import utc_now
 
 

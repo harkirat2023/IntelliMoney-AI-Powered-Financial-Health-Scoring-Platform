@@ -4,8 +4,11 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.goal_planning.models.goal_models import (
-    FinancialGoal, GoalNotification, GoalPrediction,
-    GoalProgress, GoalRecommendation,
+    FinancialGoal,
+    GoalNotification,
+    GoalPrediction,
+    GoalProgress,
+    GoalRecommendation,
 )
 
 

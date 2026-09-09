@@ -6,8 +6,13 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.api.deps import get_current_user
 from app.db.mongodb import get_database
 from app.health.schemas import (
-    CalculateResponse, HealthBreakdownResponse, HealthCurrentResponse,
-    HealthHistoryResponse, HealthRecommendationItem, RiskAssessmentResponse, TrendAnalysis,
+    CalculateResponse,
+    HealthBreakdownResponse,
+    HealthCurrentResponse,
+    HealthHistoryResponse,
+    HealthRecommendationItem,
+    RiskAssessmentResponse,
+    TrendAnalysis,
 )
 from app.health.services.financial_health_service import FinancialHealthService
 

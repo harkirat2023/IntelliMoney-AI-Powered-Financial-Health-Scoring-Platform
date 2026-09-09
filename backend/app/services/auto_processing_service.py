@@ -2,10 +2,10 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.services.intelligence_service import get_intelligence_service
-from app.processing.services.financial_processing_service import FinancialProcessingService
-from app.health.services.financial_health_service import FinancialHealthService
 from app.dashboard.services import NotificationService
+from app.health.services.financial_health_service import FinancialHealthService
+from app.processing.services.financial_processing_service import FinancialProcessingService
+from app.services.intelligence_service import get_intelligence_service
 
 logger = logging.getLogger("intellimoney")
 

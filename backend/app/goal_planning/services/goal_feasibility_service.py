@@ -2,8 +2,6 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.goal_planning.models.goal_models import GOAL_TYPES
-
 logger = logging.getLogger(__name__)
 
 

@@ -1,15 +1,12 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
 from app.core.logging import logger
-from app.db.mongodb import get_database
-from app.dashboard.services import DashboardGateway, DashboardService, WidgetService
+from app.dashboard.services import DashboardGateway
 from app.infrastructure.websocket.auth import validate_ws_token
 from app.infrastructure.websocket.manager import connection_manager
-from app.utils.date_utils import utc_now
 
 router = APIRouter()
 

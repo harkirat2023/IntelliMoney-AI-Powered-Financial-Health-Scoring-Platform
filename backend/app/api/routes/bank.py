@@ -15,13 +15,20 @@ from app.infrastructure.database.repositories.sync_repository import (
     MongoBankTransactionRepository,
     MongoSyncLogRepository,
 )
-from app.schemas.bank import BankAccountPublic, BankConnectRequest, BankImportRequest, BankImportResponse, BankStatusResponse, ConnectInitResponse, ConsentSubmitRequest
+from app.schemas.bank import (
+    BankAccountPublic,
+    BankConnectRequest,
+    BankImportRequest,
+    BankImportResponse,
+    BankStatusResponse,
+    ConnectInitResponse,
+    ConsentSubmitRequest,
+)
+from app.schemas.consent import ConsentGrantRequest
 from app.services.auto_processing_service import AutoProcessingService
 from app.services.bank_service import BankService
 from app.services.consent_grant_service import ConsentGrantService
 from app.services.sync_service import SyncService
-from app.schemas.consent import ConsentGrantRequest
-
 
 router = APIRouter(prefix="/bank", tags=["bank"])
 

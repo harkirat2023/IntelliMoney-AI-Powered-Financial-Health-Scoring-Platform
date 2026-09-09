@@ -1,5 +1,5 @@
 from asyncio import wait_for
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from app.core.encryption import FieldEncryptor
 from app.core.exceptions import (

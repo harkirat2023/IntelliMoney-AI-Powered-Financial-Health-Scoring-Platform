@@ -5,7 +5,8 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.goal_planning.models.goal_models import GoalNotification
 from app.goal_planning.repositories.goal_repositories import (
-    GoalNotificationRepository, MongoGoalNotificationRepository,
+    GoalNotificationRepository,
+    MongoGoalNotificationRepository,
 )
 
 logger = logging.getLogger(__name__)

@@ -8,18 +8,27 @@ from pydantic import BaseModel, Field
 from app.agent.executor import ProposalExecutor
 from app.agent.schemas import Proposal, ProposalStatus
 from app.api.deps import get_current_user
+from app.copilot.repositories.repositories import (
+    MongoChatMessageRepository,
+    MongoChatSessionRepository,
+    MongoConversationMemoryRepository,
+    MongoConversationSummaryRepository,
+)
 from app.copilot.schemas import (
-    ChatHistoryResponse, ChatMessageResponse, ChatRequest, ChatResponse,
-    ChatSessionResponse, CopilotSettings, FeedbackRequest, FeedbackResponse,
-    ProposalResponse, SuggestionResponse,
+    ChatHistoryResponse,
+    ChatMessageResponse,
+    ChatRequest,
+    ChatResponse,
+    ChatSessionResponse,
+    CopilotSettings,
+    FeedbackRequest,
+    FeedbackResponse,
+    ProposalResponse,
+    SuggestionResponse,
 )
 from app.copilot.services.copilot_service import CopilotService
 from app.copilot.services.llm_service import LLMService
 from app.copilot.services.memory_service import MemoryService
-from app.copilot.repositories.repositories import (
-    MongoChatMessageRepository, MongoChatSessionRepository,
-    MongoConversationMemoryRepository, MongoConversationSummaryRepository,
-)
 from app.core.config import get_settings
 from app.db.mongodb import get_database
 from app.utils.object_id import to_object_id

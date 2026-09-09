@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from app.infrastructure.bank_integration.merchant.merchant_data import (
     AliasEntry,

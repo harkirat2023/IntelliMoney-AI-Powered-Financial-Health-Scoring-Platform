@@ -1,16 +1,30 @@
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime
 from types import SimpleNamespace
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.dashboard.schemas import (
-    ActivityFeedItem, AIInsightItem, BudgetAlertItem, BudgetStatusWidget,
-    CashFlowWidget, DashboardOverviewResponse, HealthScoreWidget,
-    IncomeWidget, MonthlyTrendPoint, NotificationItem, RecentTransactionItem,
-    RecurringWidget, SavingsWidget, SpendingHeatmapPoint, SpendingWidget,
-    SubscriptionWidget, TopCategoryItem, UpcomingBillsWidget, AnalyticsResponse,
+    ActivityFeedItem,
+    AIInsightItem,
+    AnalyticsResponse,
+    BudgetAlertItem,
+    BudgetStatusWidget,
+    CashFlowWidget,
+    DashboardOverviewResponse,
+    HealthScoreWidget,
+    IncomeWidget,
+    MonthlyTrendPoint,
+    NotificationItem,
+    RecentTransactionItem,
+    RecurringWidget,
+    SavingsWidget,
+    SpendingHeatmapPoint,
+    SpendingWidget,
+    SubscriptionWidget,
+    TopCategoryItem,
+    UpcomingBillsWidget,
 )
 from app.infrastructure.database.repositories.intelligence.financial_transaction_repository import (
     MongoFinancialTransactionRepository,

@@ -5,7 +5,13 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
 from app.db.mongodb import get_database
-from app.schemas.subscription import Subscription, SubscriptionCreate, SubscriptionInsights, SubscriptionSuggestion, SubscriptionUpdate
+from app.schemas.subscription import (
+    Subscription,
+    SubscriptionCreate,
+    SubscriptionInsights,
+    SubscriptionSuggestion,
+    SubscriptionUpdate,
+)
 from app.services.subscription_service import (
     create_subscription,
     delete_subscription,
@@ -16,7 +22,6 @@ from app.services.subscription_service import (
     record_payment,
     update_subscription,
 )
-
 
 router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 

@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import Any
+
 from bson import ObjectId
 
 from app.utils.date_utils import date_to_datetime, month_bounds, utc_now

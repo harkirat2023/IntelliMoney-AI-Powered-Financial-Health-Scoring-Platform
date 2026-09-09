@@ -2,7 +2,9 @@ import logging
 from datetime import datetime
 
 from app.copilot.models.models import (
-    ChatMessage, ChatSession, ConversationMemory, ConversationSummary,
+    ChatMessage,
+    ChatSession,
+    ConversationSummary,
 )
 from app.copilot.repositories.repositories import (
     ChatMessageRepository,

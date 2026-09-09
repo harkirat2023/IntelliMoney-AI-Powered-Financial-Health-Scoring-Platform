@@ -21,9 +21,9 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.agent.schemas import (
     ActionExecutionResult,
     ActionKind,
-    ProposedAction,
     Proposal,
     ProposalStatus,
+    ProposedAction,
 )
 from app.services.serializers import date_to_datetime, utc_now
 from app.utils.object_id import to_object_id
@@ -33,6 +33,11 @@ _NOTES = "note: applied automatically via confirmed AI Copilot proposal."
 
 def _now_date_str() -> str:
     return utc_now().strftime("%Y-%m-%d")
+
+
+def _current_period() -> tuple[int, int]:
+    now = utc_now()
+    return now.year, now.month
 
 
 def _parse_date(value: str):

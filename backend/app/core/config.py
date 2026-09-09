@@ -31,7 +31,7 @@ class Settings(BaseSettings):
         default=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:80", "http://localhost"],
     )
 
-    bank_encryption_key: str
+    bank_encryption_key: str = "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE="
     bank_consent_redirect_base: str = "http://localhost:5173/connect-bank/consent"
 
     clerk_frontend_api: str = ""

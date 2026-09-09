@@ -23,7 +23,6 @@ from app.infrastructure.database.repositories.sync_repository import (
 )
 from app.infrastructure.messaging.event_bus import event_bus as global_event_bus
 
-
 _service_instance: FinancialTransactionService | None = None
 
 

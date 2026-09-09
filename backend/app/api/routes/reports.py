@@ -19,7 +19,6 @@ from app.services.report_service import (
     mark_report_read,
 )
 
-
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 

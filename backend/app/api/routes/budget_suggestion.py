@@ -14,7 +14,6 @@ from app.services.budget_suggestion_service import (
     get_budget_suggestions,
 )
 
-
 router = APIRouter(prefix="/budget-suggestions", tags=["budget-suggestions"])
 
 

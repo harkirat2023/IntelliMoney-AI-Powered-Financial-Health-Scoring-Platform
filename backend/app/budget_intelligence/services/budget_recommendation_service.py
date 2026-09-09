@@ -93,7 +93,7 @@ class BudgetRecommendationService:
                         limit, spent + reduction * 0.5, reduction, 0.8,
                         ["Savings", cat], f"Increases savings by ₹{reduction:.0f}/month.",
                         [f"Reduce {cat} budget to ₹{spent * 1.1:.0f}.",
-                         f"Auto-transfer the difference to savings on payday."],
+                         "Auto-transfer the difference to savings on payday."],
                     )
                     recommendations.append(rec)
 
@@ -107,10 +107,10 @@ class BudgetRecommendationService:
                 f"Your Financial Health Score is {score}. Smart budget optimization can improve it by ~{points:.0f} points.",
                 score, 65, 0, 0.8,
                 list(set(bu.get("category", "") for bu in budget_usages)),
-                f"A higher score improves loan eligibility and financial stability.",
-                [f"Increase savings rate by 5% of income.",
-                 f"Reduce discretionary spending by 10%.",
-                 f"Set up automatic bill payments to avoid late fees."],
+                "A higher score improves loan eligibility and financial stability.",
+                ["Increase savings rate by 5% of income.",
+                 "Reduce discretionary spending by 10%.",
+                 "Set up automatic bill payments to avoid late fees."],
             )
             recommendations.append(rec)
 

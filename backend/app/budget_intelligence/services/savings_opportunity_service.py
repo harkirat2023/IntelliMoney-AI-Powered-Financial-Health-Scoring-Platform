@@ -106,9 +106,9 @@ class SavingsOpportunityService:
                 f"Your average monthly spending is ₹{avg_total:.0f}. A 5% reduction across all categories saves "
                 f"₹{savings_target:.0f}/month (₹{annual:.0f}/year).",
                 0.7,
-                [f"Review all recurring subscriptions for unused services.",
-                 f"Track every expense for 30 days to identify waste.",
-                 f"Apply the 24-hour rule for non-essential purchases."],
+                ["Review all recurring subscriptions for unused services.",
+                 "Track every expense for 30 days to identify waste.",
+                 "Apply the 24-hour rule for non-essential purchases."],
             )
             opportunities.append(opp)
 
@@ -123,9 +123,9 @@ class SavingsOpportunityService:
                 f"You have {len(unused_subs)} inactive subscription(s) totaling ₹{total_unused:.0f}/month. "
                 f"Cancelling them saves ₹{annual:.0f}/year.",
                 0.9,
-                [f"Review each inactive subscription and cancel if not needed.",
-                 f"Contact providers to confirm cancellation.",
-                 f"Set up monthly subscription audit reminder."],
+                ["Review each inactive subscription and cancel if not needed.",
+                 "Contact providers to confirm cancellation.",
+                 "Set up monthly subscription audit reminder."],
             )
             opportunities.append(opp)
 
@@ -140,9 +140,9 @@ class SavingsOpportunityService:
                 f"Your Financial Health Score is {health['score']}. Optimizing budgets and increasing savings by 10% "
                 f"can boost your score by approximately {improvement:.0f} points.",
                 0.8,
-                [f"Increase savings allocation by 10% of monthly income.",
-                 f"Reduce discretionary spending categories.",
-                 f"Set up automatic transfers to savings on payday."],
+                ["Increase savings allocation by 10% of monthly income.",
+                 "Reduce discretionary spending categories.",
+                 "Set up automatic transfers to savings on payday."],
             )
             opportunities.append(opp)
 

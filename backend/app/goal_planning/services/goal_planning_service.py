@@ -1,14 +1,15 @@
 import logging
-from datetime import datetime, timezone
-from typing import Any
+from datetime import datetime
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.goal_planning.models.goal_models import (
-    FinancialGoal, GoalRecommendation,
+    FinancialGoal,
+    GoalRecommendation,
 )
 from app.goal_planning.repositories.goal_repositories import (
-    MongoFinancialGoalRepository, MongoGoalPredictionRepository,
+    MongoFinancialGoalRepository,
+    MongoGoalPredictionRepository,
     MongoGoalRecommendationRepository,
 )
 from app.goal_planning.services.goal_feasibility_service import GoalFeasibilityService

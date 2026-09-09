@@ -26,7 +26,6 @@ from app.schemas.sync import (
 from app.services.auto_processing_service import AutoProcessingService
 from app.services.sync_service import SyncService
 
-
 router = APIRouter(prefix="/sync", tags=["sync"])
 
 

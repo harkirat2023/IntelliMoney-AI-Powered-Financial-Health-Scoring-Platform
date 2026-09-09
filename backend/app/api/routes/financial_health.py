@@ -10,7 +10,6 @@ from app.health.services.financial_health_service import FinancialHealthService
 from app.schemas.analytics import FinancialHealthScore
 from app.services.financial_service import calculate_financial_score
 
-
 router = APIRouter(prefix="/financial-health", tags=["financial-health"])
 
 

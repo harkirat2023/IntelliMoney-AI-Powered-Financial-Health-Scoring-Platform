@@ -5,7 +5,12 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.api.deps import get_current_user
 from app.db.mongodb import get_database
-from app.schemas.recurring import RecurringExpenseCreate, RecurringExpensePublic, RecurringExpenseSuggestion, RecurringExpenseUpdate
+from app.schemas.recurring import (
+    RecurringExpenseCreate,
+    RecurringExpensePublic,
+    RecurringExpenseSuggestion,
+    RecurringExpenseUpdate,
+)
 from app.services.recurring_service import (
     create_recurring_expense,
     delete_recurring_expense,
@@ -15,7 +20,6 @@ from app.services.recurring_service import (
     get_recurring_expenses,
     update_recurring_expense,
 )
-
 
 router = APIRouter(prefix="/recurring", tags=["recurring"])
 

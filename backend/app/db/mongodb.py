@@ -1,10 +1,9 @@
+import asyncio
+
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import get_settings
 from app.core.logging import logger
-
-
-import asyncio
 
 client: AsyncIOMotorClient | None = None
 database: AsyncIOMotorDatabase | None = None

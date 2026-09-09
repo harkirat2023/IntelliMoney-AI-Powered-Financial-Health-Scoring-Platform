@@ -1,10 +1,7 @@
 import logging
 from statistics import mean, pstdev
 
-from app.core.constants import RISK_LEVELS
-
 logger = logging.getLogger("intellimoney")
-from app.domain.expenses.models import Expense
 from app.infrastructure.database.repositories.expense_repository import MongoExpenseRepository
 from app.processing.models.financial_metrics import FinancialMetrics
 from app.processing.repositories.financial_metrics_repository import MongoFinancialMetricsRepository

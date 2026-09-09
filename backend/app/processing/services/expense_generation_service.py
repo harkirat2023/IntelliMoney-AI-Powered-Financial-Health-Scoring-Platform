@@ -1,8 +1,6 @@
 import logging
 from datetime import date
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
 from app.domain.expenses.models import Expense
 
 logger = logging.getLogger("intellimoney")

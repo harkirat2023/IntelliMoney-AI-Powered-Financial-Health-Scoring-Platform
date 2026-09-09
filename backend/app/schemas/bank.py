@@ -3,7 +3,6 @@ from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
-
 ALLOWED_PROVIDERS = {"mock", "setu", "finvu", "onemoney", "perfios"}
 
 
