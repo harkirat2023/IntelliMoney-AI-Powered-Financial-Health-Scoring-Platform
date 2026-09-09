@@ -7,7 +7,6 @@ from pathlib import Path
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.core.config import get_settings
 from app.infrastructure.messaging.event_bus import event_bus as global_event_bus
 from app.infrastructure.messaging.events import Event
 from app.infrastructure.storage import get_storage_backend

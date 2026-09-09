@@ -27,7 +27,7 @@ class OCRService:
         try:
             img = Image.open(io.BytesIO(image_bytes))
             raw_text = pytesseract.image_to_string(img, config=self._config)
-            lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
+            lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
 
             merchant = self._extract_merchant(lines)
             total_amount = self._extract_amount(lines)

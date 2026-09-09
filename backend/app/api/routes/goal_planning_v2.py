@@ -8,7 +8,7 @@ from app.api.deps import get_current_user
 from app.db.mongodb import get_database
 from app.goal_planning.schemas import (
     GoalAnalyzeRequest, GoalAnalyzeResponse, GoalCreateRequest,
-    GoalCreateResponse, GoalPredictionResponse, GoalProgressResponseList,
+    GoalCreateResponse, GoalProgressResponseList,
     GoalRecommendationResponse, GoalResponse,
     GoalUpdateRequest,
 )

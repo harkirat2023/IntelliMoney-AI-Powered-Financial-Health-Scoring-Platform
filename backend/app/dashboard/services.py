@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime
 from types import SimpleNamespace
 
 from motor.motor_asyncio import AsyncIOMotorDatabase

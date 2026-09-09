@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -31,36 +30,31 @@ class BudgetOptimizationService:
             if percentage > 100:
                 suggested = round(spent * 1.05, 2)
                 reason = f"{cat} spending exceeds budget by {percentage - 100:.0f}%. Increasing limit to {suggested:.0f} accommodates realistic spending."
-                savings = 0
                 confidence = 0.7
                 insights.append(f"⚠ {cat} is overspent by ₹{spent - limit:.0f}. Consider increasing budget or reducing spending.")
             elif percentage > 80:
                 suggested = round((limit + spent) / 2, 2)
                 reason = f"{cat} is at {percentage:.0f}% utilization. A moderate increase to {suggested:.0f} provides buffer."
-                savings = round(limit - suggested, 2) if suggested < limit else 0
+                round(limit - suggested, 2) if suggested < limit else 0
                 confidence = 0.8
             elif percentage < 50 and limit > 0:
                 suggested = round(spent * 1.2, 2)
                 reduction = round(limit - suggested, 2)
                 if reduction > 0 and cat in self.DISCRETIONARY:
                     reason = f"{cat} uses only {percentage:.0f}% of budget. Reducing by ₹{reduction:.0f} frees up funds."
-                    savings = reduction
                     confidence = 0.85
                     insights.append(f"💰 Reduce {cat} budget by ₹{reduction:.0f} — only {percentage:.0f}% used.")
                 elif cat in self.ESSENTIAL:
                     suggested = round(limit, 2)
                     reason = f"{cat} is essential and under budget. Keeping limit at ₹{limit:.0f}."
-                    savings = 0
                     confidence = 0.9
                 else:
                     suggested = round(limit, 2)
                     reason = f"{cat} uses only {percentage:.0f}%. Current limit of ₹{limit:.0f} is reasonable."
-                    savings = reduction if reduction > 0 else 0
                     confidence = 0.8
             else:
                 suggested = round(limit, 2)
                 reason = f"{cat} is on track at {percentage:.0f}% utilization. Current limit of ₹{limit:.0f} is optimal."
-                savings = 0
                 confidence = 0.9
 
             total_suggested += suggested

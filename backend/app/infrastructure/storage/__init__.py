@@ -1,6 +1,4 @@
-import io
 from abc import ABC, abstractmethod
-from typing import BinaryIO
 
 
 class StorageBackend(ABC):

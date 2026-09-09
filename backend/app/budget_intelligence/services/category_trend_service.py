@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from statistics import pstdev
 
 from motor.motor_asyncio import AsyncIOMotorDatabase

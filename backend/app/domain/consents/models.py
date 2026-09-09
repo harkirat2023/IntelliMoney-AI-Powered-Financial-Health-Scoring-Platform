@@ -1,10 +1,9 @@
 from datetime import datetime
 
 from bson import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.utils.date_utils import utc_now
-from app.utils.object_id import to_object_id
 
 
 class ConsentGrant(BaseModel):

@@ -5,9 +5,9 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.processing.repositories.budget_usage_repository import MongoBudgetUsageRepository
 from app.utils.budget_state import get_budget_state
+from app.utils.date_utils import month_bounds, utc_now
 
 logger = logging.getLogger("intellimoney")
-from app.utils.date_utils import month_bounds, utc_now
 
 
 class BudgetProcessingService:

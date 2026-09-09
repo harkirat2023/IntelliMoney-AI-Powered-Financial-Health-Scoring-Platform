@@ -3,7 +3,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.core.constants import CATEGORIES, PAYMENT_METHODS
 from app.schemas.common import PyObjectId
 
 

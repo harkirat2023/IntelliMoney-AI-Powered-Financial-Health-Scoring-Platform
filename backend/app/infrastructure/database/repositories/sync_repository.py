@@ -5,7 +5,6 @@ from pymongo.errors import BulkWriteError
 
 from app.domain.sync.models import BankTransaction, SyncLog
 from app.domain.sync.repository import BankTransactionRepository, SyncLogRepository
-from app.utils.date_utils import utc_now
 from app.utils.object_id import to_object_id
 
 

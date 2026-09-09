@@ -13,7 +13,7 @@ class SavingsOpportunityService:
         self._db = db
 
     async def detect(self, user_id: str) -> list[dict]:
-        now = datetime.utcnow()
+        datetime.utcnow()
         opportunities = []
 
         budget_usages = await self._db.budget_usage.find({"user_id": user_id}).to_list(length=None)
@@ -52,8 +52,8 @@ class SavingsOpportunityService:
 
         for bu in budget_usages:
             cat = bu.get("category", "")
-            limit = bu.get("limit", 0)
-            spent = bu.get("spent", 0)
+            bu.get("limit", 0)
+            bu.get("spent", 0)
             percentage = bu.get("percentage_used", 0)
 
             amounts = cat_monthly.get(cat, [])
@@ -96,7 +96,7 @@ class SavingsOpportunityService:
                 )
                 opportunities.append(opp)
 
-        total_monthly_spending = sum(amounts[-1] for amounts in cat_monthly.values() if amounts)
+        sum(amounts[-1] for amounts in cat_monthly.values() if amounts)
         if avg_total > 0:
             savings_target = avg_total * 0.05
             annual = savings_target * 12
@@ -106,9 +106,9 @@ class SavingsOpportunityService:
                 f"Your average monthly spending is ₹{avg_total:.0f}. A 5% reduction across all categories saves "
                 f"₹{savings_target:.0f}/month (₹{annual:.0f}/year).",
                 0.7,
-                [f"Review all recurring subscriptions for unused services.",
-                 f"Track every expense for 30 days to identify waste.",
-                 f"Apply the 24-hour rule for non-essential purchases."],
+                ["Review all recurring subscriptions for unused services.",
+                 "Track every expense for 30 days to identify waste.",
+                 "Apply the 24-hour rule for non-essential purchases."],
             )
             opportunities.append(opp)
 
@@ -123,9 +123,9 @@ class SavingsOpportunityService:
                 f"You have {len(unused_subs)} inactive subscription(s) totaling ₹{total_unused:.0f}/month. "
                 f"Cancelling them saves ₹{annual:.0f}/year.",
                 0.9,
-                [f"Review each inactive subscription and cancel if not needed.",
-                 f"Contact providers to confirm cancellation.",
-                 f"Set up monthly subscription audit reminder."],
+                ["Review each inactive subscription and cancel if not needed.",
+                 "Contact providers to confirm cancellation.",
+                 "Set up monthly subscription audit reminder."],
             )
             opportunities.append(opp)
 
@@ -140,9 +140,9 @@ class SavingsOpportunityService:
                 f"Your Financial Health Score is {health['score']}. Optimizing budgets and increasing savings by 10% "
                 f"can boost your score by approximately {improvement:.0f} points.",
                 0.8,
-                [f"Increase savings allocation by 10% of monthly income.",
-                 f"Reduce discretionary spending categories.",
-                 f"Set up automatic transfers to savings on payday."],
+                ["Increase savings allocation by 10% of monthly income.",
+                 "Reduce discretionary spending categories.",
+                 "Set up automatic transfers to savings on payday."],
             )
             opportunities.append(opp)
 

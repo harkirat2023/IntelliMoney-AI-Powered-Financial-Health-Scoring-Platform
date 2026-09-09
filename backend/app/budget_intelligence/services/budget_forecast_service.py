@@ -46,7 +46,7 @@ class BudgetForecastService:
             if len(amounts) < 2:
                 continue
             amounts = amounts[-6:]
-            avg = sum(amounts) / len(amounts)
+            sum(amounts) / len(amounts)
             std = pstdev(amounts) if len(amounts) > 1 else 0
             last = amounts[-1]
             mom_changes = [(amounts[i] - amounts[i - 1]) / amounts[i - 1] * 100 for i in range(1, len(amounts)) if amounts[i - 1]]
@@ -72,7 +72,7 @@ class BudgetForecastService:
                 "months_analyzed": len(amounts),
             })
 
-        by_category = await self._db.budget_usage.find({"user_id": user_id}).sort("percentage_used", -1).to_list(length=None)
+        await self._db.budget_usage.find({"user_id": user_id}).sort("percentage_used", -1).to_list(length=None)
 
         return {
             "period": period,

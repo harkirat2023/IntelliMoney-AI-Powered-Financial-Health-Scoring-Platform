@@ -1,4 +1,4 @@
-from datetime import date as Date, datetime, timedelta
+from datetime import date as Date, timedelta
 
 
 def _calculate_next_date(start_date: Date, frequency: str) -> Date:

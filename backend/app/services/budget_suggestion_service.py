@@ -1,5 +1,4 @@
 from collections import defaultdict
-from datetime import date as Date
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -7,7 +6,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.models.documents import BudgetSuggestionDocument
-from app.schemas.budget_suggestion import BudgetOptimizationReport, BudgetSuggestion
+from app.schemas.budget_suggestion import BudgetOptimizationReport
 from app.services.serializers import serialize_document, utc_now
 
 

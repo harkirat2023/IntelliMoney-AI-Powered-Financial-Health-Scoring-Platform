@@ -1,6 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.utils.object_id import to_object_id
 
 
 class MongoMerchantRepository:

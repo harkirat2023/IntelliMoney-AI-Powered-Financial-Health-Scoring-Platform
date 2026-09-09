@@ -1,7 +1,7 @@
 import asyncio
 import hashlib
 import random
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from app.core.exceptions import BankConnectionException

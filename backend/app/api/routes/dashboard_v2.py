@@ -95,7 +95,7 @@ async def dashboard_budgets(
 ) -> dict:
     now = utc_now()
     period = period or f"{now.year}-{now.month:02d}"
-    dash_svc = _get_dash_svc(db)
+    _get_dash_svc(db)
     from app.processing.repositories.dashboard_metrics_repository import MongoDashboardMetricsRepository
     dash_repo = MongoDashboardMetricsRepository(db)
     dash = await dash_repo.get_by_user_and_period(str(current_user["_id"]), period)

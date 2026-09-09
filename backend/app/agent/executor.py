@@ -35,6 +35,11 @@ def _now_date_str() -> str:
     return utc_now().strftime("%Y-%m-%d")
 
 
+def _current_period() -> tuple[int, int]:
+    now = utc_now()
+    return now.year, now.month
+
+
 def _parse_date(value: str):
     from datetime import date
     if isinstance(value, date):

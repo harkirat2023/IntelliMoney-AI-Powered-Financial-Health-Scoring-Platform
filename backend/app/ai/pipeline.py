@@ -1,5 +1,4 @@
 import asyncio
-from datetime import datetime
 from typing import Any
 
 from app.ai.category_service import CategoryPredictionService
@@ -16,7 +15,6 @@ from app.infrastructure.database.repositories.intelligence.financial_transaction
     MongoFinancialTransactionRepository,
 )
 from app.infrastructure.messaging.event_bus import EventBus
-from app.infrastructure.messaging.events import Event
 from app.utils.date_utils import utc_now
 
 

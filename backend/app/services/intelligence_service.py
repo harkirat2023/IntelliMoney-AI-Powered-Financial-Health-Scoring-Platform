@@ -37,7 +37,7 @@ def get_intelligence_service(
     bank_tx_repo = MongoBankTransactionRepository(db)
     financial_tx_repo = MongoFinancialTransactionRepository(db)
     feedback_repo = MongoFeedbackRepository(db)
-    merchant_repo = MongoMerchantRepository(db)
+    MongoMerchantRepository(db)
 
     merchant_service = MerchantNormalizationService()
     category_service = CategoryPredictionService()

@@ -3,10 +3,11 @@ from collections import defaultdict
 
 from app.domain.financial_transactions.models import FinancialTransaction
 
-logger = logging.getLogger("intellimoney")
 from app.processing.models.cash_flow_summary import CashFlowSummary
 from app.processing.repositories.cash_flow_repository import MongoCashFlowRepository
 from app.utils.date_utils import utc_now
+
+logger = logging.getLogger("intellimoney")
 
 
 class CashFlowService:

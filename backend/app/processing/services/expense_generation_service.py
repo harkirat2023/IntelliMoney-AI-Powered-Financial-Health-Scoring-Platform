@@ -1,17 +1,16 @@
 import logging
 from datetime import date
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.domain.expenses.models import Expense
-
-logger = logging.getLogger("intellimoney")
 from app.domain.financial_transactions.models import FinancialTransaction
 from app.infrastructure.database.repositories.expense_repository import MongoExpenseRepository
 from app.infrastructure.database.repositories.intelligence.financial_transaction_repository import (
     MongoFinancialTransactionRepository,
 )
 from app.utils.date_utils import utc_now
+
+logger = logging.getLogger("intellimoney")
 
 
 class ExpenseGenerationService:

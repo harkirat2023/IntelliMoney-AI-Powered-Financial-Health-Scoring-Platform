@@ -1,7 +1,6 @@
 from datetime import date
 from typing import Any
 
-from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
