@@ -1,11 +1,11 @@
 from typing import Any
 
-from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.services.analytics_service import get_month_expenses
 from app.services.serializers import serialize_document, utc_now
 from app.utils.budget_state import get_budget_state
+from app.utils.object_id import user_id_query
 
 
 async def get_budget_status(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[str, Any]]:
@@ -13,7 +13,7 @@ async def get_budget_status(db: AsyncIOMotorDatabase, user_id: str) -> list[dict
     budgets = [
         serialize_document(item)
         async for item in db.budgets.find(
-            {"user_id": ObjectId(user_id), "month": now.month, "year": now.year}
+            {"user_id": user_id_query(user_id), "month": now.month, "year": now.year}
         )
     ]
     expenses = await get_month_expenses(db, user_id, now.year, now.month)

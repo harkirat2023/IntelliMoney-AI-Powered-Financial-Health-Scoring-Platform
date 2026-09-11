@@ -237,7 +237,7 @@ def test_aa_full_sandbox_flow():
             # 8. Imported transactions land in the shared bank_transactions pipeline
             assert len(fake_db.bank_transactions.items) > 0
             imported_user = fake_db.bank_transactions.items[0]["user_id"]
-            assert imported_user == str(_AA_USER["_id"])
+            assert str(imported_user) == str(_AA_USER["_id"])
 
             # 8b. The AA-created account has an encrypted token and a matching
             #     active consent doc so the standard SyncService path works.

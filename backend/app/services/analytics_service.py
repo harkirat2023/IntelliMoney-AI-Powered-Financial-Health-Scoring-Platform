@@ -2,10 +2,10 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
-from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.services.serializers import month_bounds, serialize_document, utc_now
+from app.utils.object_id import user_id_query
 
 
 async def get_month_expenses(
@@ -13,7 +13,7 @@ async def get_month_expenses(
 ) -> list[dict[str, Any]]:
     start, end = month_bounds(year, month)
     cursor = db.expenses.find(
-        {"user_id": ObjectId(user_id), "date": {"$gte": start, "$lt": end}}
+        {"user_id": user_id_query(user_id), "date": {"$gte": start, "$lt": end}}
     ).sort("date", -1)
     return [serialize_document(item) async for item in cursor]
 
@@ -79,5 +79,5 @@ async def monthly_spending(db: AsyncIOMotorDatabase, user_id: str) -> list[dict[
 
 
 async def recent_expenses(db: AsyncIOMotorDatabase, user_id: str, limit: int = 8) -> list[dict[str, Any]]:
-    cursor = db.expenses.find({"user_id": ObjectId(user_id)}).sort("date", -1).limit(limit)
+    cursor = db.expenses.find({"user_id": user_id_query(user_id)}).sort("date", -1).limit(limit)
     return [serialize_document(item) async for item in cursor]

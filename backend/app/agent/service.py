@@ -34,6 +34,7 @@ from app.agent.tools import build_tools
 from app.copilot.services.llm_service import LLMService
 from app.copilot.services.memory_service import MemoryService
 from app.services.budget_service import get_budget_status
+from app.utils.object_id import user_id_query
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class AgentCopilotService:
         response_text = await self._deterministic_answer(user_id, message)
         if response_text is None:
             messages = self._build_messages(history, message, context)
-            response_text = await self._run_agent_loop(messages, tools)
+            response_text = await self._run_agent_loop(messages, tools, context)
 
         await self._memory.add_message(user_id, session.id, "user", message)
         ai_msg = await self._memory.add_message(user_id, session.id, "assistant", response_text)
@@ -110,14 +111,23 @@ class AgentCopilotService:
             return f"You are not over budget yet, but you are close in {details}."
         return "No — none of your budgeted categories are overspent this month."
 
-    async def _run_agent_loop(self, messages: list, tools: list) -> str:
+    async def _run_agent_loop(self, messages: list, tools: list, context: dict | None = None) -> str:
         llm = self._llm._get_llm()
         llm_with_tools = llm.bind_tools(tools)
         tool_map = {t.name: t for t in tools}
 
         current = messages
         for _ in range(MAX_TOOL_ITERATIONS):
-            response = await llm_with_tools.ainvoke(current)
+            try:
+                response = await llm_with_tools.ainvoke(current)
+            except Exception as exc:
+                logger.error("Groq LLM invocation failed: %s", exc)
+                summary = self._format_context_summary(context or {})
+                return (
+                    "I'm currently unable to reach the AI model, but here is your current financial summary: "
+                    f"{summary}"
+                )
+
             tool_calls = getattr(response, "tool_calls", None) or []
             if not tool_calls:
                 return str(response.content) if response.content else (
@@ -145,18 +155,36 @@ class AgentCopilotService:
             "Please clarify your request or rephrase the question."
         )
 
+    def _format_context_summary(self, context: dict) -> str:
+        parts = []
+        if "cash_flow" in context:
+            cf = context["cash_flow"]
+            parts.append(f"Income: ₹{cf.get('income', 0):,.2f}, Expenses: ₹{cf.get('expenses', 0):,.2f}, Savings: ₹{cf.get('net_savings', 0):,.2f}")
+        if "financial_health" in context:
+            fh = context["financial_health"]
+            parts.append(f"Health Score: {fh.get('score')}/100 ({fh.get('risk_level')})")
+        if "current_budgets" in context:
+            over = [b for b in context["current_budgets"] if b.get("state") == "over"]
+            if over:
+                parts.append("Overspent Categories: " + ", ".join(f"{b['category']} (₹{b['spent']:,.2f}/₹{b['limit']:,.2f})" for b in over))
+            else:
+                parts.append("All category budgets are healthy.")
+        return " | ".join(parts) if parts else "No financial data recorded yet."
+
     # ---- helpers -----------------------------------------------------------
     async def _build_context(self, user_id: str) -> dict:
         ctx: dict[str, Any] = {}
+        uq = user_id_query(user_id)
+
         health = await self._db.financial_health.find_one(
-            {"user_id": user_id}, sort=[("calculated_at", -1)]
+            {"user_id": uq}, sort=[("calculated_at", -1)]
         )
         if health:
             ctx["financial_health"] = {
                 "score": health.get("score"), "risk_level": health.get("risk_level"),
             }
         budget = await self._db.budget_intelligence.find_one(
-            {"user_id": user_id}, sort=[("calculated_at", -1)]
+            {"user_id": uq}, sort=[("calculated_at", -1)]
         )
         if budget:
             ctx["budget"] = {
@@ -164,7 +192,7 @@ class AgentCopilotService:
                 "categories_count": len(budget.get("categories", [])),
             }
         cash = await self._db.cash_flow_summary.find_one(
-            {"user_id": user_id}, sort=[("calculated_at", -1)]
+            {"user_id": uq}, sort=[("calculated_at", -1)]
         )
         if cash:
             ctx["cash_flow"] = {
@@ -172,6 +200,23 @@ class AgentCopilotService:
                 "expenses": cash.get("total_expenses"),
                 "net_savings": cash.get("net_savings"),
             }
+
+        try:
+            statuses = await get_budget_status(self._db, user_id)
+            if statuses:
+                ctx["current_budgets"] = [
+                    {
+                        "category": s["category"],
+                        "limit": s["limit"],
+                        "spent": s["spent"],
+                        "state": s["state"],
+                        "percentage_used": s["percentage_used"],
+                    }
+                    for s in statuses
+                ]
+        except Exception as e:
+            logger.warning("Could not load current budgets into context: %s", e)
+
         return ctx
 
     def _build_messages(self, history: list, message: str, context: dict) -> list:

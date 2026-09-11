@@ -11,6 +11,7 @@ from app.schemas.report import FinancialReport, ReportSummary
 from app.services.analytics_service import get_month_expenses
 from app.services.serializers import serialize_document, utc_now
 from app.utils.budget_state import get_budget_state
+from app.utils.object_id import to_user_id, user_id_query
 
 
 async def generate_weekly_report(db: AsyncIOMotorDatabase, user_id: str) -> dict[str, Any]:
@@ -26,7 +27,6 @@ async def generate_monthly_report(db: AsyncIOMotorDatabase, user_id: str) -> dic
     """Generate a monthly financial report."""
     today = Date.today()
     month_start = Date(today.year, today.month, 1)
-    # Get last day of month
     if today.month == 12:
         month_end = Date(today.year + 1, 1, 1) - timedelta(days=1)
     else:
@@ -43,82 +43,72 @@ async def _generate_report(
     period_end: Date
 ) -> dict[str, Any]:
     """Internal function to generate financial reports."""
-    # Convert dates to datetime for MongoDB queries
     period_start_dt = datetime.combine(period_start, datetime.min.time())
     period_end_dt = datetime.combine(period_end + timedelta(days=1), datetime.min.time())
     
-    # Get expenses for the period
     expenses = [
         serialize_document(item)
         async for item in db.expenses.find({
-            "user_id": ObjectId(user_id),
+            "user_id": user_id_query(user_id),
             "date": {"$gte": period_start_dt, "$lt": period_end_dt}
         })
     ]
     
-    # Calculate totals
     total_spending = sum(e["amount"] for e in expenses)
     
-    # Get user's monthly income
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    user = await db.users.find_one({"_id": to_user_id(user_id)})
+    if not user:
+        user = await db.users.find_one({"clerk_user_id": user_id})
     monthly_income = user.get("monthly_income", 0) if user else 0
     
-    # Calculate income for the period
     if report_type == "weekly":
-        total_income = monthly_income / 4  # Approximate weekly income
+        total_income = monthly_income / 4
     else:
         total_income = monthly_income
     
     net_savings = total_income - total_spending
     savings_rate = (net_savings / total_income * 100) if total_income > 0 else 0
     
-    # Category breakdown
     category_breakdown: dict[str, float] = defaultdict(float)
     for expense in expenses:
         category_breakdown[expense["category"]] += expense["amount"]
     
-    # Top expenses
     top_expenses = sorted(expenses, key=lambda x: x["amount"], reverse=True)[:10]
     top_expenses_list = [
         {
             "description": e["description"],
             "amount": e["amount"],
             "category": e["category"],
-            "date": e["date"].date().isoformat() if isinstance(e["date"], datetime) else e["date"]
+            "date": e["date"].date().isoformat() if isinstance(e["date"], datetime) else str(e["date"])
         }
         for e in top_expenses
     ]
     
-    # Budget performance
     budget_performance = await _calculate_budget_performance(db, user_id, period_start, period_end)
     
-    # Health score (v2 engine writes financial_health; fall back to legacy collection)
     health_score = None
     health_doc = await db.financial_health.find_one(
-        {"user_id": ObjectId(user_id)},
-        sort=[("period", -1)]
+        {"user_id": user_id_query(user_id)},
+        sort=[("calculated_at", -1)]
     )
     if not health_doc:
         health_doc = await db.financial_scores.find_one(
-            {"user_id": ObjectId(user_id)},
+            {"user_id": user_id_query(user_id)},
             sort=[("calculated_at", -1)]
         )
     if health_doc:
         health_score = health_doc.get("score")
     
-    # Generate insights
     insights = _generate_insights(
         total_spending, total_income, net_savings, savings_rate,
         category_breakdown, budget_performance, report_type
     )
     
-    # Get recommendations
     recommendations = await _get_recommendations(db, user_id, insights)
     
-    # Create report document
     report_doc: FinancialReportDocument = {
         "_id": ObjectId(),
-        "user_id": ObjectId(user_id),
+        "user_id": to_user_id(user_id),
         "report_type": report_type,
         "period_start": datetime.combine(period_start, datetime.min.time()),
         "period_end": datetime.combine(period_end, datetime.min.time()),
@@ -147,33 +137,29 @@ async def _calculate_budget_performance(
     period_end: Date
 ) -> dict[str, Any]:
     """Calculate budget performance for the period."""
-    # Get budgets for the period
     budgets = [
         serialize_document(item)
-        async for item in db.budgets.find({"user_id": ObjectId(user_id)})
+        async for item in db.budgets.find({"user_id": user_id_query(user_id)})
     ]
     
     if not budgets:
         return {"total_budget": 0, "spent": 0, "remaining": 0, "categories": {}}
     
-    # Get expenses for the period
     period_start_dt = datetime.combine(period_start, datetime.min.time())
     period_end_dt = datetime.combine(period_end + timedelta(days=1), datetime.min.time())
     
     expenses = [
         serialize_document(item)
         async for item in db.expenses.find({
-            "user_id": ObjectId(user_id),
+            "user_id": user_id_query(user_id),
             "date": {"$gte": period_start_dt, "$lt": period_end_dt}
         })
     ]
     
-    # Calculate spending by category
     spent_by_category: dict[str, float] = defaultdict(float)
     for expense in expenses:
         spent_by_category[expense["category"]] += expense["amount"]
     
-    # Calculate performance
     total_budget = sum(b["limit"] for b in budgets)
     total_spent = sum(spent_by_category.get(b["category"], 0) for b in budgets)
     
@@ -212,7 +198,6 @@ def _generate_insights(
     """Generate actionable insights for the report."""
     insights = []
     
-    # Savings insights
     if savings_rate >= 20:
         insights.append(f"✅ Excellent! You saved {savings_rate:.1f}% of your income this {report_type}")
     elif savings_rate >= 10:
@@ -222,14 +207,12 @@ def _generate_insights(
     else:
         insights.append("🚨 You're spending more than you earn! Review your expenses immediately.")
     
-    # Top spending category
     if category_breakdown:
         top_category = max(category_breakdown, key=category_breakdown.get)
         top_amount = category_breakdown[top_category]
         top_percentage = (top_amount / total_spending * 100) if total_spending > 0 else 0
         insights.append(f"📊 Highest spending: {top_category} at ₹{top_amount:,.2f} ({top_percentage:.1f}% of total)")
     
-    # Budget performance
     if budget_performance.get("categories"):
         over_budget = [cat for cat, data in budget_performance["categories"].items() if data["status"] == "over"]
         warning_budget = [cat for cat, data in budget_performance["categories"].items() if data["status"] == "warning"]
@@ -239,7 +222,6 @@ def _generate_insights(
         if warning_budget:
             insights.append(f"⚡ Approaching budget limit in: {', '.join(warning_budget)}")
     
-    # Spending trend
     if total_spending > 0:
         insights.append(f"💰 Total spending this {report_type}: ₹{total_spending:,.2f}")
     
@@ -254,16 +236,14 @@ async def _get_recommendations(
     """Get personalized recommendations based on insights."""
     recommendations = []
     
-    # Check for existing recommendations
     existing = await db.recommendations.find_one(
-        {"user_id": ObjectId(user_id)},
+        {"user_id": user_id_query(user_id)},
         sort=[("created_at", -1)]
     )
     
     if existing and existing.get("items"):
-        return existing["items"][:5]  # Return top 5
+        return existing["items"][:5]
     
-    # Generate basic recommendations
     if any("savings rate" in insight.lower() for insight in insights):
         recommendations.append({
             "title": "Increase Savings",
@@ -290,7 +270,7 @@ async def _get_recommendations(
 
 async def get_reports(db: AsyncIOMotorDatabase, user_id: str, report_type: str | None = None) -> list[dict[str, Any]]:
     """Get all reports for a user, optionally filtered by type."""
-    query = {"user_id": ObjectId(user_id)}
+    query = {"user_id": user_id_query(user_id)}
     if report_type:
         query["report_type"] = report_type
     
@@ -302,8 +282,7 @@ async def get_expenses_for_export(
     db: AsyncIOMotorDatabase, user_id: ObjectId | str,
 ) -> list[dict[str, Any]]:
     """Return only the authenticated user's source-of-truth expense ledger."""
-    owner_id = user_id if isinstance(user_id, ObjectId) else ObjectId(user_id)
-    cursor = db.expenses.find({"user_id": owner_id}).sort("date", -1)
+    cursor = db.expenses.find({"user_id": user_id_query(user_id)}).sort("date", -1)
     return [item async for item in cursor]
 
 
@@ -314,7 +293,7 @@ async def get_report(db: AsyncIOMotorDatabase, user_id: str, report_id: str) -> 
     
     report = await db.financial_reports.find_one({
         "_id": ObjectId(report_id),
-        "user_id": ObjectId(user_id)
+        "user_id": user_id_query(user_id)
     })
     return serialize_document(report) if report else None
 
@@ -325,34 +304,30 @@ async def mark_report_read(db: AsyncIOMotorDatabase, user_id: str, report_id: st
         return None
     
     await db.financial_reports.update_one(
-        {"_id": ObjectId(report_id), "user_id": ObjectId(user_id)},
+        {"_id": ObjectId(report_id), "user_id": user_id_query(user_id)},
         {"$set": {"is_read": True}}
     )
     
     report = await db.financial_reports.find_one({
         "_id": ObjectId(report_id),
-        "user_id": ObjectId(user_id)
+        "user_id": user_id_query(user_id)
     })
     return serialize_document(report) if report else None
 
 
 async def get_report_summary(db: AsyncIOMotorDatabase, user_id: str) -> ReportSummary:
     """Get summary of user's reports."""
-    # Get all reports
     reports = await get_reports(db, user_id)
     
-    # Calculate statistics
     total_reports = len(reports)
     unread_count = sum(1 for r in reports if not r.get("is_read", False))
     latest_report = reports[0] if reports else None
     
-    # Calculate averages from monthly reports
     monthly_reports = [r for r in reports if r.get("report_type") == "monthly"]
     if monthly_reports:
         avg_spending = sum(r.get("total_spending", 0) for r in monthly_reports) / len(monthly_reports)
         avg_savings_rate = sum(r.get("savings_rate", 0) for r in monthly_reports) / len(monthly_reports)
         
-        # Determine trend
         if len(monthly_reports) >= 2:
             recent_spending = monthly_reports[0].get("total_spending", 0)
             older_spending = monthly_reports[1].get("total_spending", 0)

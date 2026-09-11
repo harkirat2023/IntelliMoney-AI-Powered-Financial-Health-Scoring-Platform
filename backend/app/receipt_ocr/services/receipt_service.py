@@ -21,6 +21,7 @@ from app.receipt_ocr.services.receipt_validation_service import (
     ReceiptValidationService,
 )
 from app.services.category_service import suggest_category
+from app.utils.object_id import to_user_id, user_id_query
 
 logger = logging.getLogger(__name__)
 
@@ -274,7 +275,7 @@ class ReceiptService:
                     pass
             if expense_updates and ObjectId.is_valid(receipt.expense_id):
                 await self._db.expenses.update_one(
-                    {"_id": ObjectId(receipt.expense_id), "user_id": ObjectId(user_id)},
+                    {"_id": ObjectId(receipt.expense_id), "user_id": user_id_query(user_id)},
                     {"$set": expense_updates},
                 )
         await self._log(receipt_id, user_id, "update", "success",
@@ -295,7 +296,7 @@ class ReceiptService:
         await self._receipt_repo.delete(receipt_id)
         if receipt.expense_id and ObjectId.is_valid(receipt.expense_id):
             await self._db.expenses.delete_one({
-                "_id": ObjectId(receipt.expense_id), "user_id": ObjectId(user_id),
+                "_id": ObjectId(receipt.expense_id), "user_id": user_id_query(user_id),
             })
         await self._log(receipt_id, user_id, "delete", "success", "Receipt deleted")
         return True
@@ -321,7 +322,7 @@ class ReceiptService:
                 except ValueError:
                     pass
             expense_doc = {
-                "user_id": ObjectId(user_id),
+                "user_id": to_user_id(user_id),
                 "amount": receipt.total_amount,
                 "description": f"{receipt.merchant_name or receipt.filename} (via Receipt OCR)",
                 "category": receipt.predicted_category or "Other",

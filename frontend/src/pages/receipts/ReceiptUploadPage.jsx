@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { receiptsStore } from "../../store/receiptsStore";
-import { Upload, FileText, Loader, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, Camera, FileText, Loader, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function ReceiptUploadPage() {
   const [file, setFile] = useState(null);
@@ -11,6 +11,7 @@ export default function ReceiptUploadPage() {
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef(null);
+  const cameraInputRef = useRef(null);
   const navigate = useNavigate();
 
   const handleFile = useCallback((f) => {
@@ -39,8 +40,8 @@ export default function ReceiptUploadPage() {
 
   const handleUpload = useCallback(async () => {
     if (!file) return;
-      setUploading(true);
-      setError("");
+    setUploading(true);
+    setError("");
     try {
       const uploaded = await receiptsStore.upload(file);
       const res = await receiptsStore.process(uploaded.receipt.id);
@@ -54,7 +55,22 @@ export default function ReceiptUploadPage() {
 
   return (
     <div className="receipts-page">
-      <div className="page-header"><h2><Upload size={20} /> Upload Receipt</h2></div>
+      <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2><Upload size={20} /> Upload Receipt</h2>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn-secondary" onClick={() => cameraInputRef.current?.click()} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Camera size={16} /> Take Photo
+          </button>
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
+        </div>
+      </div>
 
       {!result ? (
         <>
@@ -70,7 +86,7 @@ export default function ReceiptUploadPage() {
             ) : (
               <>
                 <Upload size={48} style={{ color: "#6b7280" }} />
-                <p>Drag & drop a receipt image here, or click to browse</p>
+                <p>Drag & drop a receipt image here, click to browse, or use camera</p>
                 <div className="hint">Supports JPG, PNG, BMP, TIFF, WebP &bull; Max 10 MB</div>
               </>
             )}
@@ -83,14 +99,14 @@ export default function ReceiptUploadPage() {
               <FileText size={16} style={{ color: "#9ca3af" }} />
               <span style={{ color: "#d1d5db", fontSize: "0.9rem" }}>{file.name}</span>
               <button className="btn-primary" onClick={handleUpload}>
-                Upload &amp; Process
+                Upload &amp; Add to Spending
               </button>
             </div>
           )}
 
           {uploading && (
             <div style={{ marginTop: 16 }}>
-              <Loader className="spin" size={20} /> Processing...
+              <Loader className="spin" size={20} /> Extracting receipt total and adding to spending...
               <div className="progress-bar"><div className="progress-fill" style={{ width: "60%" }} /></div>
             </div>
           )}
@@ -98,13 +114,13 @@ export default function ReceiptUploadPage() {
       ) : (
         <div style={{ textAlign: "center", padding: 40 }}>
           <CheckCircle size={48} style={{ color: "#10b981" }} />
-          <h3 style={{ color: "#f9fafb", margin: "16px 0 8px" }}>Upload Successful</h3>
+          <h3 style={{ color: "#f9fafb", margin: "16px 0 8px" }}>Receipt Added to Spending!</h3>
           <p style={{ color: "#9ca3af", marginBottom: 20 }}>
-            {result.receipt?.merchant_name || "Receipt"} — ₹{result.receipt?.total_amount || "—"}
+            {result.receipt?.merchant_name || "Receipt"} — ₹{result.receipt?.total_amount || "0"} added to your total spending and budget track.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             <button className="btn-primary" onClick={() => navigate(`/app/receipts/review?id=${result.receipt?.id}`)}>
-              Review &amp; Confirm
+              Review &amp; Edit Details
             </button>
             <button className="btn-secondary" onClick={() => { setFile(null); setPreview(null); setResult(null); }}>
               Upload Another

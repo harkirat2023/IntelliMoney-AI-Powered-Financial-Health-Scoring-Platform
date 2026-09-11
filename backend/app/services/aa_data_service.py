@@ -19,6 +19,7 @@ from app.infrastructure.bank_integration.consent_manager import (
 )
 from app.services.auto_processing_service import AutoProcessingService
 from app.utils.date_utils import utc_now
+from app.utils.object_id import to_user_id, user_id_query
 
 
 async def import_aa_data_session(
@@ -52,7 +53,7 @@ async def import_aa_data_session(
         )
 
     account_doc = await db.bank_accounts.find_one({
-        "user_id": ObjectId(user_id),
+        "user_id": user_id_query(user_id),
         "consent_handle": consent_handle,
         "provider": session["provider"],
         "source": "aa_sandbox",
@@ -63,7 +64,7 @@ async def import_aa_data_session(
         encryptor = FieldEncryptor()
         bank_account_doc = {
             "_id": ObjectId(),
-            "user_id": ObjectId(user_id),
+            "user_id": to_user_id(user_id),
             "provider": session["provider"],
             "consent_handle": consent_handle,
             "provider_account_id": encryptor.encrypt(f"aa-{session_id}"),
@@ -84,7 +85,7 @@ async def import_aa_data_session(
         bank_account_id = bank_account_doc["_id"]
         now = utc_now()
         await db.consents.insert_one({
-            "user_id": ObjectId(user_id),
+            "user_id": to_user_id(user_id),
             "bank_account_id": bank_account_id,
             "consent_status": "granted",
             "consent_version": "1.0",
@@ -110,7 +111,7 @@ async def import_aa_data_session(
             skipped += 1
             continue
         await db.bank_transactions.insert_one({
-            "user_id": user_id,
+            "user_id": to_user_id(user_id),
             "bank_account_id": bank_account_id,
             "sync_log_id": "",
             "provider_account_id": ptx.transaction_id,
