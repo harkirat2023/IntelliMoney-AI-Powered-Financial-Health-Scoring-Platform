@@ -99,14 +99,14 @@ export default function ReceiptUploadPage() {
               <FileText size={16} style={{ color: "#9ca3af" }} />
               <span style={{ color: "#d1d5db", fontSize: "0.9rem" }}>{file.name}</span>
               <button className="btn-primary" onClick={handleUpload}>
-                Upload &amp; Add to Spending
+                Upload &amp; Extract Details
               </button>
             </div>
           )}
 
           {uploading && (
             <div style={{ marginTop: 16 }}>
-              <Loader className="spin" size={20} /> Extracting receipt total and adding to spending...
+              <Loader className="spin" size={20} /> Extracting receipt details...
               <div className="progress-bar"><div className="progress-fill" style={{ width: "60%" }} /></div>
             </div>
           )}
@@ -114,13 +114,13 @@ export default function ReceiptUploadPage() {
       ) : (
         <div style={{ textAlign: "center", padding: 40 }}>
           <CheckCircle size={48} style={{ color: "#10b981" }} />
-          <h3 style={{ color: "#f9fafb", margin: "16px 0 8px" }}>Receipt Added to Spending!</h3>
+          <h3 style={{ color: "#f9fafb", margin: "16px 0 8px" }}>Receipt Details Extracted!</h3>
           <p style={{ color: "#9ca3af", marginBottom: 20 }}>
-            {result.receipt?.merchant_name || "Receipt"} — ₹{result.receipt?.total_amount || "0"} added to your total spending and budget track.
+            {result.receipt?.merchant_name || "Receipt"} — ₹{result.receipt?.total_amount || "0"} extracted. Review the details and confirm to add it to your spending.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             <button className="btn-primary" onClick={() => navigate(`/app/receipts/review?id=${result.receipt?.id}`)}>
-              Review &amp; Edit Details
+              Review &amp; Add to Spending
             </button>
             <button className="btn-secondary" onClick={() => { setFile(null); setPreview(null); setResult(null); }}>
               Upload Another

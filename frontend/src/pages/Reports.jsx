@@ -11,6 +11,8 @@ export default function Reports() {
   const [error, setError] = useState("");
   const [selectedReport, setSelectedReport] = useState(null);
   const [filter, setFilter] = useState("all"); // all, weekly, monthly
+  const [rangeFrom, setRangeFrom] = useState("");
+  const [rangeTo, setRangeTo] = useState("");
 
   async function loadData() {
     try {
@@ -58,13 +60,22 @@ export default function Reports() {
     }
   }
 
-  async function exportSpending() {
+async function exportSpending() {
     try {
-      const response = await api.get("/reports/export.csv", { responseType: "blob" });
+      const params = {};
+      if (rangeFrom) params.start_date = rangeFrom;
+      if (rangeTo) params.end_date = rangeTo;
+      if (rangeFrom && rangeTo && rangeFrom > rangeTo) {
+        setError("From date must be before or equal to To date.");
+        return;
+      }
+      const response = await api.get("/reports/export.csv", { params, responseType: "blob" });
       const url = URL.createObjectURL(new Blob([response.data], { type: "text/csv" }));
       const link = document.createElement("a");
+      const disposition = response.headers?.["content-disposition"] || "";
+      const match = disposition.match(/filename="?([^";]+)"?/);
       link.href = url;
-      link.download = "intellimoney-spending.csv";
+      link.download = match?.[1] || "intellimoney-spending.csv";
       link.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -94,7 +105,7 @@ export default function Reports() {
           <h1>Financial Reports</h1>
           <p>Automated weekly and monthly spending insights</p>
         </div>
-        <div className="header-actions">
+<div className="header-actions">
           <button className="secondary" onClick={generateWeekly}>
             <FileText size={16} />
             Weekly Report
@@ -103,12 +114,42 @@ export default function Reports() {
             <FileText size={16} />
             Monthly Report
           </button>
+        </div>
+      </header>
+
+      <section className="panel" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          <span className="muted" style={{ fontSize: "0.85rem" }}>Export from</span>
+          <input
+            type="date"
+            value={rangeFrom}
+            onChange={(e) => setRangeFrom(e.target.value)}
+            style={{ padding: "6px 8px", borderRadius: "8px", border: "1px solid var(--neutral-200)" }}
+          />
+          <span className="muted" style={{ fontSize: "0.85rem" }}>to</span>
+          <input
+            type="date"
+            value={rangeTo}
+            onChange={(e) => setRangeTo(e.target.value)}
+            style={{ padding: "6px 8px", borderRadius: "8px", border: "1px solid var(--neutral-200)" }}
+          />
           <button className="secondary" onClick={exportSpending}>
             <Download size={16} />
             Export CSV
           </button>
+          {(rangeFrom || rangeTo) && (
+            <button
+              className="secondary"
+              onClick={() => {
+                setRangeFrom("");
+                setRangeTo("");
+              }}
+            >
+              Clear dates
+            </button>
+          )}
         </div>
-      </header>
+      </section>
 
       {summary && (
         <section className="panel summary-panel">

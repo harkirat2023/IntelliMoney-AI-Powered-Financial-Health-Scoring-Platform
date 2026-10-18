@@ -44,6 +44,11 @@ class LLMService:
         self._api_key = cfg.groq_api_key
         self._base_url = self._normalize_base_url(cfg.groq_api_base)
 
+    @property
+    def is_configured(self) -> bool:
+        """Whether a Groq API key is available on this deployment."""
+        return bool((self._api_key or "").strip())
+
     @classmethod
     def _normalize_base_url(cls, base: str) -> str:
         base = (base or "").strip().rstrip("/")
@@ -54,6 +59,8 @@ class LLMService:
         return base
 
     def _get_llm(self, streaming: bool = False) -> ChatGroq:
+        if not self.is_configured:
+            raise RuntimeError("GROQ_API_KEY is not configured on this deployment.")
         return ChatGroq(
             model=self._model,
             temperature=self._temperature,
@@ -65,7 +72,6 @@ class LLMService:
 
     async def generate(self, system_prompt: str, messages: list[dict],
                        tools: list[Any] | None = None) -> tuple[str, dict]:
-        llm = self._get_llm()
         langchain_messages = [SystemMessage(content=system_prompt)]
         for m in messages:
             if m["role"] == "user":
@@ -73,6 +79,7 @@ class LLMService:
             elif m["role"] == "assistant":
                 langchain_messages.append(AIMessage(content=m["content"]))
         try:
+            llm = self._get_llm()
             if tools:
                 llm_with_tools = llm.bind_tools(tools)
                 response = await llm_with_tools.ainvoke(langchain_messages)

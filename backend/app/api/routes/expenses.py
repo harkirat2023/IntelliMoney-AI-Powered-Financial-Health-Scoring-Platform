@@ -11,6 +11,11 @@ from app.db.mongodb import get_database
 from app.schemas.expense import ExpenseCreate, ExpensePublic, ExpenseUpdate
 from app.services.category_service import suggest_category
 from app.services.serializers import date_to_datetime, serialize_document, to_object_id, utc_now
+from app.services.spending_sync_service import refresh_aggregates
+
+import logging
+
+logger = logging.getLogger("intellimoney")
 
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
@@ -53,6 +58,10 @@ async def create_expense(
     }
     result = await db.expenses.insert_one(document)
     document["_id"] = result.inserted_id
+    try:
+        await refresh_aggregates(db, str(current_user["_id"]))
+    except Exception as exc:  # noqa: BLE001 - derived aggregates must never fail the request
+        logger.warning("expense_sync_failed user=%s err=%s", current_user["_id"], exc)
     return ExpensePublic(**serialize_document(document))
 
 
@@ -127,6 +136,10 @@ async def update_expense(
     expense = await db.expenses.find_one({"_id": object_id, "user_id": current_user["_id"]})
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
+    try:
+        await refresh_aggregates(db, str(current_user["_id"]))
+    except Exception as exc:  # noqa: BLE001 - derived aggregates must never fail the request
+        logger.warning("expense_sync_failed user=%s err=%s", current_user["_id"], exc)
     return ExpensePublic(**serialize_document(expense))
 
 
@@ -143,4 +156,8 @@ async def delete_expense(
     result = await db.expenses.delete_one({"_id": object_id, "user_id": current_user["_id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Expense not found")
+    try:
+        await refresh_aggregates(db, str(current_user["_id"]))
+    except Exception as exc:  # noqa: BLE001 - derived aggregates must never fail the request
+        logger.warning("expense_sync_failed user=%s err=%s", current_user["_id"], exc)
     return {"message": "Expense deleted"}

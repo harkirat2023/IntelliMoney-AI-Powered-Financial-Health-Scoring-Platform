@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -18,7 +18,7 @@ class SmartBudgetService:
         self._trend_service = CategoryTrendService(db)
 
     async def generate_budget(self, user_id: str) -> BudgetIntelligence:
-        now = datetime.utcnow()
+        now = utc_now()
         period = f"{now.year}-{now.month:02d}"
 
         budget_usages = await self._db.budget_usage.find({"user_id": user_id}).to_list(length=None)

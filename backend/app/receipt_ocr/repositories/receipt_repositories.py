@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -40,7 +40,7 @@ class MongoReceiptRepository(ReceiptRepository):
 
     async def create(self, receipt: Receipt) -> Receipt:
         doc = receipt.to_mongo()
-        doc["created_at"] = doc["updated_at"] = datetime.utcnow()
+        doc["created_at"] = doc["updated_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         receipt.id = str(r.inserted_id)
         return receipt
@@ -59,7 +59,7 @@ class MongoReceiptRepository(ReceiptRepository):
         return [Receipt.from_mongo(d) for d in docs]
 
     async def update(self, receipt_id: str, data: dict) -> bool:
-        data["updated_at"] = datetime.utcnow()
+        data["updated_at"] = utc_now()
         r = await self._collection.update_one({"_id": receipt_id}, {"$set": data})
         return r.modified_count > 0
 
@@ -78,7 +78,7 @@ class MongoReceiptProcessingLogRepository(ReceiptProcessingLogRepository):
 
     async def create(self, log: ReceiptProcessingLog) -> ReceiptProcessingLog:
         doc = log.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         log.id = str(r.inserted_id)
         return log

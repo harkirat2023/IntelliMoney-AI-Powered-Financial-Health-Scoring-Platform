@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -65,7 +65,7 @@ class MongoChatSessionRepository(ChatSessionRepository):
 
     async def create(self, session: ChatSession) -> ChatSession:
         doc = session.to_mongo()
-        doc["created_at"] = doc["updated_at"] = datetime.utcnow()
+        doc["created_at"] = doc["updated_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         session.id = str(r.inserted_id)
         return session
@@ -79,7 +79,7 @@ class MongoChatSessionRepository(ChatSessionRepository):
         return ChatSession.from_mongo(d) if d else None
 
     async def update(self, session_id: str, data: dict) -> bool:
-        data["updated_at"] = datetime.utcnow()
+        data["updated_at"] = utc_now()
         r = await self._collection.update_one({"_id": session_id}, {"$set": data})
         return r.modified_count > 0
 
@@ -94,7 +94,7 @@ class MongoChatMessageRepository(ChatMessageRepository):
 
     async def create(self, msg: ChatMessage) -> ChatMessage:
         doc = msg.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         msg.id = str(r.inserted_id)
         return msg
@@ -122,7 +122,7 @@ class MongoConversationMemoryRepository(ConversationMemoryRepository):
 
     async def upsert(self, memory: ConversationMemory) -> ConversationMemory:
         doc = memory.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         await self._collection.update_one(
             {"user_id": memory.user_id, "session_id": memory.session_id},
             {"$set": doc}, upsert=True)
@@ -143,7 +143,7 @@ class MongoConversationSummaryRepository(ConversationSummaryRepository):
 
     async def upsert(self, summary: ConversationSummary) -> ConversationSummary:
         doc = summary.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         await self._collection.update_one(
             {"user_id": summary.user_id, "session_id": summary.session_id},
             {"$set": doc}, upsert=True)
@@ -164,7 +164,7 @@ class MongoAiFeedbackRepository(AiFeedbackRepository):
 
     async def create(self, feedback: AiFeedback) -> AiFeedback:
         doc = feedback.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         feedback.id = str(r.inserted_id)
         return feedback

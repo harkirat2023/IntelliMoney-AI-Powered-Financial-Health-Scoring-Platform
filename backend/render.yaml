@@ -4,7 +4,20 @@ services:
     runtime: python
     rootDir: backend
     healthCheckPath: /healthz
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install -r requirements.txt &&
+      python -c "
+      import subprocess, sys
+      result = subprocess.run([sys.executable, '../ml/train_model.py'], capture_output=True, text=True, cwd='..')
+      print(result.stdout)
+      if result.returncode != 0:
+          print(result.stderr, file=sys.stderr)
+          sys.exit(1)
+      p = __import__('pathlib').Path('app/ml/expense_classifier.joblib')
+      assert p.exists(), f'Model not found at {p.resolve()}'
+      m = __import__('joblib').load(p)
+      print(f'Model verified OK: {type(m).__name__}, classes={list(m.classes_)}')
+      "
     startCommand: python start.py
     envVars:
       - key: PYTHON_VERSION
@@ -17,8 +30,6 @@ services:
         sync: false
       - key: MONGODB_DB
         value: IntelliMoney
-      - key: REDIS_URL
-        sync: false
       - key: BANK_ENCRYPTION_KEY
         sync: false
       - key: BANK_CONSENT_REDIRECT_BASE
@@ -27,6 +38,10 @@ services:
         value: https://intellimoney.vercel.app,http://localhost:5173
       - key: LOG_LEVEL
         value: INFO
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
       - key: CLERK_FRONTEND_API
         sync: false
       - key: CLERK_PUBLISHABLE_KEY
@@ -45,7 +60,5 @@ services:
         value: sandbox
       - key: AA_ALLOW_DEMO_FALLBACK
         value: "true"
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_KEY
-        sync: false
+      - key: ML_ALLOW_FALLBACK
+        value: "true"

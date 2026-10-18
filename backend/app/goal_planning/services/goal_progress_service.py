@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -26,7 +26,7 @@ class GoalProgressService:
         self._db = db
 
     async def track_progress(self, goal: FinancialGoal) -> GoalProgress:
-        now = datetime.utcnow()
+        now = utc_now()
         period = now.strftime("%Y-%m")
         existing = await self._progress_repo.get_by_goal_and_period(goal.id, period)
         previous = await self._progress_repo.get_latest_by_goal(goal.id)
@@ -92,7 +92,7 @@ class GoalProgressService:
         if latest.skipped_months >= 3:
             return f"No contributions for {latest.skipped_months} months. Consider adjusting your goal."
         if latest.progress_percentage < 10 and goal.created_at:
-            age_days = (datetime.utcnow() - goal.created_at).days
+            age_days = (utc_now() - goal.created_at).days
             if age_days > 60:
                 return "Very little progress after 2 months. Consider reducing target or increasing contributions."
         return None

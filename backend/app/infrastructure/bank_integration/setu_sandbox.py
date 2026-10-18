@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 from typing import Any
 
 import httpx
@@ -106,9 +106,9 @@ class SetuSandboxProvider(BankProviderAdapter):
         payload = {
             "consentVersion": consent_version or "1.0",
             "consentUse": {
-                "from": datetime.utcnow().date().isoformat(),
+                "from": utc_now().date().isoformat(),
                 "to": "2027-03-31",
-                "dataRange": {"from": datetime.utcnow().date().isoformat(), "to": "2027-03-31"},
+                "dataRange": {"from": utc_now().date().isoformat(), "to": "2027-03-31"},
                 "frequency": {"unit": "HOUR", "value": 12},
                 "DataFilter": [],
                 "DataLife": {"unit": "MONTH", "value": 3},
@@ -126,7 +126,7 @@ class SetuSandboxProvider(BankProviderAdapter):
             return ConsentInitResponse(
                 consent_handle=consent_handle,
                 consent_url=consent_url or redirect_url,
-                expires_at=datetime.utcnow(),
+                expires_at=utc_now(),
             )
         except Exception as exc:  # noqa: BLE001
             logger.warning("Setu sandbox consent failed, falling back to demo data: %s", exc)

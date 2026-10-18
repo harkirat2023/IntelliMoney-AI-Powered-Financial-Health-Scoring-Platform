@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -127,7 +127,7 @@ class CopilotService:
         parts = [SYSTEM_PROMPT, FINANCIAL_CONTEXT_PROMPT]
         if context:
             parts.append(f"\n## Current User Context\n{json.dumps(context, indent=2)}")
-        parts.append(f"\n## Date & Time\n{datetime.utcnow().isoformat()}")
+        parts.append(f"\n## Date & Time\n{utc_now().isoformat()}")
         return "\n\n".join(parts)
 
     def _build_messages(self, history: list, context: dict, message: str) -> list[dict]:

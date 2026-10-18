@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from app.utils.date_utils import utc_now
 from statistics import pstdev
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -12,7 +12,7 @@ class BudgetForecastService:
         self._db = db
 
     async def forecast(self, user_id: str) -> dict:
-        now = datetime.utcnow()
+        now = utc_now()
         period = f"{now.year}-{now.month:02d}"
 
         pipeline = [

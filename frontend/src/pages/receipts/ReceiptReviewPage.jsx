@@ -4,11 +4,7 @@ import { receiptsStore } from "../../store/receiptsStore";
 import { receiptsApi } from "../../api/receipts";
 import { Loader, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 
-const CATEGORIES = [
-  "Food & Dining", "Transportation", "Shopping", "Bills & Utilities",
-  "Entertainment", "Healthcare", "Education", "Groceries",
-  "Rent", "Subscriptions", "Travel", "Other",
-];
+import { CATEGORIES } from "../../config/constants";
 
 export default function ReceiptReviewPage() {
   const [searchParams] = useSearchParams();
@@ -59,7 +55,7 @@ export default function ReceiptReviewPage() {
     try {
       const res = await receiptsStore.confirm(receiptId);
       setReceipt(res.receipt);
-      setMessage(`Expense is already included in your spending. ID: ${res.expense_id}`);
+      setMessage(`Expense added to your spending. ID: ${res.expense_id}`);
     } catch (e) {
       setMessage("Confirmation failed");
     } finally {

@@ -66,11 +66,11 @@ async def chat(
     try:
         result = await agent.process_message(user_id, body.message, body.session_id)
     except Exception as exc:  # noqa: BLE001 - never 500 the chat endpoint
-        logger.error("Copilot chat failed for user %s: %s", user_id, exc)
+        logger.error("Copilot chat failed for user %s: %s", user_id, exc, exc_info=True)
         result = {
             "session_id": body.session_id or "",
             "message": (
-                "I'm sorry, I couldn't reach the language model right now. "
+                "I'm sorry, I couldn't process your request right now. "
                 "Please try again in a moment."
             ),
             "message_id": "",

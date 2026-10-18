@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone`nfrom app.utils.date_utils import utc_now
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -47,7 +47,7 @@ class GoalPlanningService:
             category=data.get("category", ""),
             description=data.get("description", ""),
             auto_adjust=data.get("auto_adjust", True),
-            start_date=datetime.utcnow().strftime("%Y-%m-%d"),
+            start_date=utc_now().strftime("%Y-%m-%d"),
         )
 
         feasibility = await self._feasibility.analyze(

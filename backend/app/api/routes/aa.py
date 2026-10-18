@@ -46,7 +46,7 @@ from app.infrastructure.bank_integration.setu_sandbox import (
     SANDBOX_MODE_LABEL,
     setu_sandbox_provider,
 )
-from app.services.aa_data_service import import_aa_data_session
+from app.services.aa_data_service import import_aa_data_session, preview_aa_data_session
 from app.utils.date_utils import utc_now
 
 router = APIRouter(prefix="/aa", tags=["account-aggregator"])
@@ -315,13 +315,45 @@ async def fetch_sandbox_data(
     user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> dict[str, Any]:
-    """Fetch sandbox data, normalize, import into the existing pipeline.
+    """Fetch sandbox data and return a PREVIEW for review.
 
-    The fetched data is persisted as bank transactions and then runs the
-    same deterministic categorization / budget / cash-flow / financial-health
-    engine used for every other transaction source.
+    Nothing is imported here. The fetched transactions are returned to the
+    client so the user can review them before confirming. Write the fetched
+    data into financial records only via POST /data-sessions/{id}/import.
     """
     session = await _get_data_session(db, str(user["_id"]), session_id)
+
+    registry = _get_registry()
+    adapter = registry.get(session["provider"])
+
+    result = await preview_aa_data_session(db, str(user["_id"]), session, adapter)
+    result["sandbox"] = True
+    result["label"] = SANDBOX_LABEL
+    return result
+
+
+@router.post("/data-sessions/{session_id}/import")
+async def import_sandbox_data(
+    session_id: str,
+    user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+) -> dict[str, Any]:
+    """Confirm the reviewed sandbox data and import it into the pipeline.
+
+    Explicit confirmation step: consumes a previously fetched/previewed data
+    session and runs the deterministic bank-transaction -> categorization ->
+    budgets -> cash-flow -> financial-health engine. Idempotent: transactions
+    already imported for a provider are skipped.
+    """
+    session = await _get_data_session(db, str(user["_id"]), session_id)
+    if session.get("data_status") == "IMPORTED":
+        return {
+            "session_id": str(session["_id"]),
+            "sandbox": True,
+            "label": SANDBOX_LABEL,
+            "message": "This data session was already imported. Nothing new was added.",
+            **{k: v for k, v in session.items() if k in ("transactions_imported",)},
+        }
 
     registry = _get_registry()
     adapter = registry.get(session["provider"])
@@ -329,6 +361,18 @@ async def fetch_sandbox_data(
     result = await import_aa_data_session(db, str(user["_id"]), session, adapter)
     result["sandbox"] = True
     result["label"] = SANDBOX_LABEL
+
+    # Keep every derived aggregate consistent with the newly imported data.
+    try:
+        from app.services.spending_sync_service import refresh_aggregates
+
+        await refresh_aggregates(db, str(user["_id"]))
+    except Exception as exc:  # noqa: BLE001 - the import itself already succeeded
+        import logging
+
+        logging.getLogger("intellimoney").warning(
+            "aa_import_sync_failed user=%s err=%s", user["_id"], exc
+        )
     return result
 
 

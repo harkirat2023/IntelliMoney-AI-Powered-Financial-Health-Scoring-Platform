@@ -10,4 +10,5 @@ export const aaApi = {
   createDataSession: (consentId) => api.post("/aa/data-sessions", { consent_id: consentId }),
   listDataSessions: () => api.get("/aa/data-sessions"),
   fetchDataSession: (sessionId) => api.post(`/aa/data-sessions/${sessionId}/fetch`),
+  importDataSession: (sessionId) => api.post(`/aa/data-sessions/${sessionId}/import`),
 };

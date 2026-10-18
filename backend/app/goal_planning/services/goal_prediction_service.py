@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta`nfrom app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -34,7 +34,7 @@ class GoalPredictionService:
         best_months = max(1, int(remaining / max(effective * 1.2, 1)))
         worst_months = int(remaining / max(effective * 0.6, 1)) if effective > 0 else 999
 
-        now = datetime.utcnow()
+        now = utc_now()
 
         def add_months(dt, n):
             month = dt.month - 1 + n

@@ -13,6 +13,7 @@ export default function AASandboxPage() {
   const [activeConsent, setActiveConsent] = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [fetchResult, setFetchResult] = useState(null);
+  const [importResult, setImportResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -80,18 +81,31 @@ export default function AASandboxPage() {
   };
 
   const fetchData = async (sessionId) => {
-    const confirmed = window.confirm(
-      "Import this sandbox's demo transactions into your spending, budgets, and financial health data?"
-    );
-    if (!confirmed) return;
+    if (busy) return;
     setBusy(true);
     setError("");
+    setFetchResult(null);
+    setImportResult(null);
     try {
       const res = await aaApi.fetchDataSession(sessionId);
       setFetchResult(res.data);
-      await refresh();
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to fetch sandbox data");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const importData = async (sessionId) => {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await aaApi.importDataSession(sessionId);
+      setImportResult(res.data);
+      await refresh();
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to import sandbox data");
     } finally {
       setBusy(false);
     }
@@ -158,17 +172,63 @@ export default function AASandboxPage() {
           </p>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button onClick={() => fetchData(activeSession.id)} disabled={busy}>
-              {busy ? <><Loader2 size={16} className="spin" /> Fetching...</> : <><CloudDownload size={16} /> Fetch Transactions</>}
+              {busy && !fetchResult ? <><Loader2 size={16} className="spin" /> Fetching...</> : <><CloudDownload size={16} /> Fetch Transactions</>}
             </button>
+            {fetchResult && (
+              <button className="primary" onClick={() => importData(activeSession.id)} disabled={busy || importResult}>
+                {busy && !importResult ? <><Loader2 size={16} className="spin" /> Importing...</> : <><Database size={16} /> Confirm &amp; Import</>}
+              </button>
+            )}
           </div>
-          {fetchResult && (
+
+          {fetchResult && !importResult && (
+            <div style={{ marginTop: "14px", padding: "12px 14px", borderRadius: "10px", background: "var(--brand-50)" }}>
+              <strong style={{ fontSize: "0.9rem" }}>{fetchResult.transactions_fetched} transactions ready for review</strong>
+              <p className="muted" style={{ fontSize: "0.82rem", margin: "4px 0 10px" }}>
+                {fetchResult.message} Nothing has been added to your spending yet.
+              </p>
+              <div style={{ overflowX: "auto", fontSize: "0.8rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: "left", padding: "6px 8px" }}>Date</th>
+                      <th style={{ textAlign: "left", padding: "6px 8px" }}>Description</th>
+                      <th style={{ textAlign: "left", padding: "6px 8px" }}>Category</th>
+                      <th style={{ textAlign: "right", padding: "6px 8px" }}>Type</th>
+                      <th style={{ textAlign: "right", padding: "6px 8px" }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(fetchResult.preview || []).slice(0, 20).map((tx, i) => (
+                      <tr key={tx.transaction_id || i} style={{ borderTop: "1px solid var(--neutral-200)" }}>
+                        <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>{tx.transaction_date}</td>
+                        <td style={{ padding: "6px 8px" }}>{tx.description}</td>
+                        <td style={{ padding: "6px 8px" }}>{tx.category}</td>
+                        <td style={{ padding: "6px 8px", textAlign: "right" }}>{tx.transaction_type}</td>
+                        <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: 600 }}>₹{Number(tx.amount).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {(fetchResult.preview || []).length > 20 && (
+                  <p className="muted" style={{ fontSize: "0.75rem", marginTop: "6px" }}>
+                    Showing first 20 of {fetchResult.preview.length} transactions.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {importResult && (
             <div style={{ marginTop: "14px", padding: "12px 14px", borderRadius: "10px", background: "var(--brand-50)" }}>
               <strong style={{ fontSize: "0.9rem" }}>Import complete</strong>
               <ul style={{ margin: "8px 0 0", paddingLeft: "18px", fontSize: "0.85rem" }}>
-                <li>Transactions fetched: {fetchResult.transactions_fetched}</li>
-                <li>Transactions imported: {fetchResult.transactions_imported}</li>
-                <li>Auto-categorized: {fetchResult.categorized ?? "n/a"}</li>
-                <li>Financial transactions processed: {fetchResult.processed ?? "n/a"}</li>
+                <li>Transactions fetched: {importResult.transactions_fetched}</li>
+                <li>Transactions imported: {importResult.transactions_imported}</li>
+                <li>Transactions skipped (duplicates): {importResult.transactions_skipped ?? "n/a"}</li>
+                <li>Auto-categorized: {importResult.categorized ?? "n/a"}</li>
+                <li>Financial transactions processed: {importResult.processed ?? "n/a"}</li>
+                <li>Health recalculated: {importResult.health_recalculated ? "yes" : "no"}</li>
               </ul>
             </div>
           )}

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+from app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -32,7 +32,7 @@ class MongoBudgetOpportunityRepository(BudgetOpportunityRepository):
 
     async def create(self, opp: BudgetOpportunity) -> BudgetOpportunity:
         doc = opp.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         result = await self._collection.insert_one(doc)
         opp.id = str(result.inserted_id)
         return opp
@@ -41,7 +41,7 @@ class MongoBudgetOpportunityRepository(BudgetOpportunityRepository):
         docs = []
         for opp in opps:
             doc = opp.to_mongo()
-            doc["created_at"] = datetime.utcnow()
+            doc["created_at"] = utc_now()
             docs.append(doc)
         if docs:
             await self._collection.insert_many(docs, ordered=False)

@@ -25,11 +25,16 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 @router.get("/export.csv")
 async def export_spending_csv(
+    start_date: str | None = None,
+    end_date: str | None = None,
     current_user: dict[str, Any] = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_database),
 ) -> StreamingResponse:
     """Export the user's expense ledger as a portable CSV file."""
-    rows = await get_expenses_for_export(db, current_user["_id"])
+    try:
+        rows = await get_expenses_for_export(db, current_user["_id"], start_date, end_date)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid date range: {exc}") from exc
     output = StringIO()
     writer = csv.writer(output)
     writer.writerow(["date", "description", "category", "amount", "payment_method"])
@@ -41,12 +46,18 @@ async def export_spending_csv(
             expense.get("description", ""),
             expense.get("category", ""),
             f"{float(expense.get('amount', 0)):.2f}",
-            expense.get("payment_method", ""),
+expense.get("payment_method", ""),
         ])
+    filename = "intellimoney-spending.csv"
+    if start_date and end_date:
+        filename = f"intellimoney-spending-{start_date}-to-{end_date}.csv"
+    elif start_date or end_date:
+        edge = start_date or end_date
+        filename = f"intellimoney-spending-from-{edge}.csv" if start_date else f"intellimoney-spending-until-{edge}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=intellimoney-spending.csv"},
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 

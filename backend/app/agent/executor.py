@@ -13,6 +13,7 @@ Guarantees:
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from bson import ObjectId
@@ -27,6 +28,8 @@ from app.agent.schemas import (
 )
 from app.services.serializers import date_to_datetime, utc_now
 from app.utils.object_id import to_object_id
+
+logger = logging.getLogger(__name__)
 
 _NOTES = "note: applied automatically via confirmed AI Copilot proposal."
 
@@ -82,6 +85,15 @@ class ProposalExecutor:
         proposal.status = status
         proposal.execution = results
         proposal.updated_at = utc_now()
+
+        # Keep all derived aggregates consistent with the writes just applied.
+        try:
+            from app.services.spending_sync_service import refresh_aggregates
+
+            await refresh_aggregates(self._db, proposal.user_id)
+        except Exception as exc:  # noqa: BLE001 - never fail a completed execute
+            logger.warning("proposal_sync_failed user=%s err=%s", proposal.user_id, exc)
+
         return proposal
 
     async def _execute_one(self, action: ProposedAction, user_id: str) -> ActionExecutionResult:

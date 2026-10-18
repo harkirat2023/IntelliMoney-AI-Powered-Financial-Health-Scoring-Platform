@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+from app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -23,7 +23,7 @@ class MongoBudgetRiskRepository(BudgetRiskRepository):
 
     async def upsert(self, risk: BudgetRisk) -> BudgetRisk:
         doc = risk.to_mongo()
-        doc["calculated_at"] = datetime.utcnow()
+        doc["calculated_at"] = utc_now()
         result = await self._collection.find_one_and_update(
             {"user_id": risk.user_id, "period": risk.period},
             {"$set": doc},

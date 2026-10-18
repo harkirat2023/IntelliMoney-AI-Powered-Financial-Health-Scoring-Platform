@@ -279,10 +279,33 @@ async def get_reports(db: AsyncIOMotorDatabase, user_id: str, report_type: str |
 
 
 async def get_expenses_for_export(
-    db: AsyncIOMotorDatabase, user_id: ObjectId | str,
+    db: AsyncIOMotorDatabase,
+    user_id: ObjectId | str,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Return only the authenticated user's source-of-truth expense ledger."""
-    cursor = db.expenses.find({"user_id": user_id_query(user_id)}).sort("date", -1)
+    """Return only the authenticated user's source-of-truth expense ledger.
+
+    Optionally narrow the window with ``start_date``/``end_date`` (ISO ``YYYY-MM-DD``);
+    both are inclusive.
+    """
+    query: dict[str, Any] = {"user_id": user_id_query(user_id)}
+
+    if start_date or end_date:
+        date_filter: dict[str, Any] = {}
+
+        def _parse(value: str) -> datetime:
+            return datetime.combine(Date.fromisoformat(value), datetime.min.time())
+
+        if start_date:
+            date_filter["$gte"] = _parse(start_date)
+        if end_date:
+            date_filter["$lt"] = _parse(end_date) + timedelta(days=1)
+
+        if date_filter:
+            query["date"] = date_filter
+
+    cursor = db.expenses.find(query).sort("date", -1)
     return [item async for item in cursor]
 
 

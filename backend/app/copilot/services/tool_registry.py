@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 from typing import Any
 
 from langchain_core.tools import tool
@@ -54,7 +54,7 @@ class ToolRegistry:
     async def _expenses(self, period: str = "") -> str:
         """Get expense data. Provide a period like '2026-07' or leave empty for current month. Use for spending questions."""
         if not period:
-            now = datetime.utcnow()
+            now = utc_now()
             period = f"{now.year}-{now.month:02d}"
         pipeline = [
             {"$match": {"user_id": self._user_id, "transaction_type": "DEBIT"}},
@@ -132,7 +132,7 @@ class ToolRegistry:
     async def _monthly_report(self, period: str = "") -> str:
         """Generate a monthly financial report. Provide a period like '2026-07' or leave empty for current month. Use for 'summarize my month' questions."""
         if not period:
-            now = datetime.utcnow()
+            now = utc_now()
             period = f"{now.year}-{now.month:02d}"
         health = await self._db.financial_health.find_one(
             {"user_id": self._user_id, "period": period}

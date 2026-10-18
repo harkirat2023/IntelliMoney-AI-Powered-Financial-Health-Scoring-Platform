@@ -9,6 +9,22 @@ from app.db.mongodb import get_database
 from app.schemas.budget import BudgetCreate, BudgetPublic, BudgetStatus, BudgetUpdate
 from app.services.budget_service import get_budget_status
 from app.services.serializers import serialize_document, to_object_id
+from app.services.spending_sync_service import refresh_aggregates
+
+import logging
+
+logger = logging.getLogger("intellimoney")
+
+
+def _user_str(current_user: dict[str, Any]) -> str:
+    return str(current_user["_id"])
+
+
+async def _try_refresh(current_user: dict[str, Any], db: AsyncIOMotorDatabase) -> None:
+    try:
+        await refresh_aggregates(db, _user_str(current_user))
+    except Exception as exc:  # noqa: BLE001 - derived aggregates must never fail the request
+        logger.warning("budget_sync_failed user=%s err=%s", current_user["_id"], exc)
 
 
 router = APIRouter(prefix="/budgets", tags=["budgets"])
@@ -26,6 +42,7 @@ async def create_budget(
     except DuplicateKeyError as exc:
         raise HTTPException(status_code=409, detail="Budget already exists for this category and month") from exc
     document["_id"] = result.inserted_id
+    await _try_refresh(current_user, db)
     return BudgetPublic(**serialize_document(document))
 
 
@@ -63,6 +80,7 @@ async def update_budget(
     budget = await db.budgets.find_one({"_id": object_id, "user_id": current_user["_id"]})
     if not budget:
         raise HTTPException(status_code=404, detail="Budget not found")
+    await _try_refresh(current_user, db)
     return BudgetPublic(**serialize_document(budget))
 
 
@@ -79,4 +97,5 @@ async def delete_budget(
     result = await db.budgets.delete_one({"_id": object_id, "user_id": current_user["_id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Budget not found")
+    await _try_refresh(current_user, db)
     return {"message": "Budget deleted"}

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -60,7 +60,7 @@ class BudgetIntelligenceService:
         self._trends = CategoryTrendService(db)
 
     async def generate(self, user_id: str) -> dict:
-        now = datetime.utcnow()
+        now = utc_now()
         period = f"{now.year}-{now.month:02d}"
 
         existing = await self._intel_repo.get_by_user_and_period(user_id, period)
@@ -124,7 +124,7 @@ class BudgetIntelligenceService:
         }
 
     async def recalculate(self, user_id: str) -> dict:
-        now = datetime.utcnow()
+        now = utc_now()
         period = f"{now.year}-{now.month:02d}"
 
         intelligence = await self._smart_budget.generate_budget(user_id)

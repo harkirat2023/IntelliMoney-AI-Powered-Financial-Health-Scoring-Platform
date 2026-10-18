@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+from app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -32,7 +32,7 @@ class MongoBudgetRecommendationRepository(BudgetRecommendationRepository):
 
     async def create(self, rec: BudgetRecommendation) -> BudgetRecommendation:
         doc = rec.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         result = await self._collection.insert_one(doc)
         rec.id = str(result.inserted_id)
         return rec
@@ -41,7 +41,7 @@ class MongoBudgetRecommendationRepository(BudgetRecommendationRepository):
         docs = []
         for rec in recs:
             doc = rec.to_mongo()
-            doc["created_at"] = datetime.utcnow()
+            doc["created_at"] = utc_now()
             docs.append(doc)
         if docs:
             await self._collection.insert_many(docs, ordered=False)

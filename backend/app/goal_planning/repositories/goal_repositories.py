@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -78,7 +78,7 @@ class MongoFinancialGoalRepository(FinancialGoalRepository):
 
     async def create(self, goal: FinancialGoal) -> FinancialGoal:
         doc = goal.to_mongo()
-        doc["created_at"] = doc["updated_at"] = datetime.utcnow()
+        doc["created_at"] = doc["updated_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         goal.id = str(r.inserted_id)
         return goal
@@ -96,7 +96,7 @@ class MongoFinancialGoalRepository(FinancialGoalRepository):
         return [FinancialGoal.from_mongo(d) for d in docs]
 
     async def update(self, goal_id: str, data: dict) -> bool:
-        data["updated_at"] = datetime.utcnow()
+        data["updated_at"] = utc_now()
         r = await self._collection.update_one({"_id": goal_id}, {"$set": data})
         return r.modified_count > 0
 
@@ -118,7 +118,7 @@ class MongoGoalProgressRepository(GoalProgressRepository):
 
     async def create(self, progress: GoalProgress) -> GoalProgress:
         doc = progress.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         progress.id = str(r.inserted_id)
         return progress
@@ -149,7 +149,7 @@ class MongoGoalRecommendationRepository(GoalRecommendationRepository):
 
     async def create(self, rec: GoalRecommendation) -> GoalRecommendation:
         doc = rec.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         rec.id = str(r.inserted_id)
         return rec
@@ -160,7 +160,7 @@ class MongoGoalRecommendationRepository(GoalRecommendationRepository):
         docs = []
         for r in recs:
             d = r.to_mongo()
-            d["created_at"] = datetime.utcnow()
+            d["created_at"] = utc_now()
             docs.append(d)
         result = await self._collection.insert_many(docs)
         return len(result.inserted_ids)
@@ -188,7 +188,7 @@ class MongoGoalPredictionRepository(GoalPredictionRepository):
 
     async def upsert(self, prediction: GoalPrediction) -> GoalPrediction:
         doc = prediction.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         await self._collection.update_one(
             {"goal_id": prediction.goal_id},
             {"$set": doc}, upsert=True)
@@ -210,7 +210,7 @@ class MongoGoalNotificationRepository(GoalNotificationRepository):
 
     async def create(self, notification: GoalNotification) -> GoalNotification:
         doc = notification.to_mongo()
-        doc["created_at"] = datetime.utcnow()
+        doc["created_at"] = utc_now()
         r = await self._collection.insert_one(doc)
         notification.id = str(r.inserted_id)
         return notification

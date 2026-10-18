@@ -110,7 +110,10 @@ async def update_receipt(
 ) -> ReceiptResponse:
     svc = _get_svc(db)
     data = body.model_dump(exclude_none=True)
-    receipt = await svc.update_receipt(receipt_id, str(current_user["_id"]), data)
+    try:
+        receipt = await svc.update_receipt(receipt_id, str(current_user["_id"]), data)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not receipt:
         raise HTTPException(status_code=404, detail="Receipt not found")
     return ReceiptResponse(**svc._receipt_to_dict(receipt))

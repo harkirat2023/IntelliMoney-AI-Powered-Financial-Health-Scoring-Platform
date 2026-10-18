@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -13,7 +13,7 @@ class SavingsOpportunityService:
         self._db = db
 
     async def detect(self, user_id: str) -> list[dict]:
-        now = datetime.utcnow()
+        now = utc_now()
         opportunities = []
 
         budget_usages = await self._db.budget_usage.find({"user_id": user_id}).to_list(length=None)

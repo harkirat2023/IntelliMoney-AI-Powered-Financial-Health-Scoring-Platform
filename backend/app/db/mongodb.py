@@ -14,6 +14,9 @@ _connected_event: asyncio.Event = asyncio.Event()
 
 async def connect_to_mongo() -> None:
     global client, database, connection_error
+    if client is not None and database is not None:
+        _connected_event.set()
+        return
     _connected_event.clear()
     settings = get_settings()
     use_tls = settings.mongodb_url.startswith("mongodb+srv")

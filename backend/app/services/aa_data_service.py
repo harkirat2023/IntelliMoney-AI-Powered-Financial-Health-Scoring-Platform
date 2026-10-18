@@ -22,20 +22,12 @@ from app.utils.date_utils import utc_now
 from app.utils.object_id import to_user_id, user_id_query
 
 
-async def import_aa_data_session(
+async def _fetch_provider_transactions(
     db: AsyncIOMotorDatabase,
-    user_id: str,
     session: dict,
     adapter: BankProviderAdapter,
-) -> dict[str, Any]:
-    """Fetch AA sandbox FI data for a data session and import it.
-
-    Mirrors the previous inline router logic exactly: normalize provider
-    data, ensure a real bank-account document exists (with encrypted tokens
-    and a matching active consent so SyncService works), insert deduplicated
-    bank transactions, then run the shared auto-processing pipeline.
-    """
-    session_id = str(session["_id"])
+) -> tuple[list[Any], str]:
+    """Fetch the sandbox FI data for a data session (accounts + transactions)."""
     consent = await db.aa_consents.find_one({"_id": ObjectId(session["consent_id"])})
     consent_handle = session.get("consent_handle") or consent.get("consent_handle", "")
 
@@ -51,6 +43,65 @@ async def import_aa_data_session(
                 to_date=utc_now(),
             )
         )
+    return provider_txs, consent_handle
+
+
+def _preview_row(ptx: Any) -> dict[str, Any]:
+    return {
+        "transaction_id": ptx.transaction_id,
+        "description": ptx.description,
+        "amount": ptx.amount,
+        "transaction_type": ptx.transaction_type,
+        "transaction_date": (
+            str(ptx.transaction_date.isoformat())
+            if hasattr(ptx.transaction_date, "isoformat")
+            else str(ptx.transaction_date)
+        ),
+        "category": ptx.category or "Uncategorized",
+        "reference": ptx.reference,
+    }
+
+
+async def preview_aa_data_session(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    session: dict,
+    adapter: BankProviderAdapter,
+) -> dict[str, Any]:
+    """Fetch sandbox data and return a preview WITHOUT importing anything.
+
+    Nothing is persisted here. The user reviews the returned transactions and
+    explicitly confirms the import (POST /aa/data-sessions/{id}/import) before
+    any data becomes part of their financial records.
+    """
+    provider_txs, _ = await _fetch_provider_transactions(db, session, adapter)
+    return {
+        "session_id": str(session["_id"]),
+        "transactions_fetched": len(provider_txs),
+        "preview": [_preview_row(tx) for tx in provider_txs],
+        "message": (
+            "Fetch complete. Review the transactions below, then confirm the "
+            "import to add them to your spending."
+        ),
+    }
+
+
+async def import_aa_data_session(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    session: dict,
+    adapter: BankProviderAdapter,
+) -> dict[str, Any]:
+    """Fetch AA sandbox FI data for a data session and import it.
+
+    Mirrors the previous inline router logic exactly: normalize provider
+    data, ensure a real bank-account document exists (with encrypted tokens
+    and a matching active consent so SyncService works), insert deduplicated
+    bank transactions, then run the shared auto-processing pipeline.
+    Run ONLY after the user has reviewed and confirmed the fetched data.
+    """
+    session_id = str(session["_id"])
+    provider_txs, consent_handle = await _fetch_provider_transactions(db, session, adapter)
 
     account_doc = await db.bank_accounts.find_one({
         "user_id": user_id_query(user_id),

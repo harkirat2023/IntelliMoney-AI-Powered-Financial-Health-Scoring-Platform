@@ -226,13 +226,22 @@ def test_aa_full_sandbox_flow():
             assert session_body["data_status"] == "READY"
             session_id = session_body["id"]
 
-            # 7. Fetch sandbox data -> normalize -> import
+            # 7. Fetch sandbox data -> PREVIEW only (nothing imported yet)
             fetched = client.post(f"/api/v1/aa/data-sessions/{session_id}/fetch")
             assert fetched.status_code == 200, fetched.text
             fetch_body = fetched.json()
             assert fetch_body["sandbox"] is True
             assert fetch_body["transactions_fetched"] > 0
-            assert fetch_body["transactions_imported"] > 0
+            assert len(fetch_body["preview"]) == fetch_body["transactions_fetched"]
+            assert fetch_body["preview"][0]["amount"]
+            assert fake_db.bank_transactions.items == []  # preview persists nothing
+
+            # 7b. Explicit confirmation -> import
+            imported = client.post(f"/api/v1/aa/data-sessions/{session_id}/import")
+            assert imported.status_code == 200, imported.text
+            import_body = imported.json()
+            assert import_body["transactions_fetched"] == fetch_body["transactions_fetched"]
+            assert import_body["transactions_imported"] > 0
 
             # 8. Imported transactions land in the shared bank_transactions pipeline
             assert len(fake_db.bank_transactions.items) > 0

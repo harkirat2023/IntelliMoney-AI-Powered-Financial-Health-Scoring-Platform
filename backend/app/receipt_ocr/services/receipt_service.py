@@ -1,7 +1,7 @@
 import logging
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 from pathlib import Path
 
 from bson import ObjectId
@@ -21,6 +21,7 @@ from app.receipt_ocr.services.receipt_validation_service import (
     ReceiptValidationService,
 )
 from app.services.category_service import suggest_category
+from app.services.spending_sync_service import refresh_aggregates
 from app.utils.object_id import to_user_id, user_id_query
 
 logger = logging.getLogger(__name__)
@@ -55,12 +56,12 @@ class ReceiptService:
         receipt = Receipt(
             user_id=user_id, image_path=image_path, filename=filename,
             mime_type=content_type, file_size=len(file_bytes),
-            image_preview_url=self._storage.get_url(safe_name),
+            image_preview_url="",
             status="uploaded",
             metadata={"original_filename": filename, "file_id": file_id},
         )
         receipt = await self._receipt_repo.create(receipt)
-        image_url = self._storage.get_url(safe_name)
+        image_url = f"/api/v1/receipts/{receipt.id}/image"
         await self._receipt_repo.update(receipt.id, {"image_preview_url": image_url})
         receipt.image_preview_url = image_url
 
@@ -160,19 +161,12 @@ class ReceiptService:
                 "amount": receipt.total_amount,
             })
 
-            # A successful OCR result is a financial transaction. Persist it
-            # once immediately so receipt uploads are reflected in spending;
-            # ``confirm_and_finalize`` remains idempotent for older clients.
-            if receipt.status == "processed":
-                expense_id = await self._create_expense(user_id, receipt)
-                if expense_id:
-                    receipt.expense_id = expense_id
-                    receipt.status = "completed"
-                    await self._receipt_repo.update(receipt.id, {
-                        "expense_id": expense_id, "status": "completed",
-                    })
-
-            return {"receipt": receipt, "expense_id": receipt.expense_id,
+            # No expense is created here. A receipt only affects spending after
+            # the user reviews the OCR result and explicitly confirms it via
+            # POST /receipts/{id}/confirm (spec: explicit confirmation for
+            # writes). ``review_required`` stays reviewable; ``processed`` is
+            # ready for confirmation.
+            return {"receipt": receipt, "expense_id": "",
                     "errors": validation_errors if validation_errors else [],
                     "message": "Processed" if receipt.status != "review_required" else "Review required"}
 
@@ -221,6 +215,11 @@ class ReceiptService:
             "receipt_id": receipt.id, "expense_id": expense_id,
         })
 
+        try:
+            await refresh_aggregates(self._db, user_id)
+        except Exception as exc:  # noqa: BLE001 - derived aggregates must never fail the confirm
+            logger.warning("receipt_sync_failed user=%s err=%s", user_id, exc)
+
         return {"receipt": receipt, "expense_id": expense_id,
                 "errors": [], "message": "Expense created"}
 
@@ -229,6 +228,10 @@ class ReceiptService:
         receipt = await self._receipt_repo.get_by_id(receipt_id)
         if not receipt or receipt.user_id != user_id:
             return None
+
+        validation_errors = self._validator.validate_update_data(data)
+        if validation_errors:
+            raise ValueError("; ".join(validation_errors))
 
         upd = {}
         for field in ("merchant_name", "total_amount", "transaction_date",
@@ -278,6 +281,10 @@ class ReceiptService:
                     {"_id": ObjectId(receipt.expense_id), "user_id": user_id_query(user_id)},
                     {"$set": expense_updates},
                 )
+            try:
+                await refresh_aggregates(self._db, user_id)
+            except Exception as exc:  # noqa: BLE001 - derived aggregates must never fail the update
+                logger.warning("receipt_sync_failed user=%s err=%s", user_id, exc)
         await self._log(receipt_id, user_id, "update", "success",
                         f"Fields updated: {', '.join(upd.keys())}")
 
@@ -298,6 +305,10 @@ class ReceiptService:
             await self._db.expenses.delete_one({
                 "_id": ObjectId(receipt.expense_id), "user_id": user_id_query(user_id),
             })
+            try:
+                await refresh_aggregates(self._db, user_id)
+            except Exception as exc:  # noqa: BLE001 - derived aggregates must never fail the delete
+                logger.warning("receipt_sync_failed user=%s err=%s", user_id, exc)
         await self._log(receipt_id, user_id, "delete", "success", "Receipt deleted")
         return True
 
@@ -315,7 +326,7 @@ class ReceiptService:
 
     async def _create_expense(self, user_id: str, receipt: Receipt) -> str | None:
         try:
-            tx_date = datetime.utcnow()
+            tx_date = utc_now()
             if receipt.transaction_date:
                 try:
                     tx_date = datetime.strptime(receipt.transaction_date, "%Y-%m-%d")
@@ -328,7 +339,7 @@ class ReceiptService:
                 "category": receipt.predicted_category or "Other",
                 "payment_method": "Receipt OCR",
                 "date": tx_date,
-                "created_at": datetime.utcnow(),
+                "created_at": utc_now(),
             }
             result = await self._db.expenses.insert_one(expense_doc)
             expense_id = str(result.inserted_id)

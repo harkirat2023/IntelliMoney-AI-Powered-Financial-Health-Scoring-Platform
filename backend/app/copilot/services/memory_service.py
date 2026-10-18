@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime`nfrom app.utils.date_utils import utc_now
 
 from app.copilot.models.models import (
     ChatMessage, ChatSession, ConversationMemory, ConversationSummary,
@@ -60,13 +60,19 @@ class MemoryService:
         if existing:
             return
         combined = "\n".join(f"{m.role}: {m.content}" for m in messages[-20:])
-        summary_text, _ = await self._llm.generate(
-            "Summarize this financial conversation concisely.",
-            [{"role": "user", "content": f"Summarize:\n{combined}"}],
-        )
+        try:
+            summary_text, _ = await self._llm.generate(
+                "Summarize this financial conversation concisely.",
+                [{"role": "user", "content": f"Summarize:\n{combined}"}],
+            )
+        except Exception as exc:  # noqa: BLE001 - summarization must never break messaging
+            logger.warning("Conversation summarization failed: %s", exc)
+            return
+        if not summary_text or summary_text.startswith("I'm sorry"):
+            return
         summary = ConversationSummary(
             user_id=user_id, session_id=session_id,
-            summary=summary_text, last_message_at=datetime.utcnow(),
+            summary=summary_text, last_message_at=utc_now(),
         )
         await self._summary_repo.upsert(summary)
 

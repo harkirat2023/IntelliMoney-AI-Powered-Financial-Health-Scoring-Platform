@@ -1,0 +1,101 @@
+description,category
+coffee at starbucks,Food
+office lunch with team,Food
+monthly grocery shopping,Food
+pizza delivery dominos,Food
+dinner at restaurant,Food
+swiggy food delivery,Food
+zomato burger order,Food
+morning breakfast and tea,Food
+supermarket fruits and vegetables,Food
+bakery cake purchase,Food
+uber ride to office,Transport
+metro card recharge,Transport
+petrol pump fuel recharge,Transport
+bus ticket booking,Transport
+train ticket booking irctc,Transport
+ola cab trip,Transport
+fastag toll recharge,Transport
+auto rickshaw fare,Transport
+diesel for car,Transport
+parking fee at mall,Transport
+amazon headphones order,Shopping
+new shoes from mall,Shopping
+flipkart mobile cover,Shopping
+clothes shopping zudio,Shopping
+gift purchase for birthday,Shopping
+electronics purchase laptop mouse,Shopping
+myntra clothes order,Shopping
+superstore home decor,Shopping
+online shopping retail,Shopping
+watch bought from store,Shopping
+electricity bill payment,Bills
+mobile phone recharge jio,Bills
+home internet bill airtel,Bills
+water utility bill,Bills
+credit card annual fee,Bills
+piped gas bill adani,Bills
+broadband wifi bill,Bills
+dth satellite tv recharge,Bills
+municipality property tax bill,Bills
+electricity board power payment,Bills
+movie tickets pvr cinemas,Entertainment
+netflix monthly subscription,Entertainment
+spotify premium subscription,Entertainment
+gaming pass xbox live,Entertainment
+concert live music ticket,Entertainment
+amusement park ticket,Entertainment
+youtube premium subscription,Entertainment
+bookmyshow event pass,Entertainment
+bowling game night,Entertainment
+streaming ott service,Entertainment
+doctor consultation clinic,Health
+pharmacy medicines purchase,Health
+hospital bill payment,Health
+dental clinic visit treatment,Health
+health insurance premium policy,Health
+diagnostic blood test lab,Health
+eye checkup and optical glasses,Health
+physiotherapy session,Health
+medical store emergency medicine,Health
+vitamins and health supplements,Health
+online course subscription udemy,Education
+college exam fee payment,Education
+textbook purchase bookstore,Education
+tuition fee payment,Education
+coding bootcamp fee,Education
+school quarterly fees,Education
+library annual membership,Education
+university seminar pass,Education
+certification exam registration,Education
+study materials and stationery,Education
+flight ticket to goa indigo,Travel
+hotel booking agoda stay,Travel
+airbnb stay vacation,Travel
+holiday tour package,Travel
+airport cab transfer,Travel
+resort room reservation,Travel
+intercity train journey,Travel
+sightseeing tour booking,Travel
+visa application fee,Travel
+luggage bag for trip,Travel
+monthly house rent,Rent
+apartment rent transfer,Rent
+rent paid to landlord,Rent
+flat maintenance rent charges,Rent
+room rent payment,Rent
+society maintenance fee,Rent
+studio apartment lease rent,Rent
+office desk rent coworking,Rent
+residential lease payment,Rent
+pg accommodation rent,Rent
+atm cash withdrawal,Other
+charity donation temple,Other
+bank service charge fee,Other
+miscellaneous expense,Other
+cash transfer to friend,Other
+general office expense,Other
+unidentified vendor charge,Other
+courier service postal fee,Other
+notary legal affidavit fee,Other
+hardware shop repair tool,Other
