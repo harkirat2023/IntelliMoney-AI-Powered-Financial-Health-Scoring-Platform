@@ -2,8 +2,8 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     alerts, analytics, anomaly, aa, auth, bank, budgets, budget_intelligence_v2,
-    budget_suggestion, consent, copilot_v2, dashboard_v2,
-    expenses, financial_health, goal_planning_v2, health_v2, import_preference,
+    consent, copilot_v2, dashboard_v2,
+    expenses, goal_planning_v2, health_v2, import_preference,
     receipt_ocr_v2, recommendations, recurring,
     reports, subscriptions, sync,
 )
@@ -18,11 +18,9 @@ router.include_router(auth.router, tags=["auth"])
 router.include_router(expenses.router, tags=["expenses"])
 router.include_router(budgets.router, tags=["budgets"])
 router.include_router(analytics.router, tags=["analytics"])
-router.include_router(financial_health.router, tags=["financial_health"])
 router.include_router(recommendations.router, tags=["recommendations"])
 router.include_router(alerts.router, tags=["alerts"])
 router.include_router(anomaly.router, tags=["anomaly"])
-router.include_router(budget_suggestion.router, tags=["budget_suggestions"])
 router.include_router(reports.router, tags=["reports"])
 router.include_router(subscriptions.router, tags=["subscriptions"])
 router.include_router(recurring.router, tags=["recurring"])

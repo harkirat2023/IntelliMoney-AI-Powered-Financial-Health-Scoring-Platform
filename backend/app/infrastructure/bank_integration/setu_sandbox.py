@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime`nfrom app.utils.date_utils import utc_now
+from datetime import datetime
+from app.utils.date_utils import utc_now
 from typing import Any
 
 import httpx

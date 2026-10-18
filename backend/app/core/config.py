@@ -22,7 +22,6 @@ class Settings(BaseSettings):
     rate_limit_auth_enabled: bool = True
     rate_limit_auth_max_requests: int = 10
     rate_limit_auth_window_seconds: int = 60
-    otp_expire_minutes: int = 10
     frontend_base_url: str = "http://localhost:5173"
     mongodb_url: str = "mongodb://localhost:27017"
     mongodb_db: str = "IntelliMoney"

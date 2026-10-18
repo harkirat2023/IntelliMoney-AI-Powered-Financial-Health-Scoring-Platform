@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
 from app.api.deps import get_current_user
-from app.api.routes import alerts, auth, budgets, expenses, financial_health
+from app.api.routes import alerts, auth, budgets, expenses, health_v2
 from app.schemas.budget import BudgetCreate, BudgetUpdate
 from app.schemas.expense import ExpenseCreate, ExpenseUpdate
 from app.services import analytics_service
@@ -34,6 +34,10 @@ class FakeCursor:
         self.items = self.items[:count]
         return self
 
+    def skip(self, count):
+        self.items = self.items[count:]
+        return self
+
     def __aiter__(self):
         self._index = 0
         return self
@@ -52,8 +56,11 @@ class FakeCollection:
 
     async def insert_one(self, document):
         stored = dict(document)
-        stored["_id"] = stored.get("_id", ObjectId())
+        if "_id" not in stored:
+            stored["_id"] = ObjectId()
         self.items.append(stored)
+        # Also update the original document reference
+        document["_id"] = stored["_id"]
         return SimpleNamespace(inserted_id=stored["_id"])
 
     async def find_one(self, query):
@@ -62,12 +69,17 @@ class FakeCollection:
     def find(self, query):
         return FakeCursor([item for item in self.items if matches(item, query)])
 
-    async def update_one(self, query, update):
+    async def update_one(self, query, update, upsert=False):
         item = await self.find_one(query)
         if item:
             item.update(update.get("$set", {}))
-            return SimpleNamespace(modified_count=1)
-        return SimpleNamespace(modified_count=0)
+            return SimpleNamespace(modified_count=1, upserted_id=None)
+        if upsert:
+            stored = dict(update.get("$set", {}))
+            stored["_id"] = stored.get("_id", ObjectId())
+            self.items.append(stored)
+            return SimpleNamespace(modified_count=0, upserted_id=stored["_id"])
+        return SimpleNamespace(modified_count=0, upserted_id=None)
 
     async def delete_one(self, query):
         for index, item in enumerate(self.items):
@@ -90,6 +102,15 @@ class FakeDb:
         self.budget_alerts = FakeCollection()
         self.financial_scores = FakeCollection()
         self.recommendations = FakeCollection()
+        self.financial_health = FakeCollection()
+        self.cash_flow_summary = FakeCollection()
+        self.budget_usage = FakeCollection()
+        self.financial_transactions = FakeCollection()
+        self.financial_goals = FakeCollection()
+        self.financial_health_history = FakeCollection()
+        self.recurring_expenses = FakeCollection()
+        self.financial_risk_profile = FakeCollection()
+        self.health_recommendations = FakeCollection()
 
 
 def matches(item, query):
@@ -293,10 +314,10 @@ def test_financial_score_and_categorization_endpoint():
         )
     )
 
-    score = run(financial_health.score(user, db))
+    score = run(health_v2.health_calculate(user, db))
     assert 0 <= score.score <= 100
-    assert score.risk_level in {"Excellent", "Good", "Moderate", "Needs Attention"}
-    assert len(db.financial_scores.items) == 1
+    assert score.risk_level in {"Excellent", "Good", "Moderate", "Needs Attention", "Poor"}
+    assert len(db.financial_health.items) == 1
 
     prediction = run(
         expenses.categorize_expense(

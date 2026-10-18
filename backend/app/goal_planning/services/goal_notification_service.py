@@ -1,5 +1,6 @@
 import logging
-from datetime import datetime, timedelta`nfrom app.utils.date_utils import utc_now
+from datetime import datetime, timedelta
+from app.utils.date_utils import utc_now
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 

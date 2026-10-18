@@ -8,7 +8,6 @@ class UserDocument(TypedDict):
     _id: ObjectId
     email: str
     name: str
-    hashed_password: str
     monthly_income: float
     created_at: datetime
 

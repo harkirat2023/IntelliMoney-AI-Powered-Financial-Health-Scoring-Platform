@@ -20,9 +20,7 @@ class OCRService:
 
     def extract(self, image_bytes: bytes) -> dict:
         if not TESSERACT_AVAILABLE:
-            return {"raw_text": "", "merchant_name": "", "total_amount": 0.0,
-                    "transaction_date": "", "transaction_time": "",
-                    "currency": "INR", "tax_amount": 0.0, "items": []}
+            return self._empty_result("pytesseract or PIL not installed. Install with: pip install pytesseract pillow")
 
         try:
             img = Image.open(io.BytesIO(image_bytes))
@@ -45,12 +43,29 @@ class OCRService:
                 "tax_amount": 0.0,
                 "items": [],
             }
+        except FileNotFoundError as e:
+            # Tesseract binary not found in PATH
+            logger.error("Tesseract executable not found: %s", e)
+            return self._empty_result("Tesseract OCR engine not found. Please install Tesseract and add it to your system PATH.")
+        except pytesseract.TesseractNotFoundError as e:
+            logger.error("Tesseract not found: %s", e)
+            return self._empty_result("Tesseract OCR engine not found. Please install Tesseract and add it to your system PATH.")
         except Exception as e:
-            logger.error(f"OCR extraction failed: {e}")
-            return {"raw_text": "", "merchant_name": "", "total_amount": 0.0,
-                    "transaction_date": "", "transaction_time": "",
-                    "currency": "INR", "tax_amount": 0.0, "items": [],
-                    "error": str(e)}
+            logger.error("OCR extraction failed: %s", e)
+            return self._empty_result(str(e))
+
+    def _empty_result(self, error: str) -> dict:
+        return {
+            "raw_text": "",
+            "merchant_name": "",
+            "total_amount": 0.0,
+            "transaction_date": "",
+            "transaction_time": "",
+            "currency": "INR",
+            "tax_amount": 0.0,
+            "items": [],
+            "error": error,
+        }
 
     def _extract_merchant(self, lines: list[str]) -> str:
         noise_keywords = {"total", "amount", "tax", "gst", "cash", "change",

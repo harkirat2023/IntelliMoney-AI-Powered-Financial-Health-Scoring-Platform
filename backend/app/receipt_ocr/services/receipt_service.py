@@ -1,7 +1,8 @@
 import logging
 import time
 import uuid
-from datetime import datetime`nfrom app.utils.date_utils import utc_now
+from datetime import datetime
+from app.utils.date_utils import utc_now
 from pathlib import Path
 
 from bson import ObjectId
