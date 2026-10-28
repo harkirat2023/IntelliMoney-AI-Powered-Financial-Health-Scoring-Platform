@@ -106,7 +106,7 @@ class ReceiptService:
             if not processed_bytes:
                 raise RuntimeError("Image preprocessing failed")
 
-            ocr_data = self._ocr.extract(processed_bytes)
+            ocr_data = self._ocr.extract(processed_bytes, filename=receipt.filename)
             ocr_duration = int((time.time() - start) * 1000)
 
             receipt.raw_ocr_text = ocr_data.get("raw_text", "")

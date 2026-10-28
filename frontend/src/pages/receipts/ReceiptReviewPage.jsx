@@ -143,7 +143,7 @@ export default function ReceiptReviewPage() {
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               ) : (
-                <span style={{ color: "#f9fafb" }}>{receipt.predicted_category || "—"} {receipt.confidence_score > 0 && `(${Math.round(receipt.confidence_score * 100)}%)`}</span>
+                <span style={{ color: "#f9fafb" }}>{receipt.predicted_category || "—"} {receipt.confidence_score > 0 && `(ML: ${Math.round(receipt.confidence_score * 100)}% confidence)`}</span>
               )}
             </div>
             <div className="review-row">

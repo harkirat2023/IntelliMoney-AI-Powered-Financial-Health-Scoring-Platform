@@ -4,48 +4,208 @@ office lunch with team,Food
 monthly grocery shopping,Food
 pizza delivery,Food
 dinner at restaurant,Food
+swiggy food delivery,Food
+zomato dinner order,Food
+blinkit quick grocery,Food
+zepto milk and bread,Food
+mcdonalds burger meal,Food
+subway sandwich lunch,Food
+dominos cheese pizza,Food
+kfc chicken bucket,Food
+supermarket fruits and vegetables,Food
+dmart monthly groceries,Food
+bigbasket organic veggies,Food
+bakery cake and pastries,Food
+chai and samosa snack,Food
+biryani takeaway,Food
+ice cream parlor,Food
+starbucks iced latte,Food
+haldirams thali dinner,Food
+street food evening snack,Food
+office cafeteria lunch,Food
+grocery store milk eggs,Food
+bbq nation team dinner,Food
+taco bell quesadilla,Food
+cafe coffee day cappuccino,Food
+fresh meat and fish market,Food
+juice bar smoothie,Food
 uber ride to office,Transport
 metro card recharge,Transport
 petrol pump fuel,Transport
 bus ticket,Transport
 train booking,Transport
-amazon headphones order,Shopping
-new shoes from mall,Shopping
-flipkart mobile cover,Shopping
-clothes shopping,Shopping
-gift purchase,Shopping
+ola cab ride to airport,Transport
+rapido bike taxi,Transport
+irctc express ticket,Transport
+shell petrol station cng,Transport
+fastag toll payment,Transport
+parking fee mall,Transport
+car servicing and oil change,Transport
+bike repair brake pad,Transport
+auto rickshaw cash fare,Transport
+hpcl petrol fill up,Transport
+bpcl diesel fuel,Transport
+uber premier ride home,Transport
+metro token station,Transport
+city bus monthly pass,Transport
+car wash and detailing,Transport
+tyre puncture repair,Transport
+ev charging station fee,Transport
+cab ride back from party,Transport
+train tatkal ticket booking,Transport
+scooter battery replacement,Transport
+amazon online shopping,Shopping
+flipkart electronics sale,Shopping
+myntra clothes shopping,Shopping
+zara jacket and shirt,Shopping
+shoes purchase nike,Shopping
+ajio ethnic wear,Shopping
+meesho household items,Shopping
+h&m casual tshirts,Shopping
+nykaa skincare and cosmetics,Shopping
+sneakers from adidas store,Shopping
+shopping mall clothes,Shopping
+leather wallet and belt,Shopping
+smartwatch online purchase,Shopping
+bluetooth headphones amazon,Shopping
+sunglasses ray ban,Shopping
+backpack laptop bag,Shopping
+ikea home furniture table,Shopping
+kitchen utensils set,Shopping
+books from bookstore,Shopping
+gift for friend birthday,Shopping
+running shoes decathlon,Shopping
+winter hoodie shopping,Shopping
+office formal trousers,Shopping
+croma electronics gadgets,Shopping
+reliance digital smartphone,Shopping
 electricity bill payment,Bills
-mobile phone recharge,Bills
-home internet bill,Bills
-water bill,Bills
-credit card annual fee,Bills
-movie tickets,Entertainment
+internet wifi broadband bill,Bills
+mobile phone recharge airtel,Bills
+water utility bill,Bills
+bescom monthly electricity,Bills
+jio fiber broadband plan,Bills
+piped gas bill mgl,Bills
+lpg cylinder refill indane,Bills
+tata play dth recharge,Bills
+vi postpaid family bill,Bills
+airtel postpaid connection,Bills
+property municipal tax bill,Bills
+society monthly maintenance bill,Bills
+broadband router subscription,Bills
+electricity bill msedcl,Bills
+gas cylinder bharat gas,Bills
+water tanker supply payment,Bills
+house maintenance charges,Bills
+postpaid mobile bill,Bills
+dish tv satellite recharge,Bills
 netflix monthly subscription,Entertainment
-spotify premium,Entertainment
-gaming pass,Entertainment
-concert ticket,Entertainment
-doctor consultation,Health
-pharmacy medicines,Health
-hospital bill,Health
-dental clinic visit,Health
-health insurance premium,Health
-online course subscription,Education
-college exam fee,Education
-textbook purchase,Education
-tuition payment,Education
-coding bootcamp fee,Education
-flight ticket to goa,Travel
-hotel booking,Travel
-airbnb stay,Travel
-holiday package,Travel
-airport cab,Travel
-monthly house rent,Rent
-apartment rent transfer,Rent
-rent paid to landlord,Rent
-flat maintenance rent,Rent
-room rent payment,Rent
-atm withdrawal,Other
-charity donation,Other
-bank service charge,Other
-miscellaneous expense,Other
-cash transfer to friend,Other
+spotify premium music,Entertainment
+pvr cinema movie tickets,Entertainment
+bookmyshow concert passes,Entertainment
+steam video game purchase,Entertainment
+youtube premium family plan,Entertainment
+amazon prime video,Entertainment
+disney hotstar subscription,Entertainment
+imax movie tickets avatar,Entertainment
+playstation plus membership,Entertainment
+bowling alley with friends,Entertainment
+board game cafe entry,Entertainment
+amusement park day pass,Entertainment
+standup comedy show ticket,Entertainment
+museum entry fee,Entertainment
+escape room game weekend,Entertainment
+gaming arcade tokens,Entertainment
+club entry weekend party,Entertainment
+music concert ticket,Entertainment
+cricket match stadium ticket,Entertainment
+doctor consultation fee,Health
+apollo pharmacy medicines,Health
+hospital emergency clinic,Health
+dental teeth cleaning checkup,Health
+gym membership monthly,Health
+cult fit fitness pack,Health
+medplus prescription drugs,Health
+1mg medicine online order,Health
+blood test diagnostic lab,Health
+eye checkup lenskart specs,Health
+whey protein powder tub,Health
+multivitamin supplements,Health
+physiotherapy therapy session,Health
+dermatologist consultation,Health
+orthopedic specialist visit,Health
+first aid bandages and dettol,Health
+covid booster vaccination,Health
+yoga classes monthly fee,Health
+skin care ointment pharmacy,Health
+dental braces adjustment,Health
+college semester tuition,Education
+udemy python coding course,Education
+coursera data science certificate,Education
+textbooks engineering books,Education
+notebooks and pens stationery,Education
+ielts exam registration,Education
+gre preparation class fee,Education
+coaching class monthly fees,Education
+edx online course fee,Education
+library annual membership,Education
+kindle programming ebook,Education
+data analytics certification,Education
+school annual fee payment,Education
+drawing art supplies class,Education
+scientific calculator casio,Education
+online masterclass subscription,Education
+french language learning app,Education
+skillshare annual plan,Education
+exam application form fee,Education
+workshop registration ticket,Education
+flight ticket to mumbai,Travel
+hotel booking stay,Travel
+airbnb weekend cottage,Travel
+makemytrip holiday package,Travel
+indigo airlines domestic flight,Travel
+resort booking goa,Travel
+goibibo hotel reservation,Travel
+travel luggage trolley bag,Travel
+travel insurance international,Travel
+sightseeing tour guide fee,Travel
+visa application processing,Travel
+intercity bus travels booking,Travel
+airport taxi transfer,Travel
+hill station homestay booking,Travel
+ferry boat cruise ticket,Travel
+scuba diving activity pass,Travel
+flight air india ticket,Travel
+camel safari desert camp,Travel
+mountain trekking pass,Travel
+car rental self drive,Travel
+monthly apartment rent,Rent
+house rent landlord transfer,Rent
+flat monthly rental payment,Rent
+pg accommodation monthly rent,Rent
+studio apartment rent advance,Rent
+co-living space rent stanza,Rent
+room rent sharing flat,Rent
+rental deposit installment,Rent
+quarterly house rent payment,Rent
+hostel room rent and mess,Rent
+landlord rent via bank transfer,Rent
+residential lease rental,Rent
+shared flat rent portion,Rent
+penthouse rent monthly,Rent
+deposit adjustment rent,Rent
+atm cash withdrawal,Other
+charity donation ngofund,Other
+temple donation offering,Other
+penalty traffic challan,Other
+notary stamp paper court,Other
+courier speed post shipping,Other
+document xerox and printing,Other
+key duplication locksmith,Other
+misc personal transfer friend,Other
+gift envelope wedding,Other
+lost card reissue charge,Other
+bank locker annual fee,Other
+random unexpected expense,Other
+cleaning maid tip,Other
+stray dog shelter donation,Other

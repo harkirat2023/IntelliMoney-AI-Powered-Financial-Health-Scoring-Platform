@@ -174,9 +174,12 @@ export default function SpendingPage() {
           </div>
         </form>
         {prediction && (
-          <p className="expense-prediction">
-            <Sparkles size={14} /> Categorized as <strong>{prediction.category}</strong> ({Math.round(prediction.confidence * 100)}% confidence)
-          </p>
+          <div className="expense-prediction" style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.35)", borderRadius: 6, margin: "12px 0" }}>
+            <Sparkles size={16} style={{ color: "#10b981", flexShrink: 0 }} />
+            <span style={{ fontSize: "0.9rem" }}>
+              Predicted by <strong>ML Model ({prediction.method === "keyword" ? "Keyword Fallback" : "TF-IDF + Logistic Regression"})</strong>: <strong>{prediction.category}</strong> ({Math.round(prediction.confidence * 100)}% confidence)
+            </span>
+          </div>
         )}
         {formError && <p className="expense-error">{formError}</p>}
       </div>

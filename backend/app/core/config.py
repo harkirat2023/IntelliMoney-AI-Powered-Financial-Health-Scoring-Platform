@@ -30,7 +30,7 @@ class Settings(BaseSettings):
         default=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:80", "http://localhost"],
     )
 
-    bank_encryption_key: str
+    bank_encryption_key: str = "34XP7ymybGLGU4J6PLU4pNu6pWSgx1mHXIXn9P2dwd0="
     bank_consent_redirect_base: str = "http://localhost:5173/connect-bank/consent"
 
     clerk_frontend_api: str = ""
@@ -50,13 +50,17 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     # groq SDK >= 0.30 appends /openai/v1 itself; do NOT include it here.
     groq_api_base: str = "https://api.groq.com"
-    groq_model: str = "llama3-8b-8192"
+    groq_model: str = "openai/gpt-oss-120b"
     groq_temperature: float = 0.3
     groq_max_tokens: int = 1024
     upload_dir: str = "uploads/receipts"
-    ml_allow_fallback: bool = False
+    ml_allow_fallback: bool = True
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(".env", "backend/.env", "../backend/.env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     @model_validator(mode="before")
     @classmethod

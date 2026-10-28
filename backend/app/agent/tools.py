@@ -121,6 +121,21 @@ class CalculateRemainingArgs(BaseModel):
     )
 
 
+class AffordabilityArgs(BaseModel):
+    amount: float = Field(..., gt=0, description="Amount user wants to spend (in ₹)")
+    category: str | None = Field(
+        default=None,
+        description=f"Optional category of the purchase. One of: {CATEGORIES_JOINED}"
+    )
+
+
+class HealthChangeArgs(BaseModel):
+    period: str | None = Field(
+        default=None,
+        description="Optional period YYYY-MM to analyze. Defaults to current period vs previous period."
+    )
+
+
 class CategorizeArgs(BaseModel):
     description: str = Field(..., min_length=1, description="Transaction description")
 
@@ -546,6 +561,146 @@ def build_tools(db: AsyncIOMotorDatabase, user_id: str, session_id: str = ""):
         category, confidence = suggest_category(description)
         return _json({"description": description, "category": category, "confidence": confidence})
 
+    @tool(args_schema=AffordabilityArgs)
+    async def check_affordability(amount: float, category: str | None = None) -> str:
+        """Deterministically evaluate if the user can afford a purchase based on category budgets and monthly cash flow. Use for 'Can I afford to spend X' questions."""
+        now = utc_now()
+        start, end = month_bounds(now.year, now.month)
+        docs = await _expenses_in_range(start, end)
+        total_spending = round(sum(d.get("amount", 0) for d in docs), 2)
+        user_doc = await _income_doc()
+        monthly_income = float((user_doc or {}).get("monthly_income", 0))
+        net_cashflow = round(monthly_income - total_spending, 2)
+
+        statuses = await _budget_status_period(None)
+        cat_status = None
+        if category:
+            cat_lower = category.lower().strip()
+            cat_status = next((s for s in statuses if s["category"].lower() == cat_lower), None)
+
+        if cat_status:
+            limit = float(cat_status["limit"])
+            spent = float(cat_status["spent"])
+            cat_remaining = round(limit - spent, 2)
+            cat_after = round(cat_remaining - amount, 2)
+            affordable = amount <= cat_remaining and (net_cashflow >= amount or monthly_income == 0)
+
+            return _json({
+                "amount_requested": amount,
+                "category": cat_status["category"],
+                "category_budget_limit": limit,
+                "category_spent": spent,
+                "category_remaining_before": cat_remaining,
+                "category_remaining_after": cat_after,
+                "monthly_income": monthly_income,
+                "current_month_spending": total_spending,
+                "remaining_cashflow_before": net_cashflow,
+                "remaining_cashflow_after": round(net_cashflow - amount, 2),
+                "is_affordable": affordable,
+                "verdict": (
+                    f"Yes, you can afford this. You have ₹{cat_remaining:,.2f} left in your {cat_status['category']} budget, "
+                    f"and ₹{cat_after:,.2f} will remain after spending."
+                    if affordable else
+                    f"No, this purchase of ₹{amount:,.2f} exceeds your remaining {cat_status['category']} budget of ₹{cat_remaining:,.2f} "
+                    f"by ₹{abs(cat_after):,.2f}."
+                ),
+                "note": "Authoritative calculation performed by backend, not LLM.",
+            })
+
+        total_budget_limit = round(sum(s["limit"] for s in statuses), 2)
+        total_budget_spent = round(sum(s["spent"] for s in statuses), 2)
+        total_budget_remaining = round(total_budget_limit - total_budget_spent, 2)
+        affordable = net_cashflow >= amount and (total_budget_remaining >= amount or total_budget_limit == 0)
+
+        return _json({
+            "amount_requested": amount,
+            "category": category or "Unspecified",
+            "monthly_income": monthly_income,
+            "current_month_spending": total_spending,
+            "remaining_cashflow_before": net_cashflow,
+            "remaining_cashflow_after": round(net_cashflow - amount, 2),
+            "total_budget_limit": total_budget_limit,
+            "total_budget_remaining": total_budget_remaining,
+            "is_affordable": affordable,
+            "verdict": (
+                f"Yes, you can afford spending ₹{amount:,.2f}. Your uncommitted cash flow for this month is ₹{net_cashflow:,.2f}."
+                if affordable else
+                f"Caution: Spending ₹{amount:,.2f} is tight or exceeds your available cash flow (₹{net_cashflow:,.2f} remaining)."
+            ),
+            "note": "Authoritative calculation performed by backend, not LLM.",
+        })
+
+    @tool(args_schema=HealthChangeArgs)
+    async def explain_health_score_change(period: str | None = None) -> str:
+        """Explain why the financial health score changed or decreased, comparing the current period with the previous period."""
+        from app.health.repositories.health_history_repository import MongoHealthHistoryRepository
+        from app.health.services.financial_health_service import FinancialHealthService
+
+        health_svc = FinancialHealthService(db)
+        current_health = await health_svc.get_current(user_id)
+        history_repo = MongoHealthHistoryRepository(db)
+        history_docs = await history_repo.get_by_user(user_id, limit=3)
+
+        if not history_docs or len(history_docs) < 2:
+            breakdown = await health_svc.get_breakdown(user_id)
+            recs = await health_svc.get_recommendations(user_id)
+            score = current_health.score if current_health else (breakdown.score if breakdown else 0)
+            risk = current_health.risk_level if current_health else "Average"
+            factors = breakdown.factors if breakdown else {}
+            low_factors = sorted(
+                [(k, v) for k, v in factors.items() if isinstance(v, (int, float))],
+                key=lambda kv: kv[1],
+            )[:3]
+            return _json({
+                "status": "baseline",
+                "current_score": score,
+                "risk_level": risk,
+                "summary": f"Your current financial health score is {score}/100 ({risk}).",
+                "factors_dragging_score": [
+                    {"factor": f[0].replace("_", " ").title(), "score": round(float(f[1]), 1)}
+                    for f in low_factors
+                ],
+                "recommended_actions": [r.title for r in (recs or [])[:3]],
+                "note": "Based on current period factor breakdown.",
+            })
+
+        latest = history_docs[0]
+        previous = history_docs[1]
+        score_diff = latest.score - previous.score
+
+        factor_diffs = []
+        for attr in ["savings_rate", "budget_adherence", "expense_stability",
+                     "cash_flow_stability", "income_consistency", "emergency_fund_score"]:
+            lat_val = getattr(latest, attr, 0.0)
+            prev_val = getattr(previous, attr, 0.0)
+            diff = round(lat_val - prev_val, 2)
+            factor_diffs.append({
+                "factor": attr.replace("_", " ").title(),
+                "current": lat_val,
+                "previous": prev_val,
+                "delta": diff,
+            })
+
+        drops = [f for f in factor_diffs if f["delta"] < 0]
+        drops.sort(key=lambda x: x["delta"])
+        gains = [f for f in factor_diffs if f["delta"] > 0]
+        gains.sort(key=lambda x: -x["delta"])
+
+        recs = await health_svc.get_recommendations(user_id)
+
+        return _json({
+            "current_period": latest.period,
+            "previous_period": previous.period,
+            "current_score": latest.score,
+            "previous_score": previous.score,
+            "score_change": score_diff,
+            "trend": "decreased" if score_diff < 0 else ("increased" if score_diff > 0 else "unchanged"),
+            "declining_factors": drops,
+            "improving_factors": gains,
+            "recommended_fixes": [r.title for r in (recs or [])[:3]],
+            "note": "Authoritative component deltas calculated from financial history.",
+        })
+
     # ---- write planning tool ---------------------------------------------
     @tool(args_schema=ProposeActionsArgs)
     async def propose_actions(actions: list[dict[str, Any]]) -> str:
@@ -635,9 +790,10 @@ def build_tools(db: AsyncIOMotorDatabase, user_id: str, session_id: str = ""):
         list_recurring_expenses, get_upcoming_recurring,
         list_subscriptions, get_subscription_renewals,
         calculate_health, get_health_history, get_health_risk, get_health_factors,
+        explain_health_score_change,
         get_budget_intelligence, get_spending_report, get_cashflow_report,
         detect_anomalies, list_notifications, list_accounts, get_aa_status,
-        calculate_remaining, categorize,
+        calculate_remaining, check_affordability, categorize,
     ]
     return read_tools + [propose_actions], proposal_created
 

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from app.api.deps import get_current_user
 from app.db.mongodb import get_database
 from app.schemas.expense import ExpenseCreate, ExpensePublic, ExpenseUpdate
-from app.services.category_service import suggest_category
+from app.services.category_service import suggest_category, suggest_category_detailed
 from app.services.serializers import date_to_datetime, serialize_document, to_object_id, utc_now
 from app.services.spending_sync_service import refresh_aggregates
 
@@ -28,6 +28,7 @@ class CategorizeRequest(BaseModel):
 class CategorizeResponse(BaseModel):
     category: str
     confidence: float
+    method: str = "ml"
 
 
 @router.post("/categorize", response_model=CategorizeResponse)
@@ -35,9 +36,13 @@ async def categorize_expense(
     payload: CategorizeRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> CategorizeResponse:
-    """Suggest a category using deterministic keyword logic (no ML)."""
-    category, confidence = suggest_category(payload.description)
-    return CategorizeResponse(category=category, confidence=confidence)
+    """Suggest an expense category using the trained TF-IDF + Logistic Regression ML pipeline."""
+    result = suggest_category_detailed(payload.description)
+    return CategorizeResponse(
+        category=result["category"],
+        confidence=result["confidence"],
+        method=result["method"],
+    )
 
 
 @router.post("", response_model=ExpensePublic, status_code=201)

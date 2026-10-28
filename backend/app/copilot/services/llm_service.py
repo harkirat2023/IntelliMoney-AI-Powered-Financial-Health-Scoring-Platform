@@ -61,6 +61,11 @@ class LLMService:
     def _get_llm(self, streaming: bool = False) -> ChatGroq:
         if not self.is_configured:
             raise RuntimeError("GROQ_API_KEY is not configured on this deployment.")
+        # Ensure groq low-level client uses the normalized base url
+        import os
+        if os.environ.get("GROQ_API_BASE", "").endswith("/openai/v1"):
+            os.environ.pop("GROQ_API_BASE", None)
+        os.environ["GROQ_BASE_URL"] = self._base_url
         return ChatGroq(
             model=self._model,
             temperature=self._temperature,

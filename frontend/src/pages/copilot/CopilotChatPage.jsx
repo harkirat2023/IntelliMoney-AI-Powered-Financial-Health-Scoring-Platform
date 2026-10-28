@@ -199,6 +199,30 @@ export default function CopilotChatPage() {
         )}
         <div ref={chatEnd} />
       </div>
+      {suggestions.length > 0 && !loading && (
+        <div className="copilot-quick-bar" style={{ display: "flex", gap: "8px", overflowX: "auto", padding: "8px 16px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", background: "rgba(15, 23, 42, 0.6)" }}>
+          {suggestions.slice(0, 4).map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              className="quick-chip"
+              onClick={() => handleSuggestion(s)}
+              style={{
+                fontSize: "0.78rem",
+                padding: "4px 10px",
+                borderRadius: "14px",
+                whiteSpace: "nowrap",
+                background: "rgba(255, 255, 255, 0.07)",
+                border: "1px solid rgba(255, 255, 255, 0.14)",
+                color: "#e2e8f0",
+                cursor: "pointer",
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="copilot-input-bar">
         <textarea
           ref={inputRef}

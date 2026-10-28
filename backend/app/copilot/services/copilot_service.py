@@ -64,11 +64,13 @@ class CopilotService:
 
     async def get_suggestions(self, user_id: str) -> list[str]:
         base = [
+            "Where did most of my money go this month?",
+            "Why has my financial health score decreased?",
+            "Can I afford to spend ₹3,000 this weekend based on my current budget?",
+            "Help me reduce unnecessary spending.",
             "What's my financial health score?",
             "How am I doing on my budget this month?",
-            "Where is my money going?",
             "Show me my top savings opportunities",
-            "Summarize my financial month",
             "Do I have any overspending categories?",
         ]
         health = await self._db.financial_health.find_one(

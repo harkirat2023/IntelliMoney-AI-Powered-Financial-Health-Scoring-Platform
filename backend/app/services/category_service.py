@@ -1,16 +1,17 @@
-"""Expense categorization with ML model and keyword fallback.
+"""Expense categorization with ML model (TF-IDF + Logistic Regression) and keyword fallback.
 
 Uses a TF-IDF + Logistic Regression model when available, otherwise falls
 back to deterministic keyword matching. The ML model is loaded lazily on
 first use and cached for subsequent calls.
 """
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
 from typing import Optional
 
 import joblib
-from app.core.config import get_settings
 from app.core.constants import CATEGORIES, CATEGORY_KEYWORD_MAP
 
 logger = logging.getLogger(__name__)
@@ -64,27 +65,36 @@ def _keyword_fallback(description: str) -> tuple[str, float]:
     return best_category, round(confidence, 3)
 
 
+def suggest_category_detailed(description: str) -> dict:
+    """Return category, confidence, and method (ml or keyword)."""
+    text = (description or "").strip()
+    if not text:
+        return {"category": "Other", "confidence": 0.0, "method": "rule"}
+
+    model = _load_model()
+    if model is not None:
+        try:
+            pred = model.predict([text])[0]
+            prob = model.predict_proba([text])[0].max()
+            category = str(pred)
+            confidence = round(float(prob), 3)
+            if category in CATEGORIES:
+                return {"category": category, "confidence": confidence, "method": "ml"}
+        except Exception as exc:
+            logger.warning("ML prediction failed, falling back to keywords: %s", exc)
+
+    cat, conf = _keyword_fallback(text)
+    return {"category": cat, "confidence": conf, "method": "keyword"}
+
+
 def suggest_category(description: str) -> tuple[str, float]:
     """Return a (category, confidence) tuple for a transaction description.
 
-    First tries the ML model if available and enabled. Falls back to
-    deterministic keyword matching if ML is unavailable or disabled.
+    First tries the ML model (TF-IDF + Logistic Regression).
+    Falls back to deterministic keyword matching if ML is unavailable or errors.
     """
-    cfg = get_settings()
-    if cfg.ml_allow_fallback:
-        model = _load_model()
-        if model is not None:
-            try:
-                pred = model.predict([description])[0]
-                prob = model.predict_proba([description])[0].max()
-                category = str(pred)
-                confidence = round(float(prob), 3)
-                if category in CATEGORIES:
-                    return category, confidence
-            except Exception as exc:
-                logger.warning("ML prediction failed, falling back to keywords: %s", exc)
-
-    return _keyword_fallback(description)
+    res = suggest_category_detailed(description)
+    return res["category"], res["confidence"]
 
 
 def is_valid_category(category: str) -> bool:

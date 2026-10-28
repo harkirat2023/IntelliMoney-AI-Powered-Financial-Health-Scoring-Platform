@@ -31,6 +31,11 @@ class FakeCursor:
         self.items = self.items[:count]
         return self
 
+    async def to_list(self, length=None):
+        if length is not None:
+            return list(self.items[:length])
+        return list(self.items)
+
     def __aiter__(self):
         self._index = 0
         return self
@@ -109,6 +114,8 @@ class FakeDb:
         self.aa_consents = FakeCollection()
         self.aa_data_sessions = FakeCollection()
         self.financial_health = FakeCollection()
+        self.financial_health_history = FakeCollection()
+        self.health_recommendations = FakeCollection()
         self.budget_intelligence = FakeCollection()
         self.cash_flow_summary = FakeCollection()
 
@@ -324,3 +331,51 @@ def test_budget_tools_report_period_status():
 
     out = run(remaining.ainvoke({"period": "2026-08"}))
     assert '"remaining": 100' in out
+
+
+def test_check_affordability_tool():
+    import json
+    db = FakeDb()
+    user_id, _ = make_user(db, income=50000.0)
+    now = utc_now()
+    run(db.budgets.insert_one({
+        "_id": ObjectId(), "user_id": ObjectId(user_id),
+        "category": "Entertainment", "limit": 5000, "month": now.month, "year": now.year,
+    }))
+    run(db.expenses.insert_one({
+        "_id": ObjectId(), "user_id": ObjectId(user_id),
+        "amount": 1000, "category": "Entertainment", "description": "movies",
+        "date": now,
+    }))
+
+    tools, _ = build_tools(db, user_id, session_id="sess-afford")
+    afford_tool = next(t for t in tools if t.name == "check_affordability")
+
+    # Within budget: 3000 <= 4000 remaining
+    res1_str = run(afford_tool.ainvoke({"amount": 3000.0, "category": "Entertainment"}))
+    res1 = json.loads(res1_str)
+    assert res1["is_affordable"] is True
+    assert res1["category_remaining_before"] == 4000.0
+    assert res1["category_remaining_after"] == 1000.0
+    assert "Yes" in res1["verdict"]
+
+    # Exceeds budget: 6000 > 4000 remaining
+    res2_str = run(afford_tool.ainvoke({"amount": 6000.0, "category": "Entertainment"}))
+    res2 = json.loads(res2_str)
+    assert res2["is_affordable"] is False
+    assert res2["category_remaining_after"] == -2000.0
+    assert "No" in res2["verdict"]
+
+
+def test_explain_health_score_change_tool():
+    import json
+    db = FakeDb()
+    user_id, _ = make_user(db, income=60000.0)
+
+    tools, _ = build_tools(db, user_id, session_id="sess-health")
+    explain_tool = next(t for t in tools if t.name == "explain_health_score_change")
+
+    res_str = run(explain_tool.ainvoke({}))
+    res = json.loads(res_str)
+    assert "current_score" in res
+    assert "note" in res
