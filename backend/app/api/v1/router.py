@@ -7,7 +7,7 @@ from app.api.routes import (
     receipt_ocr_v2, recommendations, recurring,
     reports, subscriptions, sync,
 )
-from app.api.v1 import websocket
+# import websocket router removed (module not present)
 
 router = APIRouter()
 
@@ -43,5 +43,5 @@ router.include_router(goal_planning_v2.router, tags=["goals"])
 router.include_router(receipt_ocr_v2.router, tags=["receipts"])
 
 # Realtime Communication
-router.include_router(websocket.router, tags=["websocket"])
+# websocket router inclusion removed
 
